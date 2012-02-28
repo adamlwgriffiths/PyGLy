@@ -7,11 +7,11 @@ Created on 22/06/2011
 import numpy
 
 
-ColumnMajor = 1
-RowMajor = 2
+column_major = 1
+row_major = 2
 
 
-def applyDirectionScale( vectors, direction, scale ):
+def apply_direction_scale( vectors, direction, scale ):
     """
     @param vectors: a 2d numpy array of vectors
     eg. numpy.array([ [x,y,z] ])
@@ -72,7 +72,7 @@ def applyDirectionScale( vectors, direction, scale ):
     
     return numpy.dot( vectors, matrix )
 
-def applyScale( vectors, scalingVector ):
+def apply_scale( vectors, scalingVector ):
     """
     @param vectors: a 2d numpy array of vectors
     eg. numpy.array([ [x,y,z] ])
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     print "Scale by vector"
     vectors = numpy.array([ [ 2.0, 2.0, 2.0 ] ])
     scale = ( 10.0, 2.0, 1.0 )
-    result = applyScale( vectors, scale )
+    result = apply_scale( vectors, scale )
     print result
     assert result[ 0 ][ 0 ] == 20.0
     assert result[ 0 ][ 1 ] == 4.0
@@ -107,11 +107,10 @@ if __name__ == "__main__":
         [ 2.0, 1.0, 25.0 ]
         ])
     direction = numpy.array([ 0.0, 0.0, 1.0 ])
-    newVectors = applyDirectionScale( vectors, direction, 0.0 )
+    newVectors = apply_direction_scale( vectors, direction, 0.0 )
     print newVectors
     for index in xrange( len( vectors ) ):
         assert newVectors[ index ][ 0 ] == vectors[ index ][ 0 ]
         assert newVectors[ index ][ 1 ] == vectors[ index ][ 1 ]
         assert newVectors[ index ][ 2 ] == 0.0
-    
 

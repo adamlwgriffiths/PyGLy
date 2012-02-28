@@ -10,7 +10,8 @@ http://www.pyglet.org/doc/programming_guide/drawing_primitives.html
 
 from pyglet.gl import *
 
-import MD2
+#import mesh.md2
+import md2
 
 
 class MD2_Mesh( object ):
@@ -20,22 +21,23 @@ class MD2_Mesh( object ):
         
         self.filename = filename
         self._frame = 0
-        self.displayLists = []
+        self.display_lists = []
     
     def load( self ):
-        md2 = MD2.load( self.filename )
+        #md2_data = mesh.md2.load( self.filename )
+        md2_data = md2.load( self.filename )
         
         # clear the existing display lists
-        self.displayLists = []
+        self.display_lists = []
         
         # iterate through the frames
-        for frame in md2.frames:
+        for frame in md2_data.frames:
             dl = glGenLists( 1 );
             glNewList( dl, GL_COMPILE )
             
             # use the vertices and normals from each frame
             # but draw them using the gl primitives
-            for command in md2.gl_primitives:
+            for command in md2_data.gl_primitives:
                 # begin the list
                 if command.type > 0:
                     glBegin( GL_TRIANGLE_STRIP )
@@ -64,20 +66,20 @@ class MD2_Mesh( object ):
             glEndList()
             
             # add the display list
-            self.displayLists.append( dl )
+            self.display_lists.append( dl )
     
     def render( self ):
-        glCallList( self.displayLists[ self._frame ] )
+        glCallList( self.display_lists[ self._frame ] )
     
     @property
     def frames( self ):
-        return len( self.displayLists )
+        return len( self.display_lists )
     
-    def _getFrame( self ):
+    def _get_frame( self ):
         return self._frame
     
-    def _setFrame( self, frame ):
-        if frame > len( self.displayLists ):
+    def _set_frame( self, frame ):
+        if frame > len( self.display_lists ):
             raise ValueError(
                 'Invalid frame "%i" specified for mesh "%s"' % (
                     frame,
@@ -87,5 +89,5 @@ class MD2_Mesh( object ):
         
         self._frame = frame
     
-    frame = property( _getFrame, _setFrame )
+    frame = property( _get_frame, _set_frame )
     

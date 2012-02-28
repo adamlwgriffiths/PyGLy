@@ -7,42 +7,43 @@ Created on Mon Aug 22 19:01:19 2011
 
 from pyglet.gl import *
 
-from RenderNode import RenderNode
+from render_node import RenderNode
+import debug_cube
 
 
 class RenderCallbackNode( RenderNode ):
     
     
-    def __init__( self, name, initialiseCallback, renderCallback ):
+    def __init__( self, name, initialise_callback, render_callback ):
         super( RenderCallbackNode, self ).__init__( name )
         
-        if renderCallback == None:
-            raise ValueError( "RenderNode renderCallback cannot be None" )
+        if render_callback == None:
+            raise ValueError( "RenderNode render_callback cannot be None" )
         
-        self.initialiseCallback = initialiseCallback
-        self.renderCallback = renderCallback
+        self.initialise_callback = initialise_callback
+        self.render_callback = render_callback
         
         # initialise the mesh now
-        self.initialiseCallback()
+        self.initialise_callback()
     
-    def onContextLost( self ):
+    def on_context_lost( self ):
         # re-create any data for the mesh
-        self.initialiseCallback()
+        self.initialise_callback()
         
         # let our children know
         for child in self.children:
-            child.onContextLost()
+            child.on_context_lost()
     
     def render( self ):
         # apply our transforms
         glPushMatrix()
         
-        self.applyTranslations()
+        self.apply_translations()
         
-        if self.renderDebugCube == True:
-            DebugCube.renderDebugCube()
+        if self.render_debug_cube == True:
+            debug_cube.render_debug_cube()
         
-        self.renderCallback()
+        self.render_callback()
         
         # continue on to our children
         for child in self.children:

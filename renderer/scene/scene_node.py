@@ -9,11 +9,10 @@ import weakref
 import numpy
 from pyglet.gl import *
 
-from Pyrr import Quaternion
-from Pyrr import Matrix33
-from Pyrr import Matrix44
-
-import DebugCube
+import maths.quaternion
+import maths.matrix33
+import maths.matrix44
+import debug_cube
 
 
     
@@ -24,7 +23,7 @@ class SceneNode( object ):
     TODO: Add scale inheritance
     """
     
-    renderDebugCube = False
+    render_debug_cube = False
     
     
     def __init__( self, name ):
@@ -35,23 +34,23 @@ class SceneNode( object ):
         self._parent = None
         self.children = set()
         
-        self._orientation = Quaternion.identity()        
-        self._worldOrientation = Quaternion.identity()
+        self._orientation = maths.quaternion.identity()        
+        self._world_orientation = maths.quaternion.identity()
         
         self._translation = numpy.zeros( 3, dtype = float )
-        self._worldTranslation = numpy.zeros( 3, dtype = float )
+        self._world_translation = numpy.zeros( 3, dtype = float )
         
         self.scale = numpy.ones( (3), dtype = float )
         self.dirty = True
     
-    def _setDirty( self ):
+    def _set_dirty( self ):
         self.dirty = True
         
         # mark our children as dirty
         for child in self.children:
-            child._setDirty()
+            child._set_dirty()
     
-    def _updateWorldTranslations( self ):
+    def _update_world_translations( self ):
         if self.dirty == False:
             return
         
@@ -59,116 +58,116 @@ class SceneNode( object ):
         if parent == None:
             # no parent
             # just use our local translations
-            self._worldTranslation = self._translation
-            self._worldOrientation = self._orientation
+            self._world_translation = self._translation
+            self._world_orientation = self._orientation
         else:
             # get our parent's world translation
-            parentWorldTranslation = parent._getWorldTranslation()
-            parentWorldOrientation = parent._getWorldOrientation()
+            parent_world_translation = parent._get_world_translation()
+            parent_world_orientation = parent._get_world_orientation()
             
             # rotate our translation by our paren't world orientation
-            parentWorldMatrix = Matrix33.fromInertialToObjectQuaternion( parentWorldOrientation )
-            worldTranslation = Matrix33.inertialToObject( self._translation, parentWorldMatrix )
-            self._worldTranslation[:] = parentWorldTranslation + worldTranslation
+            parent_world_matrix = maths.matrix33.from_inertial_to_object_quaternion( parent_world_orientation )
+            world_translation = maths.matrix33.inertial_to_object( self._translation, parent_world_matrix )
+            self._world_translation[:] = parent_world_translation + world_translation
             
             # multiply our rotation by our parents
-            self._worldOrientation = Quaternion.crossProduct(
+            self._world_orientation = maths.quaternion.cross_product(
                 self._orientation,
-                parentWorldOrientation
+                parent_world_orientation
                 )
         self.dirty = False
     
-    def _getLocalTranslation( self ):
+    def _get_local_translation( self ):
         return self._translation
     
-    def _setLocalTranslation( self, translation ):
+    def _set_local_translation( self, translation ):
         # check for the translation not changing
         if numpy.array_equal( translation, [ 0.0, 0.0, 0.0 ] ):
             # don't bother to update anything
             return
         
         self._translation[:] = translation
-        self._setDirty()
+        self._set_dirty()
     
-    translation = property( _getLocalTranslation, _setLocalTranslation )
+    translation = property( _get_local_translation, _set_local_translation )
     
-    def _getWorldTranslation( self ):
+    def _get_world_translation( self ):
         if self.dirty == False:
             # world translation is up to date
-            return self._worldTranslation
+            return self._world_translation
         else:
             # world translations are dirty
             # update them
-            self._updateWorldTranslations()
-            return self._worldTranslation
+            self._update_world_translations()
+            return self._world_translation
     
-    def _setWorldTranslation( self, translation ):
+    def _set_world_translation( self, translation ):
         raise NotImplementedError(
-            "SceneNode._setWorldTranslation not implemented for non local translations"
+            "SceneNode._set_world_translation not implemented for non local translations"
             )
     
-    worldTranslation = property( _getWorldTranslation, _setWorldTranslation )
+    world_translation = property( _get_world_translation, _set_world_translation )
     
-    def _getLocalOrientation( self ):
+    def _get_local_orientation( self ):
         return self._orientation
     
-    def _setLocalOrientation( self, orientation ):
+    def _set_local_orientation( self, orientation ):
         # check for the orientation not changing
         if numpy.array_equal( self._orientation, orientation ):
             # don't bother to update anything
             return
         
         self._orientation[:] = orientation
-        self._setDirty()
+        self._set_dirty()
     
-    orientation = property( _getLocalOrientation, _setLocalOrientation )
+    orientation = property( _get_local_orientation, _set_local_orientation )
     
-    def _getWorldOrientation( self ):
+    def _get_world_orientation( self ):
         if self.dirty == False:
-            return self._worldOrientation
+            return self._world_orientation
         else:
             # world translations are dirty
             # update them
-            self._updateWorldTranslations()
-            return self._worldOrientation
+            self._update_world_translations()
+            return self._world_orientation
     
-    def _setWorldOrientation( self, orientation ):
-        self._setDirty()
+    def _set_world_orientation( self, orientation ):
+        self._set_dirty()
         raise NotImplementedError(
             "SceneNode._setWorldOrientation not implemented"
             )
     
-    worldOrientation = property( _getWorldOrientation, _setWorldOrientation )
+    world_orientation = property( _get_world_orientation, _set_world_orientation )
     
-    def rotateQuaternion( self, orientation ):
+    def rotate_quaternion( self, orientation ):
         # check for the orientation not changing
         if numpy.array_equal( orientation, [ 1.0, 0.0, 0.0, 0.0 ] ):
             # don't bother to update anything
             return
         
-        Quaternion.crossProduct(
+        maths.quaternion.cross_product(
             self._orientation,
             orientation,
             out = self._orientation
             )
-        self._setDirty()
+        self._set_dirty()
     
-    def rotateMatrix( self, orientation ):
+    def rotate_matrix( self, orientation ):
         # TODO: check for identity matrix
         # check for the orientation not changing
-        self._setDirty()
+        self._set_dirty()
         raise NotImplementedError(
-            "SceneNode.rotateAboutAxis not implemented for non local translations"
+            "SceneNode.rotate_matrix not implemented for non local translations"
             )
     
-    def rotateEulers( self, orientation ):
-        self._setDirty()
+    def rotate_eulers( self, orientation ):
+        self._set_dirty()
         raise NotImplementedError(
-            "SceneNode.rotateAboutAxis not implemented for non local translations"
+            "SceneNode.rotate_eulers not implemented for non local translations"
             )
     
-    def rotateAboutAxis( self, radians, axis ):
-        self._setDirty()
+    def rotate_about_axis( self, radians, axis ):
+        self._set_dirty()
         raise NotImplementedError(
             "SceneNode.rotateAboutAxis not implemented for non local translations"
             )
@@ -178,13 +177,13 @@ class SceneNode( object ):
         Amount > 0 == pitch down
         Amount < 0 == pitch up
         """
-        pitchQuat = Quaternion.setToRotationAboutX( amount )
-        self.rotateQuaternion( pitchQuat )
+        pitch_quat = maths.quaternion.set_to_rotation_about_x( amount )
+        self.rotate_quaternion( pitch_quat )
     
-    def pitchForward( self, amount ):
+    def pitch_forward( self, amount ):
         self.pitch( amount )
     
-    def pitchBackward( self, amount ):
+    def pitch_backward( self, amount ):
         self.pitch( -amount )
     
     def yaw( self, amount ):
@@ -192,81 +191,81 @@ class SceneNode( object ):
         Amount < 0 == yaw left.
         Amount > 0 == yaw right.
         """
-        yawQuat = Quaternion.setToRotationAboutY( amount )
-        self.rotateQuaternion( yawQuat )
+        yaw_quat = maths.quaternion.set_to_rotation_about_y( amount )
+        self.rotate_quaternion( yaw_quat )
     
-    def yawRight( self, amount ):
+    def yaw_right( self, amount ):
         self.yaw( -amount )
     
-    def yawLeft( self, amount ):
+    def yaw_left( self, amount ):
         self.yaw( amount )
     
     def roll( self, amount ):
-        rollQuat = Quaternion.setToRotationAboutZ( amount )
-        self.rotateQuaternion( rollQuat )
+        roll_quat = maths._quaternion.set_to_rotation_about_z( amount )
+        self.rotate_quaternion( roll_quat )
     
-    def rollRight( self, amount ):
+    def roll_right( self, amount ):
         self.roll( -amount )
     
-    def rollLeft( self, amount ):
+    def roll_left( self, amount ):
         self.roll( amount )
         
-    def lookAtWorld( self, target, upAxis ):
-        self._setDirty()
+    def look_at_world( self, target, upAxis ):
+        self._set_dirty()
         raise NotImplementedError(
             "SceneNode.lookAt not implemented for non local translations"
             )
     
     def translate( self, vector ):
         self._translation += vector
-        self._setDirty()
+        self._set_dirty()
     
-    def translateForward( self, amount ):
+    def translate_forward( self, amount ):
         if amount == 0.0:
             return
         
-        matrix = Matrix33.fromInertialToObjectQuaternion( self._orientation )
-        forwardVec = Matrix33.inertialToObject( [ 0.0, 0.0, -1.0 ], matrix )
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
+        forwardVec = maths.matrix33.inertial_to_object( [ 0.0, 0.0, -1.0 ], matrix )
         forwardVec *= amount
         self._translation += forwardVec
-        self._setDirty()
+        self._set_dirty()
     
-    def translateBackward( self, amount ):
-        self.translateForward( -amount )
+    def translate_backward( self, amount ):
+        self.translate_forward( -amount )
     
-    def translateRight( self, amount ):
+    def translate_right( self, amount ):
         if amount == 0.0:
             return
         
-        matrix = Matrix33.fromInertialToObjectQuaternion( self._orientation )
-        rightVec = Matrix33.inertialToObject( [ 1.0, 0.0, 0.0 ], matrix )
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
+        rightVec = maths.matrix33.inertial_to_object( [ 1.0, 0.0, 0.0 ], matrix )
         rightVec *= amount
         self._translation += rightVec
-        self._setDirty()
+        self._set_dirty()
     
-    def translateLeft( self, amount ):
-        self.translateRight( -amount )
+    def translate_left( self, amount ):
+        self.translate_right( -amount )
     
-    def translateUp( self, amount ):
+    def translate_up( self, amount ):
         if amount == 0.0:
             return
         
-        matrix = Matrix33.fromInertialToObjectQuaternion( self._orientation )
-        upVec = Matrix33.inertialToObject( [ 0.0, 1.0, 0.0 ], matrix )
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
+        upVec = maths.matrix33.inertial_to_object( [ 0.0, 1.0, 0.0 ], matrix )
         upVec *= amount
         self._translation += upVec
-        self._setDirty()
+        self._set_dirty()
     
-    def translateDown( self, amount ):
-        self.translateUp( -amount )
+    def translate_down( self, amount ):
+        self.translate_up( -amount )
     
-    def setScale( self, scale ):
+    def set_scale( self, scale ):
         self.scale[:] = scale
     
-    def addChild( self, node ):
-        previousParent = node.parent
-        if previousParent != None:
-            previousParent.removeChild( node )
+    def add_child( self, node ):
+        previous_parent = node.parent
+        if previous_parent != None:
+            previous_parent.remove_child( node )
         
         # add the node
         self.children.add( node )
@@ -275,9 +274,9 @@ class SceneNode( object ):
         node._parent = weakref.ref( self )
         
         # mark the node as dirty
-        node._setDirty()
+        node._set_dirty()
     
-    def removeChild( self, node ):
+    def remove_child( self, node ):
         self.children.remove( node )
         node._parent = None
     
@@ -287,21 +286,23 @@ class SceneNode( object ):
             return self._parent()
         return None
     
-    def onContextLost( self ):
+    def on_context_lost( self ):
+        # TODO: replace this with a mesh pool
+        # that does this for only objects that need it
         # we don't need to do anything
         # but our children might
         for child in self.children:
-            child.onContextLost()
+            child.on_context_lost()
     
-    def applyTranslations( self ):
+    def apply_translations( self ):
         # apply our scale
         glScalef( self.scale[ 0 ], self.scale[ 1 ], self.scale[ 2 ] )
         
         # convert our quaternion to a matrix
-        matrix = Matrix44.fromInertialToObjectQuaternion( self._orientation )
+        matrix = maths.matrix44.from_inertial_to_object_quaternion( self._orientation )
         
         # add our translation to the matrix
-        Matrix44.setTranslation( matrix, self._translation, out = matrix )
+        maths.matrix44.set_translation( matrix, self._translation, out = matrix )
         
         # convert to ctype for OpenGL
         glMatrix = (GLfloat * matrix.size)(*matrix.flat) 
@@ -311,10 +312,10 @@ class SceneNode( object ):
         # apply our transforms
         glPushMatrix()
         
-        self.applyTranslations()
+        self.apply_translations()
         
-        if self.renderDebugCube == True:
-            DebugCube.renderDebugCube()
+        if self.render_debug_cube == True:
+            debug_cube.render_debug_cube()
         
         # continue on to our children
         for child in self.children:
@@ -329,19 +330,19 @@ if __name__ == "__main__":
     """
     Tree methods
     """
-    root = SceneNode()
+    root = SceneNode( 'root' )
     
-    child1_1 = SceneNode()
-    child1_2 = SceneNode()
+    child1_1 = SceneNode( 'child1_1' )
+    child1_2 = SceneNode( 'child1_2' )
     
-    child2_1 = SceneNode()
-    child2_2 = SceneNode()
+    child2_1 = SceneNode( 'child2_1' )
+    child2_2 = SceneNode( 'child2_2' )
     
-    root.addChild( child1_1 )
-    root.addChild( child1_2 )
+    root.add_child( child1_1 )
+    root.add_child( child1_2 )
     
-    child1_1.addChild( child2_1 )
-    child1_2.addChild( child2_2 )
+    child1_1.add_child( child2_1 )
+    child1_2.add_child( child2_2 )
     
     assert child1_1.parent is root
     assert child1_1 in root.children
@@ -353,7 +354,7 @@ if __name__ == "__main__":
     assert child2_2.parent is child1_2
     assert child2_2 in child1_2.children
     
-    child1_1.addChild( child2_2 )
+    child1_1.add_child( child2_2 )
     
     assert child2_2.parent is child1_1
     assert child2_2 in child1_1.children

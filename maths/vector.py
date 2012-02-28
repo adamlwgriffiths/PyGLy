@@ -7,32 +7,32 @@ Created on 30/05/2011
 import numpy
 
 
-VecX = 0
-VecY = 1
-VecZ = 2
+x = 0
+y = 1
+z = 2
 
 def setup():
     return numpy.zeros( 3, dtype = float )
 
-def normalise( vector ):
+def normalise( vec ):
     # single vector
-    vector /= numpy.linalg.norm( vector )
-    return vector
+    vec /= numpy.linalg.norm( vec )
+    return vec
 
-def normaliseList( list ):
+def normalise_list( list ):
     """
     @param a: a 1d array with 3 elements (a vector) (eg. numpy.array([ x, y, z ]) or a
     Nx3 array (eg. numpy.array([ [x1, y1, z1], [x2, y2, z2] ]).
     @return the normalised value
     """
     # list of vectors
-    lengths = numpy.apply_along_axis(numpy.linalg.norm, 1, list )
+    lengths = numpy.apply_along_axis( numpy.linalg.norm, 1, list )
     list /= lengths.reshape( (-1, 1) )
     return list
     
-def length( vector ):
+def length( vec ):
     # single vector
-    return numpy.linalg.norm( vector )
+    return numpy.linalg.norm( vec )
 
 def lengths( list ):
     # list of vectors
@@ -63,39 +63,39 @@ if __name__ == "__main__":
     import math
     
     print "Normalise vectors"
-    vector = numpy.array( [ 1.0, 1.0, 1.0 ], dtype = float )
-    normalise( vector )
-    vecLength = math.sqrt( vector[ 0 ]**2 + vector[ 1 ]**2 + vector[ 2 ]**2 )
+    vec = numpy.array( [ 1.0, 1.0, 1.0 ], dtype = float )
+    normalise( vec )
+    vecLength = math.sqrt( vec[ 0 ]**2 + vec[ 1 ]**2 + vec[ 2 ]**2 )
     assert vecLength == 1.0
     # individual length calc
-    assert length( vector ) == 1.0
+    assert length( vec ) == 1.0
     
     # list of vectors
-    vectors = numpy.array([
+    vecs = numpy.array([
         [ 1.0, 1.0, 1.0 ],
         [ 0.0, 2.0, 0.0 ]
         ])
-    print "input %s" % str(vectors)
-    normaliseList( vectors )
-    print "output %s" % str(vectors)
+    print "input %s" % str(vecs)
+    normalise_list( vecs )
+    print "output %s" % str(vecs)
     
-    for vector in vectors:
-        print "vector %s" % str(vector)
-        vecLength = math.sqrt( vector[ 0 ]**2 + vector[ 1 ]**2 + vector[ 2 ]**2 )
+    for vec in vecs:
+        print "vec %s" % str(vec)
+        vecLength = math.sqrt( vec[ 0 ]**2 + vec[ 1 ]**2 + vec[ 2 ]**2 )
         print vecLength
         assert vecLength == 1.0
         
         # individual length calc
-        assert length( vector ) == 1.0
+        assert length( vec ) == 1.0
     
     # group length calc
-    lengths = lengths( vectors )
+    lengths = lengths( vecs )
     for value in lengths:
         assert value == 1.0
     
-    vector = numpy.array([ 1.0, 1.0, 1.0 ])
-    normalise( vector )
-    value = length( vector )
+    vec = numpy.array([ 1.0, 1.0, 1.0 ])
+    normalise( vec )
+    value = length( vec )
     assert value == 1.0
 
 

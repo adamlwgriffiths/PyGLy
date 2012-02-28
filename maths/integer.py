@@ -4,7 +4,7 @@ Created on 07/06/2011
 @author: adam
 '''
 
-def bitCount( int_type ):
+def bit_count( int_type ):
     """
     http://wiki.python.org/moin/BitManipulation
     """

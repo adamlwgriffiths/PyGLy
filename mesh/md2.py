@@ -583,6 +583,6 @@ def read_frame( f, header ):
 
 if __name__ == '__main__':
     model = load(
-        r'../test_app/data/sydney.md2'
+        r'test_app/data/sydney.md2'
         )
 

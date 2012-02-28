@@ -11,7 +11,11 @@ from collections import namedtuple
 
 import numpy
 
-from PyMesh.Exception import PyMeshException, InvalidMeshException
+class PyMeshException( Exception ):
+    pass
+
+class InvalidMeshException( Exception ):
+    pass
 
 """
 MD2 Specification
@@ -450,5 +454,5 @@ def readHeader( f ):
 
 if __name__ == '__main__':
     model = loadModel(
-        r'C:\Users\adam\workspace\python\opengl_app\opengl_app\src\data\sydney.md2'
+        r'test_app/data/sydney.md2'
         )

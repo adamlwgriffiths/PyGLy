@@ -8,10 +8,7 @@ import math
 
 import numpy
 
-from Pyrr.Plane import Plane
-import Pyrr.Matrix.Matrix as Matrix
-import Pyrr.Vector.Vector as Vector
-from Pyrr.UV_Generators.UV_Generator import UV_Generator
+from uv_generator import UV_Generator
 
 
 class Spherical( UV_Generator ):
@@ -23,25 +20,25 @@ class Spherical( UV_Generator ):
         self.scale = scale
         self.offset = offset
     
-    def generateCoordinates( self, vertices, normals ):
+    def generate_coordinates( self, vertices, normals ):
         # ignore the vertices
         
         # create an empty texture coord array
-        textureCoords = numpy.empty( (len(normals), 2), dtype = float )
+        texture_coords = numpy.empty( (len(normals), 2), dtype = float )
         
         # extract our columns
-        normalsX = normals[:,0]
-        normalsY = normals[:,1]
-        normalsZ = normals[:,2]
+        normals_x = normals[:,0]
+        normals_y = normals[:,1]
+        normals_z = normals[:,2]
         
-        tu = textureCoords[:,0]
-        tv = textureCoords[:,1]
-        
-        # calculate tu
-        numpy.arcsin( normalsZ, tu )
+        tu = texture_coords[:,0]
+        tv = texture_coords[:,1]
         
         # calculate tu
-        numpy.arctan2( normalsY, normalsX, tv )
+        numpy.arcsin( normals_z, tu )
+        
+        # calculate tu
+        numpy.arctan2( normals_y, normals_x, tv )
         
         # arc sin gives a value between -1/2pi and +1/2pi
         tu /= numpy.pi
@@ -51,28 +48,28 @@ class Spherical( UV_Generator ):
         tv /= (2.0 * numpy.pi)
         tv += 0.5 + self.offset[ 1 ]
         
-        return textureCoords
+        return texture_coords
     
 
 if __name__ == "__main__":
+    import maths.vector as vector
     # ignored anyway
     vertices = []
     
-    angleVector = numpy.array([ 1.0, 0.0, 1.0 ])
-    angleVector = Vector.normalise( angleVector )
+    angle_vector = numpy.array([ 1.0, 0.0, 1.0 ])
+    angle_vector = vector.normalise( angle_vector )
     
     normals = numpy.array([
         [ 1.0, 0.0, 0.0 ],
         [ 0.0, 0.0, 1.0 ],
-        [ angleVector[ 0 ], angleVector[ 1 ], angleVector[ 2 ] ]
+        [ angle_vector[ 0 ], angle_vector[ 1 ], angle_vector[ 2 ] ]
         ])
     
-    textureGen = Spherical( scale = (2.0, 1.0), offset = (0.0, 0.0) )
+    texture_gen = Spherical( scale = (2.0, 1.0), offset = (0.0, 0.0) )
     
-    textureCoords = textureGen.generateCoordinates( vertices, normals )
+    texture_coords = texture_gen.generate_coordinates( vertices, normals )
     print "normals %s" % str(normals)
-    print "textureCoords %s" % str(textureCoords)
+    print "textureCoords %s" % str(texture_coords)
     
-    assert textureCoords[ 0 ][ 1 ] == 0.5
-
+    assert texture_coords[ 0 ][ 1 ] == 0.5
 

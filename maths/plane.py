@@ -7,7 +7,7 @@ Created on 29/05/2011
 import numpy
 import numpy.linalg
 
-import Pyrr.Vector.Vector as Vector 
+import maths.vector
 
 
 class Plane( object ):
@@ -30,16 +30,16 @@ class Plane( object ):
         self.normal = numpy.array( normal, dtype = float )
         self.up = numpy.array( up, dtype = float )
         
-        Vector.normalise( self.normal )
-        Vector.normalise( self.up )
+        maths.vector.normalise( self.normal )
+        maths.vector.normalise( self.up )
         
         if numpy.dot( self.normal, self.up ) != 0.0:
             raise ValueError( "Vectors are not co-planar" )
     
-    def flipNormal( self ):
+    def flip_normal( self ):
         self.normal *= -1
     
-    def heightAbovePlane( self, vector ):
+    def height_above_plane( self, vector ):
         """
         Returns the height above the plane.
         Performs no checking of the vector being within the plane's surface
@@ -47,11 +47,11 @@ class Plane( object ):
         
         @return: The height above the plane as a float
         """
-        planeDot = numpy.dot( self.normal, self.position )
-        vectorDot = numpy.dot( vector, self.normal )
-        return vectorDot - planeDot 
+        plane_dot = numpy.dot( self.normal, self.position )
+        vector_dot = numpy.dot( vector, self.normal )
+        return vector_dot - plane_dot 
     
-    def closestPointOnPlane( self, vector ):
+    def closest_point_on_plane( self, vector ):
         """
         point on plane is defined as:
         q' = q + (d - q.n)n
@@ -61,13 +61,20 @@ class Plane( object ):
         d is the value of normal dot position
         n is the plane normal
         """
-        planeDot = numpy.dot( self.normal, self.position )
-        vectorDot = numpy.dot( vector, self.normal )
-        return vector + (  self.normal * (planeDot - vectorDot) )
+        plane_dot = numpy.dot( self.normal, self.position )
+        vector_dot = numpy.dot( vector, self.normal )
+        return vector + (  self.normal * (plane_dot - vector_dot) )
         
     
 
-def createPlane( vector1, vector2, vector3 ):
+def create_plane( vector1, vector2, vector3 ):
+    """
+    Create a plane from 3 co-planar vectors.
+    The vectors must all lie on the same
+    plane or an exception will be thrown.
+    @raise ValueError:  raised if the vectors
+    are not co-planar.
+    """
     # make the vectors relative to vector2
     relV1 = vector1 - vector2
     relV2 = vector3 - vector2
@@ -93,7 +100,7 @@ if __name__ == "__main__":
     
     vector = numpy.array([ [1.0, 1.0, 1.0] ])
     
-    projection = plane.closestPointOnPlane( vector )
+    projection = plane.closest_point_on_plane( vector )
     print "projection: %s" % str(projection)
     
     
@@ -103,28 +110,28 @@ if __name__ == "__main__":
         [ 1.0, 0.0, 1.0 ],
         [ 0.0, 1.0, 1.0 ]
         ])
-    newPlane = createPlane( vectors[ 0 ], vectors[ 1 ], vectors[ 2 ] )
-    print "plane position: %s" % str(newPlane.position)
-    print "plane normal: %s" % str(newPlane.normal)
+    new_plane = create_plane( vectors[ 0 ], vectors[ 1 ], vectors[ 2 ] )
+    print "plane position: %s" % str(new_plane.position)
+    print "plane normal: %s" % str(new_plane.normal)
     
-    newPlane.flipNormal()
-    print "plane position: %s" % str(newPlane.position)
-    print "plane normal: %s" % str(newPlane.normal)
+    new_plane.flip_normal()
+    print "plane position: %s" % str(new_plane.position)
+    print "plane normal: %s" % str(new_plane.normal)
     
     
     # distance
-    distanceVector = numpy.array([ 0.0, 0.0, 20.0 ])
-    distance = newPlane.heightAbovePlane( distanceVector )
+    distance_vector = numpy.array([ 0.0, 0.0, 20.0 ])
+    distance = new_plane.height_above_plane( distance_vector )
     # should be 19.0
     print "distance: %f" % distance
     assert distance == 19.0
     
     
-    closestPoint = newPlane.closestPointOnPlane( distanceVector )
+    closest_point = new_plane.closest_point_on_plane( distance_vector )
     # should be # 0, 0, 1
-    print "closestPoint: %s" % str(closestPoint)
-    assert closestPoint[ 0 ] == 0.0
-    assert closestPoint[ 1 ] == 0.0
-    assert closestPoint[ 2 ] == 1.0
+    print "closestPoint: %s" % str(closest_point)
+    assert closest_point[ 0 ] == 0.0
+    assert closest_point[ 1 ] == 0.0
+    assert closest_point[ 2 ] == 1.0
     
 

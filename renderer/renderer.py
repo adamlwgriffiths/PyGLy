@@ -6,8 +6,8 @@ Created on 20/06/2011
 
 from pyglet.gl import *
 
-from PyGLy.Scene.SceneNode import SceneNode
-from Viewport import Viewport
+from scene.scene_node import SceneNode
+from viewport import Viewport
 
 
 class Renderer( object ):
@@ -46,7 +46,7 @@ class Renderer( object ):
         Pyglet event handler method.
         """
         # update our viewport
-        self.viewport.updateViewport( width, height )
+        self.viewport.update_viewport( width, height )
     
     def on_context_lost( self ):
         """
@@ -54,10 +54,10 @@ class Renderer( object ):
         """
         print "on_context_lost"
         # update our viewport
-        self.viewport.updateViewport( self.window.width, self.window.height )
+        self.viewport.update_viewport( self.window.width, self.window.height )
         
         # update our render nodes
-        self.root.onContextLost()
+        self.root.on_context_lost()
     
     def render( self ):
         # TODO: add support for multiple viewports
@@ -70,10 +70,10 @@ class Renderer( object ):
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
         
         # set the viewport as active
-        self.viewport.setActive()
+        self.viewport.set_active()
         
         # set the viewport up for rendering
-        self.viewport.setupFor3D()
+        self.viewport.setup_for_3d()
         
         # process the scene graph
         self.root.render()

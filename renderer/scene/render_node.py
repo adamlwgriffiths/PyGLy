@@ -6,12 +6,11 @@ Created on 20/06/2011
 
 from pyglet.gl import *
 
-from SceneNode import SceneNode
-import DebugCube
+from scene_node import SceneNode
 
 
 class RenderNode( SceneNode ):
-    renderDebugCube = False
+    render_debug_cube = False
     
     
     def __init__( self, name ):

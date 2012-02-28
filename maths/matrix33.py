@@ -8,7 +8,7 @@ import math
 
 import numpy
 
-from Pyrr import Quaternion
+import maths.quaternion
 
 
 def identity( out = None ):
@@ -72,7 +72,7 @@ def setup( eulers, out = None ):
         ]
     return out
 
-def fromInertialToObjectQuaternion( quat, out = None ):
+def from_inertial_to_object_quaternion( quat, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -80,10 +80,10 @@ def fromInertialToObjectQuaternion( quat, out = None ):
     if out == None:
         out = numpy.empty( (3, 3), dtype = float )
     
-    quatW = quat[ Quaternion.QuatW ]
-    quatX = quat[ Quaternion.QuatX ]
-    quatY = quat[ Quaternion.QuatY ]
-    quatZ = quat[ Quaternion.QuatZ ]
+    quatW = quat[ maths.quaternion.w ]
+    quatX = quat[ maths.quaternion.x ]
+    quatY = quat[ maths.quaternion.y ]
+    quatZ = quat[ maths.quaternion.z ]
     
     out[:] = [
         # m1
@@ -116,7 +116,7 @@ def fromInertialToObjectQuaternion( quat, out = None ):
         ]
     return out
 
-def fromObjectToInertialQuaternion( quat, out = None ):
+def from_object_to_inertial_quaternion( quat, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -124,10 +124,10 @@ def fromObjectToInertialQuaternion( quat, out = None ):
     if out == None:
         out = numpy.empty( (3, 3), dtype = float )
     
-    quatW = quat[ Quaternion.QuatW ]
-    quatX = quat[ Quaternion.QuatX ]
-    quatY = quat[ Quaternion.QuatY ]
-    quatZ = quat[ Quaternion.QuatZ ]
+    quatW = quat[ maths.quaternion.w ]
+    quatX = quat[ maths.quaternion.x ]
+    quatY = quat[ maths.quaternion.y ]
+    quatZ = quat[ maths.quaternion.z ]
     
     out[:] = [
         # m1
@@ -160,7 +160,7 @@ def fromObjectToInertialQuaternion( quat, out = None ):
         ]
     return out
 
-def inertialToObject( vector, matrix, out = None ):
+def inertial_to_object( vector, matrix, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -182,7 +182,7 @@ def inertialToObject( vector, matrix, out = None ):
         ]
     return out
 
-def objectToInertial( vector, matrix, out = None ):
+def object_to_inertial( vector, matrix, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -204,6 +204,4 @@ def objectToInertial( vector, matrix, out = None ):
         (matrix[ (2, 0) ] * vecX) + (matrix[ (2, 1) ] * vecY) + (matrix[ (2, 2) ] * vecZ)
         ]
     return out
-
-
 

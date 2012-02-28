@@ -77,7 +77,7 @@ class OAI_Mesh( object ):
         # TODO: drop the existing materials
         
         # load the materials
-        self.loadTextures( scene )
+        self.load_textures( scene )
         
         # clear the existing display lists
         self.displayList = None
@@ -88,14 +88,14 @@ class OAI_Mesh( object ):
         glEnable( GL_TEXTURE_2D )
         
         # render the meshes
-        self.recursiveRender( scene, scene.mRootNode.contents )
+        self.recursive_render( scene, scene.mRootNode.contents )
         
         glEndList()
         
         # release the model
         pyassimp.release(scene)
     
-    def loadTextures( self, scene ):
+    def load_textures( self, scene ):
         # textures should be loaded into a key, value store
         # to avoid loading the same texture multiple times
         # http://assimp.svn.sourceforge.net/viewvc/assimp/trunk/samples/SimpleTexturedOpenGL/SimpleTexturedOpenGL/src/model_loading.cpp?revision=1084&view=markup
@@ -129,9 +129,9 @@ class OAI_Mesh( object ):
         ###################################        
         
         #for material in scene.materials:
-        #    self.loadTexture( material )
+        #    self.load_texture( material )
     
-    def loadTexture( self, material ):   
+    def load_texture( self, material ):   
         properties = pyassimp.GetMaterialProperties( material )
         
         if MaterialKeys[ 'texture' ] in properties:
@@ -149,7 +149,7 @@ class OAI_Mesh( object ):
                 except:
                     print "Exception loading texture"
     
-    def applyMaterial( self, material ):
+    def apply_material( self, material ):
         properties = pyassimp.GetMaterialProperties( material )
         # FIXME:
         # Materials are done in a stack
@@ -201,7 +201,7 @@ class OAI_Mesh( object ):
         glEmission = (GLfloat * 4)(*emission)
         glMaterialfv( GL_FRONT_AND_BACK, GL_EMISSION, glEmission )
     
-    def recursiveRender( self, scene, node ):
+    def recursive_render( self, scene, node ):
         # recursive_render
         # http://assimp.svn.sourceforge.net/viewvc/assimp/trunk/samples/SimpleOpenGL/Sample_SimpleOpenGL.c?revision=973&view=markup
         
@@ -227,7 +227,7 @@ class OAI_Mesh( object ):
             mesh = scene.mMeshes[ node.mMeshes[ meshIndex ] ].contents
             
             # apply material
-            self.applyMaterial( scene.materials[ mesh.mMaterialIndex ] )
+            self.apply_material( scene.materials[ mesh.mMaterialIndex ] )
             
             # enable / disable lighting based on normals
             if bool( mesh.mNormals[ 0 ] ) == True:
@@ -302,7 +302,7 @@ class OAI_Mesh( object ):
         
         # render the child nodes
         for childIndex in xrange( node.mNumChildren ):
-            self.recursiveRender( scene, node.mChildren[ childIndex ].contents )
+            self.recursive_render( scene, node.mChildren[ childIndex ].contents )
         
         # pop the mesh matrix from the stack
         glPopMatrix()

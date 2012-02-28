@@ -4,8 +4,7 @@ Created on 14/06/2011
 @author: adam
 '''
 
-
-def array3D_PositionToIndex( size, position ):
+def array_3d_position_to_index( size, position ):
     """
     Converts from a 3D position within the chunk, to an index in our
     1D array
@@ -13,7 +12,7 @@ def array3D_PositionToIndex( size, position ):
     # index = ( (x * ySize) + y) * zSize + z
     return (((position[ 0 ] * size[ 1 ]) + position[ 1 ]) * size[ 2 ]) + position[ 2 ]
 
-def array3D_IndexToPosition( size, index ):
+def array_3d_index_to_position( size, index ):
     """
     Converts an array index into a 3D position
     """
@@ -28,7 +27,7 @@ def array3D_IndexToPosition( size, index ):
     
     return (x, y, z)
 
-def array3D_IndexIncrementX_NBC( size, index, increment ):
+def array_3d_index_increment_x_unsafe( size, index, increment ):
     """
     Takes a position and quickly shuffles along an axis.
     This avoids having to calculate the index many times for each vertex.
@@ -38,10 +37,11 @@ def array3D_IndexIncrementX_NBC( size, index, increment ):
     pass
 
 
-def array3D_IndexIncrementX( size, index, increment ):
+def array_3d_index_increment_x( size, index, increment ):
     """
     Takes a position and quickly shuffles along an axis.
     This avoids having to calculate the index many times for each vertex.
     """
     # TODO:
     pass
+

@@ -7,7 +7,7 @@ Created on 29/06/2011
 from pyglet.gl import *
 
 
-def renderDebugCube():
+def render_debug_cube():
     # render a cube at our scene node for debugging
     glBegin( GL_QUADS )
     # green

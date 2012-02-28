@@ -8,42 +8,43 @@ import math
 
 from pyglet.gl import *
 
-from Pyrr import Quaternion
-from Pyrr import Matrix44
+import maths.quaternion
+import maths.matrix44
 
-from SceneNode import SceneNode
+from scene_node import SceneNode
+import debug_cube
 
 
 class CameraNode( SceneNode ):
-    renderDebugCube = False
+    render_debug_cube = False
     
     
-    def __init__( self, name, fov = 60.0, nearClip = 1.0, farClip = 100.0 ):
+    def __init__( self, name, fov = 60.0, near_clip = 1.0, far_clip = 100.0 ):
         super( CameraNode, self ).__init__( name )
         
         self.fov = fov
-        self.nearClip = nearClip
-        self.farClip = farClip
+        self.near_clip = near_clip
+        self.far_clip = far_clip
     
-    def applyProjectionMatrix( self, windowWidth, windowHeight ):
+    def apply_projection_matrix( self, window_width, window_height ):
         # http://www.songho.ca/opengl/gl_transform.html
         tangent = math.radians( self.fov )
         
         # tangent of half fovY
-        aspectRatio = float(windowWidth) / float(windowHeight)
+        aspect_ratio = float(window_width) / float(window_height)
         
         # half height of near plane
-        height = self.nearClip * tangent
+        height = self.near_clip * tangent
         
         # half width of near plane
-        width = height * aspectRatio
+        width = height * aspect_ratio
         
-        glFrustum( -width, width, -height, height, self.nearClip, self.farClip )
+        glFrustum( -width, width, -height, height, self.near_clip, self.far_clip )
     
-    def applyModelView( self ):
+    def apply_model_view( self ):
         # convert our quaternion to a matrix
-        #matrix = Matrix44.fromInertialToObjectQuaternion( self.orientation )
-        matrix = Matrix44.fromInertialToObjectQuaternion( self.worldOrientation )
+        #matrix = maths.matrix44.from_inertial_to_object_quaternion( self.orientation )
+        matrix = maths.matrix44.from_inertial_to_object_quaternion( self.world_orientation )
         
         # we need to apply the inverse of the matrix
         # we do this by simply transposing the matrix
@@ -59,21 +60,21 @@ class CameraNode( SceneNode ):
         # we have to do this after the orientation
         # use the world translation incase we're attached to something
         #glTranslatef( -self.translation[ 0 ], -self.translation[ 1 ], -self.translation[ 2 ] )
-        worldTranslation = self.worldTranslation
+        world_translation = self.world_translation
         glTranslatef(
-            -worldTranslation[ 0 ],
-            -worldTranslation[ 1 ],
-            -worldTranslation[ 2 ]
+            -world_translation[ 0 ],
+            -world_translation[ 1 ],
+            -world_translation[ 2 ]
             )
     
     def render( self ):
         # apply our transforms
         glPushMatrix()
         
-        self.applyTranslations()
+        self.apply_translations()
         
-        if self.renderDebugCube == True:
-            DebugCube.renderDebugCube()
+        if self.render_debug_cube == True:
+            debug_cube.render_debug_cube()
         
         # continue on to our children
         for child in self.children:
@@ -82,5 +83,3 @@ class CameraNode( SceneNode ):
         # undo our transforms
         glPopMatrix()
     
-
-

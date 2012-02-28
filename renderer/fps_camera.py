@@ -7,8 +7,8 @@ Created on Tue Sep 13 20:20:11 2011
 
 import math
 
-from Pyrr import Quaternion
-from Pyrr import Matrix33
+import maths.quaternion
+import maths.matrix33
 
 
 class FPS_Camera( object ):
@@ -21,7 +21,7 @@ class FPS_Camera( object ):
         self.pitch = 0.0
         self.yaw = 0.0
     
-    def setOrientation( self, pitch = None, yaw = None ):
+    def set_orientation( self, pitch = None, yaw = None ):
         if pitch != None:
             self.pitch = pitch
         if yaw != None:
@@ -44,54 +44,54 @@ class FPS_Camera( object ):
         if self.pitch < -self.piOver2:
             self.pitch = -self.piOver2
         
-        pitchQuat = Quaternion.setToRotationAboutX( self.pitch )
-        yawQuat = Quaternion.setToRotationAboutY( self.yaw )
+        pitchQuat = maths.quaternion.set_to_rotation_about_x( self.pitch )
+        yawQuat = maths.quaternion.set_to_rotation_about_y( self.yaw )
         
-        quat = Quaternion.crossProduct( pitchQuat, yawQuat )
-        Quaternion.normalise( quat )
+        quat = maths.quaternion.cross_product( pitchQuat, yawQuat )
+        maths.quaternion.normalise( quat )
         self.camera.orientation = quat
     
-    def translateObjectForward( self, amount ):
-        self.camera.translateForward( amount )
+    def translate_object_forward( self, amount ):
+        self.camera.translate_forward( amount )
     
-    def translateObjectBackward( self, amount ):
+    def translate_object_backward( self, amount ):
         self.camera.translateBackward( amount )
     
-    def translateInertialForward( self, amount ):
+    def translate_inertial_forward( self, amount ):
         vec = [ 0.0, 0.0, -1.0 ]
-        rotationQuat = Quaternion.setToRotationAboutY( self.yaw )
+        rotationQuat = maths.quaternion.set_to_rotation_about_y( self.yaw )
         
-        matrix = Matrix33.fromInertialToObjectQuaternion( rotationQuat )
-        forwardVec = Matrix33.inertialToObject( vec, matrix )
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( rotationQuat )
+        forwardVec = maths.matrix33.inertial_to_object( vec, matrix )
         forwardVec *= amount
         
         self.camera.translate( forwardVec )
     
-    def translateInertialBackward( self, amount ):
+    def translate_inertial_backward( self, amount ):
         vec = [ 0.0, 0.0, 1.0 ]
-        rotationQuat = Quaternion.setToRotationAboutY( self.yaw )
+        rotationQuat = maths.quaternion.set_to_rotation_about_y( self.yaw )
         
-        matrix = Matrix33.fromInertialToObjectQuaternion( rotationQuat )
-        backwardVec = Matrix33.inertialToObject( vec, matrix )
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( rotationQuat )
+        backwardVec = maths.matrix33.inertial_to_object( vec, matrix )
         backwardVec *= amount
         
         self.camera.translate( backwardVec )
     
-    def translateInertialUp( self, amount ):
+    def translate_inertial_up( self, amount ):
         self.camera.translate( [ 0.0, amount, 0.0 ] )
     
-    def translateInertialDown( self, amount ):
+    def translate_inertial_down( self, amount ):
         self.camera.translate( [ 0.0, -amount, 0.0 ] )
     
-    def translateObjectUp( self, amount ):
-        self.camera.translateUp( amount )
+    def translate_object_up( self, amount ):
+        self.camera.translate_up( amount )
     
-    def translateObjectDown( self, amount ):
-        self.camera.translateDown( amount )
+    def translate_object_down( self, amount ):
+        self.camera.translate_down( amount )
     
-    def translateLeft( self, amount ):
-        self.camera.translateLeft( amount )
+    def translate_left( self, amount ):
+        self.camera.translate_left( amount )
     
-    def translateRight( self, amount ):
-        self.camera.translateRight( amount )
+    def translate_right( self, amount ):
+        self.camera.translate_right( amount )
     

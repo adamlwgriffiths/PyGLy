@@ -5,7 +5,7 @@ Created on Mon Aug 22 19:05:03 2011
 @author: adam
 """
 
-import PyGLy.Mesh.Loader as Loader
+import renderer.mesh.loader as loader
 
 
 """
@@ -31,7 +31,7 @@ class DisplayListMesh( object ):
         
         self.filename = filename
         
-        self.model = Loader.pyassimp.load( self.filename )
+        self.model = loader.pyassimp.load( self.filename )
     
     def render( self ):
         pass
@@ -39,7 +39,7 @@ class DisplayListMesh( object ):
 
 if __name__ == '__main__':
     print 'loading mesh'
-    dlmesh = DisplayListMesh( r'C:\Users\adam\workspace\python\opengl_app\opengl_app\src\data\sydney.md2' )
+    dlmesh = DisplayListMesh( r'test_app/data/sydney.md2' )
     print 'loaded'
     
     #write some statistics
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     print "MATERIALS:"
     for index, material in enumerate(dlmesh.model.materials):
         print "  MATERIAL", index+1
-        properties = Loader.pyassimp.GetMaterialProperties(material)
+        properties = loader.pyassimp.GetMaterialProperties(material)
         for key in properties:
             print "    %s: %s" % (key, properties[key])
     print
@@ -91,4 +91,4 @@ if __name__ == '__main__':
         print "    data (size):", texture.mWidth*texture.mHeight
    
     # Finally release the model
-    Loader.pyassimp.release(dlmesh.model)
+    loader.pyassimp.release(dlmesh.model)

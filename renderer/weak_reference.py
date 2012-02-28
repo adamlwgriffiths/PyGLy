@@ -7,17 +7,17 @@ Created on 20/06/2011
 import weakref
 
 
-class WeakRef( object ):
+class WeakReference( object ):
     
     
     def __init__(self, object = None ):
-        super( WeakRef , self).__init__()
+        super( WeakReference, self).__init__()
         
         self.object = None
         if object != None:
             self.object = weakref.ref( object )
     
-    def setObject( self, object ):
+    def set_object( self, object ):
         self.object = weakref.ref( object )
     
     def __call__(self):

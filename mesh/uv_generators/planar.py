@@ -6,10 +6,9 @@ Created on 29/05/2011
 
 import numpy
 
-from Pyrr.Plane import Plane
-import Pyrr.Matrix.Matrix as Matrix
-import Pyrr.Vector.Vector as Vector
-from Pyrr.UV_Generators.UV_Generator import UV_Generator
+from maths.plane import Plane
+import maths.matrix as matrix
+from uv_generator import UV_Generator
 
 
 class Planar( UV_Generator ):
@@ -24,21 +23,21 @@ class Planar( UV_Generator ):
         self.plane = Plane( position, normal, up )
         self.size = size
     
-    def generateCoordinates( self, vertices, normals ):
+    def generate_coordinates( self, vertices, normals ):
         # ignore the normals
         
         # create an empty texture coord array
         # dot product expects contiguous memory
         # so we have 2xN shape instead of Nx2 shape
         # we reshape after the dot product
-        textureCoords = numpy.empty( (2, len(vertices)), dtype = float )
+        texture_coords = numpy.empty( (2, len(vertices)), dtype = float )
         
         # extract our rows
-        tu = textureCoords[0,...]
-        tv = textureCoords[1,...]
+        tu = texture_coords[0,...]
+        tv = texture_coords[1,...]
         
         # take our vertices and flatten them against the plane
-        planeVertices = Matrix.applyDirectionScale(
+        plane_vertices = matrix.apply_direction_scale(
             vertices,
             self.plane.normal,
             0.0
@@ -47,22 +46,20 @@ class Planar( UV_Generator ):
         right = numpy.cross( self.plane.normal, self.plane.up )
         
         # get the tu / tv values from our up and right vectors
-        numpy.dot( planeVertices, right, out = tu )
-        numpy.dot( planeVertices, self.plane.up, out = tv )
+        numpy.dot( plane_vertices, right, out = tu )
+        numpy.dot( plane_vertices, self.plane.up, out = tv )
         
         # apply our scaling
         tu /= self.size[ 0 ]
         tv /= self.size[ 1 ]
         
         # reshape back into our normal Nx2 shape
-        textureCoords = numpy.transpose( textureCoords )
+        texture_coords = numpy.transpose( texture_coords )
         
-        return textureCoords
+        return texture_coords
     
 
 if __name__ == "__main__":
-    import Pyrr.Vector as Vector
-    
     # ignored anyway
     normals = []
     
@@ -79,7 +76,7 @@ if __name__ == "__main__":
     normal = numpy.array([ 0.0, 1.0, 0.0 ])
     up = numpy.array([ 0.0, 0.0, 1.0 ])
     
-    textureGen = Planar(
+    texture_gen = Planar(
         position = position,
         normal = normal,
         up = up,
@@ -88,14 +85,13 @@ if __name__ == "__main__":
     
     
     #print vertices
-    textureCoords = textureGen.generateCoordinates( vertices, normals )
-    print "textureCoords %s" % str(textureCoords)
+    texture_coords = texture_gen.generate_coordinates( vertices, normals )
+    print "texture_coords %s" % str(texture_coords)
     
-    assert textureCoords[ 0 ][ 0 ] == -1.0
-    assert textureCoords[ 0 ][ 1 ] == 0.0
-    assert textureCoords[ 1 ][ 0 ] == 0.0
-    assert textureCoords[ 1 ][ 1 ] == 1.0
-    assert textureCoords[ 2 ][ 0 ] == 0.5
-    assert textureCoords[ 2 ][ 1 ] == 0.5
-
+    assert texture_coords[ 0 ][ 0 ] == -1.0
+    assert texture_coords[ 0 ][ 1 ] == 0.0
+    assert texture_coords[ 1 ][ 0 ] == 0.0
+    assert texture_coords[ 1 ][ 1 ] == 1.0
+    assert texture_coords[ 2 ][ 0 ] == 0.5
+    assert texture_coords[ 2 ][ 1 ] == 0.5
 

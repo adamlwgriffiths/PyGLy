@@ -8,7 +8,7 @@ import math
 
 import numpy
 
-import Matrix33
+import maths.matrix33
 
 
 def identity( out = None ):
@@ -34,11 +34,11 @@ def setup( eulers, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    mat33 = Matrix33.setup( eulers, out = mat33 )
+    mat33 = maths.matrix33.setup( eulers, out = mat33 )
     
     return out
 
-def fromInertialToObjectQuaternion( quat, out = None ):
+def from_inertial_to_object_quaternion( quat, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -49,11 +49,11 @@ def fromInertialToObjectQuaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    Matrix33.fromInertialToObjectQuaternion( quat, out = mat33 )
+    maths.matrix33.from_inertial_to_object_quaternion( quat, out = mat33 )
     
     return out
 
-def fromObjectToInertialQuaternion( quat, out = None ):
+def from_object_to_inertial_quaternion( quat, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -64,11 +64,11 @@ def fromObjectToInertialQuaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    Matrix33.fromObjectToInertialQuaternion( quat, out = mat33 )
+    Matrix33.from_object_to_inertial_quaternion( quat, out = mat33 )
     
     return out
 
-def inertialToObject( vector, matrix, out = None ):
+def inertial_to_object( vector, matrix, out = None ):
     """
     Proper matrix layout and layout used for DirectX.
     For OpenGL, transpose the matrix after calling this.
@@ -79,11 +79,11 @@ def inertialToObject( vector, matrix, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    Matrix33.inertialToObject( vector, out = mat33 )
+    Matrix33.inertial_to_object( vector, out = mat33 )
     
     return out
 
-def setTranslation( matrix, vector, out = None ):
+def set_translation( matrix, vector, out = None ):
     if out == None:
         out = numpy.empty( (4, 4), dtype = float )
     
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     assert mat44[ 3, 3 ] == 1.0
     
     out = numpy.empty( (4, 4), dtype = float )
-    setTranslation( mat44, [ 1.0, 2.0, 3.0 ], out )
+    set_translation( mat44, [ 1.0, 2.0, 3.0 ], out )
     # translation goes down the last column in normal matrix
     # opengl uses a transposed matrix
     assert out[ 3 ][ 0 ] == 1.0

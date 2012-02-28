@@ -9,10 +9,10 @@ import math
 import numpy
 
 
-QuatW = 0
-QuatX = 1
-QuatY = 2
-QuatZ = 3
+w = 0
+x = 1
+y = 2
+z = 3
 
 # TODO: slerp, lerp
 
@@ -23,7 +23,7 @@ def identity( out = None ):
     out[:] = [ 1.0, 0.0, 0.0, 0.0 ]
     return out
 
-def setToRotationAboutX( theta, out = None ):
+def set_to_rotation_about_x( theta, out = None ):
     if out == None:
         out = numpy.empty( 4, dtype = float )
     
@@ -36,7 +36,7 @@ def setToRotationAboutX( theta, out = None ):
         ]
     return out
 
-def setToRotationAboutY( theta, out = None ):
+def set_to_rotation_about_y( theta, out = None ):
     if out == None:
         out = numpy.empty( 4, dtype = float )
     
@@ -49,7 +49,7 @@ def setToRotationAboutY( theta, out = None ):
         ]
     return out
 
-def setToRotationAboutZ( theta, out = None ):
+def set_to_rotation_about_z( theta, out = None ):
     if out == None:
         out = numpy.empty( 4, dtype = float )
     
@@ -62,7 +62,7 @@ def setToRotationAboutZ( theta, out = None ):
         ]
     return out
 
-def setToRotationAboutAxis( axis, theta, out = None ):
+def set_to_rotation_about_axis( axis, theta, out = None ):
     if out == None:
         out = numpy.empty( 4, dtype = float )
     
@@ -80,7 +80,7 @@ def setToRotationAboutAxis( axis, theta, out = None ):
         ]
     return out
 
-def setToRotationObjectToInertial( eulers, out = None ):
+def set_to_rotation_object_to_inertial( eulers, out = None ):
     if out == None:
         out = numpy.empty( 4, dtype = float )
     
@@ -107,7 +107,7 @@ def setToRotationObjectToInertial( eulers, out = None ):
         ]
     return out
 
-def setToRotationInertialToObject( eulers, out = None ):
+def set_to_rotation_inertial_to_object( eulers, out = None ):
     if out == None:
         out = numpy.empty( 4, dtype = float )
     
@@ -134,7 +134,7 @@ def setToRotationInertialToObject( eulers, out = None ):
         ]
     return out
 
-def crossProduct( quat1, quat2, out = None ):
+def cross_product( quat1, quat2, out = None ):
     """
     Returns the cross-product of the two quaternions.
     Order is important.
@@ -146,36 +146,36 @@ def crossProduct( quat1, quat2, out = None ):
     # TODO: this isn't triggering the scene node's setOrientation property function!
     out[:] = [
         # q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
-        (quat1[ QuatW ] * quat2[ QuatW ]) - (quat1[ QuatX ] * quat2[ QuatX ]) - \
-            (quat1[ QuatY ] * quat2[ QuatY ]) - (quat1[ QuatZ ] * quat2[ QuatZ ]),
+        (quat1[ w ] * quat2[ w ]) - (quat1[ x ] * quat2[ x ]) - \
+            (quat1[ y ] * quat2[ y ]) - (quat1[ z ] * quat2[ z ]),
         # q1.w * q2.x + q1.x * q2.w + q1.z * q2.y - q1.y * q2.z 
-        (quat1[ QuatW ] * quat2[ QuatX ]) + (quat1[ QuatX ] * quat2[ QuatW ]) + \
-            (quat1[ QuatZ ] * quat2[ QuatY ]) - (quat1[ QuatY ] * quat2[ QuatZ ]),
+        (quat1[ w ] * quat2[ x ]) + (quat1[ x ] * quat2[ w ]) + \
+            (quat1[ z ] * quat2[ y ]) - (quat1[ y ] * quat2[ z ]),
         # q1.w * q2.y + q1.y * q2.w + q1.x * q2.z - q1.z * q2.x
-        (quat1[ QuatW ] * quat2[ QuatY ]) + (quat1[ QuatY ] * quat2[ QuatW ]) + \
-            (quat1[ QuatX ] * quat2[ QuatZ ]) - (quat1[ QuatZ ] * quat2[ QuatX ]),
+        (quat1[ w ] * quat2[ y ]) + (quat1[ y ] * quat2[ w ]) + \
+            (quat1[ x ] * quat2[ z ]) - (quat1[ z ] * quat2[ x ]),
         # q1.w * q2.z + q1.z * q2.w + q1.y * q2.x - q1.x * q2.y
-        (quat1[ QuatW ] * quat2[ QuatZ ]) + (quat1[ QuatZ ] * quat2[ QuatW ]) + \
-            (quat1[ QuatY ] * quat2[ QuatX ]) - (quat1[ QuatX ] * quat2[ QuatY ]), 
+        (quat1[ w ] * quat2[ z ]) + (quat1[ z ] * quat2[ w ]) + \
+            (quat1[ y ] * quat2[ x ]) - (quat1[ x ] * quat2[ y ]), 
         ]
     return out
 
 def length( quat ):
     return math.sqrt(
-        quat[ QuatW ]**2 + \
-        quat[ QuatX ]**2 + \
-        quat[ QuatY ]**2 + \
-        quat[ QuatZ ]**2
+        quat[ w ]**2 + \
+        quat[ x ]**2 + \
+        quat[ y ]**2 + \
+        quat[ z ]**2
         )
 
 def normalise( quat ):
     mag = length( quat )
     if mag > 0.0:
         oneOverMag = 1.0 / mag
-        quat[ QuatW ] *= oneOverMag
-        quat[ QuatX ] *= oneOverMag
-        quat[ QuatY ] *= oneOverMag
-        quat[ QuatZ ] *= oneOverMag
+        quat[ w ] *= oneOverMag
+        quat[ x ] *= oneOverMag
+        quat[ y ] *= oneOverMag
+        quat[ z ] *= oneOverMag
     else:
         assert False
     assert 0.9 < length( quat )
@@ -184,15 +184,15 @@ def normalise( quat ):
     #assert numpy.linalg.norm( quat, ord = None ) == 1.0
     return quat
 
-def getRotationAngle( quat ):
-    thetaOver2 = math.acos( quat[ QuatW ] )
+def get_rotation_angle( quat ):
+    thetaOver2 = math.acos( quat[ w ] )
     return thetaOver2 * 2.0
 
-def getRotationAxis( quat, out = None ):
+def get_rotation_axis( quat, out = None ):
     if out == None:
         out = numpy.empty( 3, dtype = float )
     
-    sinThetaOver2Sq = 1.0 - (quat[ QuatW ]**quat[ QuatW ])
+    sinThetaOver2Sq = 1.0 - (quat[ w ]**quat[ w ])
     
     if sinThetaOver2Sq <= 0.0:
         # assert here for the time being
@@ -208,18 +208,18 @@ def getRotationAxis( quat, out = None ):
     oneOverSinThetaOver2 = 1.0 / math.sqrt( sinThetaOver2Sq )
     
     out[:] = [
-        quat[ QuatX ] * oneOverSinThetaOver2,
-        quat[ QuatY ] * oneOverSinThetaOver2,
-        quat[ QuatZ ] * oneOverSinThetaOver2
+        quat[ x ] * oneOverSinThetaOver2,
+        quat[ y ] * oneOverSinThetaOver2,
+        quat[ z ] * oneOverSinThetaOver2
         ]
     return out
 
-def dotProduct( quat1, quat2 ):
+def dot_product( quat1, quat2 ):
     return \
-        (quat1[ QuatW ] * quat2[ QuatW ]) + \
-        (quat1[ QuatX ] * quat2[ QuatX ]) + \
-        (quat1[ QuatY ] * quat2[ QuatY ]) + \
-        (quat1[ QuatZ ] * quat2[ QuatZ ])
+        (quat1[ w ] * quat2[ w ]) + \
+        (quat1[ x ] * quat2[ x ]) + \
+        (quat1[ y ] * quat2[ y ]) + \
+        (quat1[ z ] * quat2[ z ])
 
 def conjugate( quat, out = None ):
     """
@@ -229,10 +229,10 @@ def conjugate( quat, out = None ):
         out = numpy.empty( 4, dtype = float )
     
     out[:] = [
-        quat[ QuatW ],
-        -quat[ QuatX ],
-        -quat[ QuatY ],
-        -quat[ QuatZ ]
+        quat[ w ],
+        -quat[ x ],
+        -quat[ y ],
+        -quat[ z ]
         ]
     return out
 
@@ -241,7 +241,7 @@ def power( quat, exponent, out = None ):
         out = numpy.empty( 4, dtype = float )
     
     # check for identify quaternion
-    if math.fabs( quat[ QuatW ] ) > 0.9999:
+    if math.fabs( quat[ w ] ) > 0.9999:
         # assert for the time being
         assert False
         print "rotation axis was identity"
@@ -249,15 +249,15 @@ def power( quat, exponent, out = None ):
         out[:] = quat
         return out
     
-    alpha = math.acos( quat[ QuatW ] )
+    alpha = math.acos( quat[ w ] )
     newAlpha = alpha * exponent
     multi = math.sin( newAlpha ) / math.sin( alpha )
     
     out[:] = [
         math.cos( newAlpha ),
-        quat[ QuatX ] * multi,
-        quat[ QuatY ] * multi,
-        quat[ QuatZ ] * multi
+        quat[ x ] * multi,
+        quat[ y ] * multi,
+        quat[ z ] * multi
         ]
     return out
 
@@ -267,32 +267,31 @@ if __name__ == "__main__":
     quat2 = quat
     
     identity( quat )
-    assert quat[ QuatW ] == 1.0
-    assert quat[ QuatX ] == 0.0
-    assert quat[ QuatY ] == 0.0
-    assert quat[ QuatZ ] == 0.0
+    assert quat[ w ] == 1.0
+    assert quat[ x ] == 0.0
+    assert quat[ y ] == 0.0
+    assert quat[ z ] == 0.0
     assert quat2 is quat
     
     quat = identity()
-    assert quat[ QuatW ] == 1.0
-    assert quat[ QuatX ] == 0.0
-    assert quat[ QuatY ] == 0.0
-    assert quat[ QuatZ ] == 0.0
+    assert quat[ w ] == 1.0
+    assert quat[ x ] == 0.0
+    assert quat[ y ] == 0.0
+    assert quat[ z ] == 0.0
     assert quat2 is not quat
     
     normalise( quat )
-    assert quat[ QuatW ] == 1.0
-    assert quat[ QuatX ] == 0.0
-    assert quat[ QuatY ] == 0.0
-    assert quat[ QuatZ ] == 0.0
+    assert quat[ w ] == 1.0
+    assert quat[ x ] == 0.0
+    assert quat[ y ] == 0.0
+    assert quat[ z ] == 0.0
     
-    quat[ QuatW ] = 2.0
+    quat[ w ] = 2.0
     normalise( quat )
-    assert quat[ QuatW ] == 1.0
-    assert quat[ QuatX ] == 0.0
-    assert quat[ QuatY ] == 0.0
-    assert quat[ QuatZ ] == 0.0
+    assert quat[ w ] == 1.0
+    assert quat[ x ] == 0.0
+    assert quat[ y ] == 0.0
+    assert quat[ z ] == 0.0
     
     del quat2
-    
-    
+

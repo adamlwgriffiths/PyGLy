@@ -9,7 +9,7 @@ Created on 20/06/2011
 import numpy
 from pyglet.gl import *
 
-from PyGLy.WeakRef import WeakRef
+from weak_reference import WeakReference
 
 
 class Viewport( object ):
@@ -18,14 +18,14 @@ class Viewport( object ):
     def __init__( self, width, height ):
         super( Viewport, self ).__init__()
         
-        self.camera = WeakRef()
+        self.camera = WeakReference()
         self.dimensions = numpy.array(
             [ width, height ],
             dtype = int
             )
         
         # setup our viewport
-        self.updateViewport( self.width, self.height )
+        self.update_viewport( self.width, self.height )
     
     @property
     def width( self ):
@@ -35,18 +35,18 @@ class Viewport( object ):
     def height( self ):
         return self.dimensions[ 1 ]
     
-    def updateViewport( self, width, height ):
+    def update_viewport( self, width, height ):
         self.dimensions[ 0 ] = width
         self.dimensions[ 1 ] = height
     
-    def setCamera( self, camera ):
-        self.camera.setObject( camera )
+    def set_camera( self, camera ):
+        self.camera.set_object( camera )
     
-    def setActive( self ):
+    def set_active( self ):
         # update our viewport size
         glViewport( 0, 0, self.width, self.height )
     
-    def setupFor3D( self ):
+    def setup_for_3d( self ):
         # z-buffer is disabled by default
         glEnable( GL_DEPTH_TEST )
         
@@ -58,7 +58,7 @@ class Viewport( object ):
         if camera != None:
             glMatrixMode( GL_PROJECTION )
             glLoadIdentity()
-            camera.applyProjectionMatrix( self.width, self.height )
+            camera.apply_projection_matrix( self.width, self.height )
         
         # setup our model view matrix
         glMatrixMode( GL_MODELVIEW )
@@ -66,9 +66,9 @@ class Viewport( object ):
         
         if camera != None:
             # apply the camera's model view
-            camera.applyModelView()
+            camera.apply_model_view()
     
-    def setupFor2D( self ):
+    def setup_for_2d( self ):
         # disable z-buffer for 2d rendering
         glDisable( GL_DEPTH_TEST )
         

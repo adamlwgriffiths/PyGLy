@@ -5,7 +5,7 @@ Created on Thu Sep 15 18:47:04 2011
 @author: adam
 """
 
-from Mesh import Mesh
+from mesh.mesh import Mesh
 
 
 class Sprite( Mesh ):
