@@ -1,0 +1,113 @@
+'''
+Created on 23/06/2011
+
+@author: adam
+'''
+
+import math
+
+import numpy
+
+import Matrix33
+
+
+def identity( out = None ):
+    if out == None:
+        out = numpy.empty( (4, 4), dtype = float )
+    
+    out[:] = [
+        [ 1.0, 0.0, 0.0, 0.0 ],
+        [ 0.0, 1.0, 0.0, 0.0 ],
+        [ 0.0, 0.0, 1.0, 0.0 ],
+        [ 0.0, 0.0, 0.0, 1.0 ]
+        ]
+    return out
+
+def setup( eulers, out = None ):
+    """
+    Proper matrix layout and layout used for DirectX.
+    For OpenGL, transpose the matrix after calling this.
+    """
+    # set to identity matrix
+    # this will populate our extra rows for us
+    out = identity( out )
+    
+    # we'll use Matrix33 for our conversion
+    mat33 = out[ 0:3, 0:3 ]
+    mat33 = Matrix33.setup( eulers, out = mat33 )
+    
+    return out
+
+def fromInertialToObjectQuaternion( quat, out = None ):
+    """
+    Proper matrix layout and layout used for DirectX.
+    For OpenGL, transpose the matrix after calling this.
+    """
+    # set to identity matrix
+    # this will populate our extra rows for us
+    out = identity( out )
+    
+    # we'll use Matrix33 for our conversion
+    mat33 = out[ 0:3, 0:3 ]
+    Matrix33.fromInertialToObjectQuaternion( quat, out = mat33 )
+    
+    return out
+
+def fromObjectToInertialQuaternion( quat, out = None ):
+    """
+    Proper matrix layout and layout used for DirectX.
+    For OpenGL, transpose the matrix after calling this.
+    """
+    # set to identity matrix
+    # this will populate our extra rows for us
+    out = identity( out )
+    
+    # we'll use Matrix33 for our conversion
+    mat33 = out[ 0:3, 0:3 ]
+    Matrix33.fromObjectToInertialQuaternion( quat, out = mat33 )
+    
+    return out
+
+def inertialToObject( vector, matrix, out = None ):
+    """
+    Proper matrix layout and layout used for DirectX.
+    For OpenGL, transpose the matrix after calling this.
+    """
+    # set to identity matrix
+    # this will populate our extra rows for us
+    out = identity( out )
+    
+    # we'll use Matrix33 for our conversion
+    mat33 = out[ 0:3, 0:3 ]
+    Matrix33.inertialToObject( vector, out = mat33 )
+    
+    return out
+
+def setTranslation( matrix, vector, out = None ):
+    if out == None:
+        out = numpy.empty( (4, 4), dtype = float )
+    
+    out[:] = matrix
+    # apply the vector to the first 3 values of the last row
+    out[ 3, 0:3 ] = vector
+    
+    return out
+
+
+if __name__ == "__main__":
+    mat44 = identity()
+    # TODO:
+    
+    eulers = numpy.array( [ 1.0, 2.0, 0.5 ], dtype = float )
+    setup( eulers, out = mat44 )
+    assert mat44[ 3, 3 ] == 1.0
+    
+    out = numpy.empty( (4, 4), dtype = float )
+    setTranslation( mat44, [ 1.0, 2.0, 3.0 ], out )
+    # translation goes down the last column in normal matrix
+    # opengl uses a transposed matrix
+    assert out[ 3 ][ 0 ] == 1.0
+    assert out[ 3 ][ 1 ] == 2.0
+    assert out[ 3 ][ 2 ] == 3.0
+    assert out is not mat44
+
