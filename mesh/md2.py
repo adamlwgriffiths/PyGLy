@@ -18,20 +18,20 @@ import numpy
 
 
 # The MD2 identifier
-ID = 844121161
+id = 844121161
 
 # The expected MD2 version
-Version = 8
+version = 8
 
 # header is made up of 17 4-byte integers
-Header = namedtuple(
+header_layout = namedtuple(
     'MD2_Header',
     [
         'ident',
         'version',
-        'skinwidth',
-        'skinheight',
-        'framesize',
+        'skin_width',
+        'skin_height',
+        'frame_size',
         'num_skins',
         'num_vertices',
         'num_st',
@@ -46,18 +46,18 @@ Header = namedtuple(
         'offset_end'
         ]
     )
-HeaderStruct = struct.Struct( '< 17L' )
+header_struct = struct.Struct( '< 17L' )
 
-OpenGL_CommandStruct = struct.Struct( '< 1l' )
+opengl_command_struct = struct.Struct( '< 1l' )
 
-OpenGL_CommandDataStruct = struct.Struct( '< 2f 1l' )
+opengl_command_data_struct = struct.Struct( '< 2f 1l' )
 
-Vector = struct.Struct( '< 3f' )
-FrameName = struct.Struct( '< 16s' )
+vector_struct = struct.Struct( '< 3f' )
+frame_name_struct = struct.Struct( '< 16s' )
 
-FrameVertexStruct = struct.Struct( '< 4B' )
+frame_vertex_struct = struct.Struct( '< 4B' )
 
-Frame = namedtuple(
+frame_layout = namedtuple(
     'MD2_Frame',
     [
         'name',
@@ -66,7 +66,7 @@ Frame = namedtuple(
         ]
     )
 
-Triangles = namedtuple(
+triangle_layout = namedtuple(
     'MD2_Triangles',
     [
         'indices',
@@ -74,7 +74,7 @@ Triangles = namedtuple(
         ]
     )
 
-OpenGL_Command = namedtuple(
+opengl_command = namedtuple(
     'MD2_GL_Command',
     [
         'type',
@@ -83,7 +83,7 @@ OpenGL_Command = namedtuple(
         ]
     )
 
-Model = namedtuple(
+model_layout = namedtuple(
     'MD2_Model',
     [
         'filename',
@@ -96,7 +96,7 @@ Model = namedtuple(
     )
 
 # The MD2 normal look-up table
-Normals = numpy.array(
+normal_lookup_table = numpy.array(
     [
         [-0.525731, 0.000000, 0.850651 ],
         [-0.442863, 0.238856, 0.864188 ],
@@ -266,7 +266,7 @@ Normals = numpy.array(
 
 # List of frame types used by Quake 2
 # http://tfc.duke.free.fr/old/models/md2.htm
-FrameNames = [
+frame_names = [
     'stand',
     'run',
     'attack',
@@ -290,7 +290,7 @@ FrameNames = [
     'boom',
     ]
 
-FrameInfo = [
+frame_offsets = [
     # start frame, end frame, fps
     (   0,  39,  9.0 ),   # STAND
     (  40,  45, 10.0 ),   # RUN
@@ -325,17 +325,17 @@ def load( filename ):
     # even if an error occurs
     with open( filename, 'rb' ) as f:
         # read the header
-        header = readHeader( f )
-        skins = readSkins( f, header )
+        header = read_header( f )
+        skins = read_skins( f, header )
         
-        tcsList = readTextureCoordinates( f, header )
-        triangles = readTriangles( f, header, tcsList )
+        tcsList = read_texture_coordinates( f, header )
+        triangles = read_triangles( f, header, tcsList )
         
-        glCommands = readGL_Commands( f, header )
+        glCommands = read_gl_commands( f, header )
         
-        frames = readFrames( f, header )
+        frames = read_frames( f, header )
     
-    md2 = Model._make(
+    md2 = model_layout._make(
         [
             filename,
             header,
@@ -348,17 +348,17 @@ def load( filename ):
     
     return md2
 
-def readHeader( f ):
+def read_header( f ):
     # read the header struct from the file
-    header = Header._make(
-        HeaderStruct.unpack( f.read( HeaderStruct.size ) )
+    header = header_layout._make(
+        header_struct.unpack( f.read( header_struct.size ) )
         )
     
-    if header.ident != ID:
+    if header.ident != id:
         raise InvalidMeshException(
             'MD2 identifier is incorrect: %i' % (header.ident)
             )
-    if header.version != Version:
+    if header.version != version:
         raise InvalidMeshException(
             'MD2 version is incorrect: %i' % (header.version)
             )
@@ -366,23 +366,23 @@ def readHeader( f ):
     #print header
     return header
 
-def readSkins( f, header ):
+def read_skins( f, header ):
     # seek to the skins offset
     f.seek( header.offset_skins, os.SEEK_SET )
     
     # skins are stored as a contiguous list of 64 char strings
     # each string is a path relative to /baseq2
-    SkinStruct = struct.Struct( '< %s' % ('64s' * header.num_skins) )
+    skin_struct = struct.Struct( '< %s' % ('64s' * header.num_skins) )
     
     # read the skins and convert to list
     # strip any \x00 characters while we're at it
     # because python gets confused by them
-    skins = [ skin.rstrip('\x00') for skin in SkinStruct.unpack( f.read( SkinStruct.size ) ) ]
+    skins = [ skin.rstrip('\x00') for skin in skin_struct.unpack( f.read( skin_struct.size ) ) ]
     
     #print skins
     return skins
 
-def readTextureCoordinates( f, header ):
+def read_texture_coordinates( f, header ):
     # seek to the skins offset
     f.seek( header.offset_st, os.SEEK_SET )
     
@@ -390,29 +390,29 @@ def readTextureCoordinates( f, header ):
     # all docs state these are signed
     # but they also state the values are 0 < x < skinMax
     # for some reason, TCs don't map directly to vertices!
-    ST_Struct = struct.Struct( '< %iH' % ( 2 * header.num_st ) )
+    st_struct = struct.Struct( '< %iH' % ( 2 * header.num_st ) )
     
     tcs = numpy.array(
-        ST_Struct.unpack( f.read( ST_Struct.size ) ),
+        st_struct.unpack( f.read( st_struct.size ) ),
         dtype = numpy.float32
         )
     tcs.shape = (header.num_st, 2)
     
-    tcs /= [ header.skinwidth, header.skinheight ]
+    tcs /= [ header.skin_width, header.skin_height ]
     
     #print tcs
     return tcs
 
-def readTriangles( f, header, tcs ):
+def read_triangles( f, header, tcs ):
     # seek to the triangles offset
     f.seek( header.offset_tris, os.SEEK_SET )
     
     # triangles are stored as 3 unsigned shorts for the vertex indices
     # and 3 unsigned shorts for the texture coordinates indices
-    TriStruct = struct.Struct( '< %iH' % ( 6 * header.num_tris ) )
+    tri_struct = struct.Struct( '< %iH' % ( 6 * header.num_tris ) )
     
     tris = numpy.array(
-        TriStruct.unpack( f.read( TriStruct.size ) ),
+        tri_struct.unpack( f.read( tri_struct.size ) ),
         dtype = numpy.uint8
         )
     tris.shape = ( header.num_tris, 6 )
@@ -427,22 +427,21 @@ def readTriangles( f, header, tcs ):
     # texture coorindate arrays.
     # so we should convert the tcs to be associate with
     # each vertex
-    tcIndex = tris[ : , 3: ]
+    tc_index = tris[ : , 3: ]
     #print tcIndex
-    tcs = tcs[ tcIndex ]
+    tcs = tcs[ tc_index ]
     #print tcs
     
-    triangles = Triangles._make(
+    triangles = triangle_layout._make(
         [
             indices,
             tcs
             ]
         )
-        
     
     return triangles
 
-def readGL_Commands( f, header ):
+def read_gl_commands( f, header ):
     # seek to the gl commands offset
     f.seek( header.offset_glcmds, os.SEEK_SET )
     
@@ -453,22 +452,22 @@ def readGL_Commands( f, header ):
     while True:
         # commands are stored as 2 floats for the texture coordinates
         # and an int for the vertex indice
-        commandType = OpenGL_CommandStruct.unpack(
-            f.read( OpenGL_CommandStruct.size )
+        command_type = opengl_command_struct.unpack(
+            f.read( opengl_command_struct.size )
             )[ 0 ]
         
         # if the command is 0, we've hit the end
-        if commandType == 0:
+        if command_type == 0:
             break
         
         # the absolute value of the command is the number
         # of indices
-        numCommands = abs( commandType )
+        num_commands = abs( command_type )
         
         # store the indices in a numpy array
         # because we know the length already
         indices = numpy.empty(
-            ( numCommands ),
+            ( num_commands ),
             dtype = numpy.uint32
             )
         
@@ -476,16 +475,16 @@ def readGL_Commands( f, header ):
         # we have to do this per gl command because
         # some vertices have multiple texture coordinates
         tcs = numpy.empty(
-            ( numCommands, 2 ),
+            ( num_commands, 2 ),
             dtype = numpy.float32
             )
         
         # load each commands data
-        for num in xrange( numCommands ):
+        for num in xrange( num_commands ):
             # the data is mixed int and floats so we can't simply
             # load into a numpy array
-            values = OpenGL_CommandDataStruct.unpack(
-                f.read( OpenGL_CommandDataStruct.size )
+            values = opengl_command_data_struct.unpack(
+                f.read( opengl_command_data_struct.size )
                 )
             
             # add the indice to our command list
@@ -498,9 +497,9 @@ def readGL_Commands( f, header ):
         
         # create a named tuple for the command
         # because we're getting pretty complex
-        command = OpenGL_Command._make(
+        command = opengl_command._make(
             [
-                commandType,
+                command_type,
                 indices,
                 tcs
                 ]
@@ -513,18 +512,18 @@ def readGL_Commands( f, header ):
     
     return commands
 
-def readFrames( f, header ):
+def read_frames( f, header ):
     # seek to the gl commands offset
     f.seek( header.offset_frames, os.SEEK_SET )
     
     frames = []
     
-    for frameNum in xrange( header.num_frames ):
-        frames.append( readFrame( f, header ) )
+    for frame_num in xrange( header.num_frames ):
+        frames.append( read_frame( f, header ) )
     
     return frames
 
-def readFrame( f, header ):
+def read_frame( f, header ):
     scale = numpy.empty( (3), dtype = numpy.float32 )
     translation = numpy.empty( (3), dtype = numpy.float32 )
     
@@ -532,19 +531,19 @@ def readFrame( f, header ):
         (header.num_vertices, 3),
         dtype = numpy.float32
         )
-    normalIndices = []
+    normal_indices = []
     
     # read the scale vector
-    scale[:] = Vector.unpack(
-        f.read( Vector.size )
+    scale[:] = vector_struct.unpack(
+        f.read( vector_struct.size )
         )
     # read the translation vector
-    translation[:] = Vector.unpack(
-        f.read( Vector.size )
+    translation[:] = vector_struct.unpack(
+        f.read( vector_struct.size )
         )
     # read the frame name
-    name = FrameName.unpack(
-        f.read( FrameName.size )
+    name = frame_name_struct.unpack(
+        f.read( frame_name_struct.size )
         )[ 0 ]
     
     # remove any \x00 characters
@@ -553,18 +552,18 @@ def readFrame( f, header ):
     
     #print name
     
-    for vertexNum in xrange( header.num_vertices ):
-        vertexValues = FrameVertexStruct.unpack(
-            f.read( FrameVertexStruct.size )
+    for vertex_num in xrange( header.num_vertices ):
+        vertex_values = frame_vertex_struct.unpack(
+            f.read( frame_vertex_struct.size )
             )
         
         # read the normal index
-        normalIndices.append( vertexValues[ 3 ] )
-        vertices[ vertexNum ] = vertexValues[ :3 ]
+        normal_indices.append( vertex_values[ 3 ] )
+        vertices[ vertex_num ] = vertex_values[ :3 ]
     
     # convert the normals from a list of indices
     # to the normals themselves
-    normals = Normals[ normalIndices ]
+    normals = normal_lookup_table[ normal_indices ]
     
     # apply our scale and translation
     # to our vertices
@@ -574,7 +573,7 @@ def readFrame( f, header ):
     #print vertices
     #print normals
     
-    return Frame._make(
+    return frame_layout._make(
         [
             name,
             vertices,
@@ -584,5 +583,6 @@ def readFrame( f, header ):
 
 if __name__ == '__main__':
     model = load(
-        r'C:\Users\adam\workspace\python\opengl_app\opengl_app\src\data\sydney.md2'
+        r'../test_app/data/sydney.md2'
         )
+
