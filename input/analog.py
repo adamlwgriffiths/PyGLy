@@ -6,8 +6,10 @@ Created on 29/02/2012
 
 from pyglet.gl import *
 
+from common.dispatcher import Dispatcher
 
-class Analog( object ):
+
+class Analog( Dispatcher ):
     """
     This class provides access to a single analog
     input.
@@ -54,33 +56,6 @@ class Analog( object ):
         end of each frame.
         """
         self.delta = 0
-
-    def register_handler( self, handler ):
-        """
-        Adds a handler to the list of
-        handlers to receive events.
-
-        @param handler: Must be a callable function.
-        Function must take the parameters:
-            device, axis, value
-        """
-        assert handler not in self.handlers
-        assert callable( handler )
-
-        self.handlers.add( handler )
-    
-    def unregister_handler( self, handler ):
-        """
-        Removes a registered handler so it
-        no longer receives updates.
-
-        @param handler: Must be a callable function.
-        Function must take the parameters:
-            device, axis, value
-
-        @raise KeyError: if not present.
-        """
-        self.handlers.remove( handler )
 
     def dispatch_event( self, value ):
         """

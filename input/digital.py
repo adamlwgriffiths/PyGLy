@@ -6,8 +6,10 @@ Created on 29/02/2012
 
 from pyglet.gl import *
 
+from common.dispatcher import Dispatcher
 
-class Digital( object ):
+
+class Digital( Dispatcher ):
     """
     This class provides access to a single digital
     device.
@@ -24,32 +26,6 @@ class Digital( object ):
         
         self.device = device
         self.handlers = set()
-    
-    def register_handler( self, handler ):
-        """
-        Adds a handler to the list of
-        handlers to receive events.
-
-        @param handler: Must be a callable function.
-        Function must take the parameters:
-            name, event, value
-        """
-        assert handler not in self.handlers
-        assert callable( handler )
-        self.handlers.add( handler )
-    
-    def unregister_handler( self, handler ):
-        """
-        Removes a registered handler so it
-        no longer receives updates.
-
-        @param handler: Must be a callable function.
-        Function must take the parameters:
-            device, event, value
-
-        @raise KeyError: if not present.
-        """
-        self.handlers.remove( handler )
 
     def dispatch_event( self, event, value ):
         """
