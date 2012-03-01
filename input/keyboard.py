@@ -24,7 +24,11 @@ class Keyboard( object ):
         self.key_state = pyglet.window.key.KeyStateHandler()
         self.digital = Digital( self.name )
     
-        self.window.push_handlers( self, self.key_state )
+        self.window.push_handlers(
+            self.key_state,
+            on_key_press = self.on_key_press,
+            on_key_release = self.on_key_release
+            )
     
     def __del__( self ):
         if self.window != None:

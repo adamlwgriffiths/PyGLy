@@ -28,7 +28,9 @@ class Mouse( object ):
             Analog( self.name, 'x' ),
             Analog( self.name, 'y' )
             ]
-        self.window.push_handlers( self, self )
+        self.window.push_handlers(
+            on_mouse_motion = self.on_mouse_motion
+            )
 
     def __del__( self ):
         if self.window != None:
