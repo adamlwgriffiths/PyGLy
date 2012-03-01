@@ -4,12 +4,10 @@ Created on 20/06/2011
 @author: adam
 '''
 
-#import weakref
+import weakref
 
 import numpy
 from pyglet.gl import *
-
-from weak_reference import WeakReference
 
 
 class Viewport( object ):
@@ -18,7 +16,7 @@ class Viewport( object ):
     def __init__( self, width, height ):
         super( Viewport, self ).__init__()
         
-        self.camera = WeakReference()
+        self.camera = None
         self.dimensions = numpy.array(
             [ width, height ],
             dtype = int
@@ -40,7 +38,7 @@ class Viewport( object ):
         self.dimensions[ 1 ] = height
     
     def set_camera( self, camera ):
-        self.camera.set_object( camera )
+        self.camera = weakref.ref( camera )
     
     def set_active( self ):
         # update our viewport size
@@ -52,7 +50,9 @@ class Viewport( object ):
         
         # the camera is a weak pointer
         # so we need to get a reference to it
-        camera = self.camera()
+        camera = None
+        if self.camera != None:
+            camera = self.camera()
         
         # setup our projection matrix
         if camera != None:
