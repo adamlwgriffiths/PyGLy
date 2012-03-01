@@ -208,6 +208,12 @@ if __name__ == '__main__':
     assert func_ref2 in collection
     assert method_ref2 in collection
 
+    print 'checking reference can be removed from collection'
+    collection.remove( func_ref2 )
+    assert func_ref not in collection
+    collection.remove( method_ref2 )
+    assert method_ref not in collection
+
     obj = None
     assert method_ref.is_dead() == True
     assert method_ref2.is_dead() == True
