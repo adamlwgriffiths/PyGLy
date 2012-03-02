@@ -25,7 +25,9 @@ class Keyboard( object ):
         self.digital = Digital( self.name )
     
         self.window.push_handlers(
-            self.key_state,
+            self.key_state
+            )
+        self.window.push_handlers(
             on_key_press = self.on_key_press,
             on_key_release = self.on_key_release
             )
@@ -90,13 +92,21 @@ if __name__ == "__main__":
     pyglet.clock.schedule_interval( update, (1.0 / 60.0) )
     """
 
-    def update( name, event, value ):
+    def handler( name, event, value ):
         print '[%s] %s: (%s, %s)' % (name, event, value[ 0 ], value[ 1 ])
 
-        global window
-        window.close()
+        #global window
+        #window.close()
 
-    keyboard.digital.register_handler( update )
+    def watcher( dt ):
+        global keyboard
+        if keyboard[ keyboard.keys.SPACE ]:
+            print 'SPACE is down'
+            global window
+            window.close()
+
+    keyboard.digital.register_handler( handler )
+    pyglet.clock.schedule_interval( watcher, (1.0 / 60.0) )
 
     pyglet.app.run()
     
