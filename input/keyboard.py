@@ -34,7 +34,11 @@ class Keyboard( object ):
     
     def __del__( self ):
         if self.window != None:
-            self.window.remove_handlers( self, self.key_state )
+            self.window.remove_handlers(
+                self.on_key_press,
+                self.on_key_release,
+                self.key_state
+                )
     
     def is_key_down( self, key ):
         return self.key_state[ key ]
