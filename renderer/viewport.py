@@ -86,4 +86,6 @@ class Viewport( object ):
         # reset the model view
         glMatrixMode( GL_MODELVIEW )
         glLoadIdentity()
+
+        # TODO: translate by the camera's position
     
