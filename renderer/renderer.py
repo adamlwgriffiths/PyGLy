@@ -18,7 +18,9 @@ class Renderer( object ):
         
         self.window = window
         self.root = SceneNode( '/root' )
-        self.viewport = Viewport( window.width, window.height )
+        self.viewport = Viewport(
+            ( 0, 0, window.width, window.height )
+            )
         
         # register to handle window events
         # we can't over-ride the on_resize method of window or OGL will
@@ -46,7 +48,9 @@ class Renderer( object ):
         Pyglet event handler method.
         """
         # update our viewport
-        self.viewport.update_viewport( width, height )
+        self.viewport.update_viewport(
+            ( 0, 0, width, height )
+            )
     
     def on_context_lost( self ):
         """
@@ -54,7 +58,9 @@ class Renderer( object ):
         """
         print "on_context_lost"
         # update our viewport
-        self.viewport.update_viewport( self.window.width, self.window.height )
+        self.viewport.update_viewport(
+            ( 0, 0, self.window.width, self.window.height )
+            )
         
         # update our render nodes
         self.root.on_context_lost()

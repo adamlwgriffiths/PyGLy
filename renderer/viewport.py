@@ -13,36 +13,50 @@ from pyglet.gl import *
 class Viewport( object ):
     
     
-    def __init__( self, width, height ):
+    def __init__( self, rect ):
         super( Viewport, self ).__init__()
         
         self.camera = None
-        self.dimensions = numpy.array(
-            [ width, height ],
-            dtype = int
-            )
+        self.dimensions = None
         
         # setup our viewport
-        self.update_viewport( self.width, self.height )
+        self.update_viewport( rect )
+
+    @property
+    def x( self ):
+        return self.dimensions[ 0 ]
+
+    @property
+    def y( self ):
+        return self.dimensions[ 1 ]
     
     @property
     def width( self ):
-        return self.dimensions[ 0 ]
+        return self.dimensions[ 2 ]
     
     @property
     def height( self ):
-        return self.dimensions[ 1 ]
+        return self.dimensions[ 3 ]
     
-    def update_viewport( self, width, height ):
-        self.dimensions[ 0 ] = width
-        self.dimensions[ 1 ] = height
+    def update_viewport( self, rect ):
+        self.dimensions = (
+            rect[ 0 ],
+            rect[ 1 ],
+            rect[ 2 ],
+            rect[ 3 ]
+            )
     
     def set_camera( self, camera ):
         self.camera = weakref.ref( camera )
     
     def set_active( self ):
         # update our viewport size
-        glViewport( 0, 0, self.width, self.height )
+        glViewport(
+            self.x,
+            self.y,
+            self.width,
+            self.height
+            )
     
     def setup_for_3d( self ):
         # z-buffer is disabled by default
@@ -58,7 +72,10 @@ class Viewport( object ):
         if camera != None:
             glMatrixMode( GL_PROJECTION )
             glLoadIdentity()
-            camera.apply_projection_matrix( self.width, self.height )
+            camera.apply_projection_matrix(
+                self.width,
+                self.height
+                )
         
         # setup our model view matrix
         glMatrixMode( GL_MODELVIEW )
@@ -81,7 +98,14 @@ class Viewport( object ):
         # with near clip of -1 and far clip
         # of +1
         # http://stackoverflow.com/questions/4269079/mixing-2d-and-3d-in-opengl-using-pyglet
-        glOrtho( 0, self.width, 0, self.height, -1.0, 1.0 )
+        glOrtho(
+            0,
+            self.width,
+            0,
+            self.height,
+            -1.0,
+            1.0
+            )
         
         # reset the model view
         glMatrixMode( GL_MODELVIEW )
@@ -89,3 +113,4 @@ class Viewport( object ):
 
         # TODO: translate by the camera's position
     
+
