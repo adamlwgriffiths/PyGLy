@@ -13,14 +13,26 @@ from pyglet.gl import *
 class Viewport( object ):
     
     
-    def __init__( self, rect ):
+    def __init__( self, window, rect, z_value ):
         super( Viewport, self ).__init__()
+
+        if window is None:
+            raise ValueError( 'Viewport received a null window' )
         
+        self.window = window
         self.camera = None
         self.dimensions = None
         
+        # register the window
+        self.window._add_viewport( self, z_value )
+
         # setup our viewport
         self.update_viewport( rect )
+
+    def __del__( self ):
+        # remove the viewport
+        self.window._remove_viewport( self )
+        super( Viewport, self ).__del__
 
     @property
     def x( self ):
@@ -37,7 +49,23 @@ class Viewport( object ):
     @property
     def height( self ):
         return self.dimensions[ 3 ]
-    
+
+    @property
+    def bottom_left( self ):
+        return self.x, self.y
+
+    @property
+    def top_left( self ):
+        return self.x, self.y + self.height
+
+    @property
+    def bottom_right( self ):
+        return self.x + self.width, self.y
+
+    @property
+    def top_right( self ):
+        return self.x + self.width, self.y + self.height
+
     def update_viewport( self, rect ):
         self.dimensions = (
             rect[ 0 ],
@@ -52,11 +80,29 @@ class Viewport( object ):
     def set_active( self ):
         # update our viewport size
         glViewport(
-            self.x,
-            self.y,
-            self.width,
-            self.height
+            int( self.x * self.window.width ),
+            int( self.y * self.window.height ),
+            int( self.width * self.window.width ),
+            int( self.height * self.window.height )
             )
+
+    def clear( self ):
+        # clear the region
+        # we use glScissor to set the pixels
+        # we want to affect
+        glEnable( GL_SCISSOR_TEST )
+
+        glScissor( 
+            int( self.x * self.window.width ),
+            int( self.y * self.window.height ),
+            int( self.width * self.window.width ),
+            int( self.height * self.window.height )
+            )
+        # clear the background or we will just draw
+        # ontop of other viewports
+        glClear( GL_COLOR_BUFFER_BIT )
+
+        glDisable( GL_SCISSOR_TEST )
     
     def setup_for_3d( self ):
         # z-buffer is disabled by default

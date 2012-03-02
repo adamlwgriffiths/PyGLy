@@ -6,32 +6,41 @@ Created on 20/06/2011
 
 from pyglet.gl import *
 
-from scene.scene_node import SceneNode
+from window import Window
 from viewport import Viewport
+from scene.scene_node import SceneNode
 
 
 class Renderer( object ):
     
     
-    def __init__( self, window ):
+    def __init__( self ):
         super( Renderer, self ).__init__()
         
-        self.window = window
         self.root = SceneNode( '/root' )
-        self.viewport = Viewport(
-            ( 0, 0, window.width, window.height )
-            )
-        
-        # register to handle window events
-        # we can't over-ride the on_resize method of window or OGL will
-        # stop rendering
-        window.push_handlers( self )
+        self.windows = set([])
         
         # over-ride the default event loop
         pyglet.app.EventLoop.idle = self.idle
         
         # ensure we're using counter-clockwise winding
         glFrontFace( GL_CCW )
+
+    def add_window( self, window ):
+        # register to handle window events
+        # we can't over-ride the on_resize method of window or OGL will
+        # stop rendering
+        window.push_handlers( self )
+
+        # add to our list of windows
+        self.windows.add( window )
+
+    def remove_window( self, window ):
+        # stop listening to events
+        window.remove_handlers( self )
+
+        # remove the window from our list
+        self.windows.remove( window )
     
     def idle( self ):
         # we need to over-ride the default idle logic
@@ -43,47 +52,22 @@ class Renderer( object ):
         # don't call on_draw
         return pyglet.clock.get_sleep_time( sleep_idle = True )
     
-    def on_resize( self, width, height ):
-        """
-        Pyglet event handler method.
-        """
-        # update our viewport
-        self.viewport.update_viewport(
-            ( 0, 0, width, height )
-            )
-    
     def on_context_lost( self ):
         """
         Pyglet event handler method.
         """
         print "on_context_lost"
-        # update our viewport
-        self.viewport.update_viewport(
-            ( 0, 0, self.window.width, self.window.height )
-            )
-        
+
         # update our render nodes
         self.root.on_context_lost()
     
     def render( self ):
-        # TODO: add support for multiple viewports
-        # clear screen
-        # for each viewport
-        #   clear buffer
-        #   render
-        
-        # clear the screen
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
-        
-        # set the viewport as active
-        self.viewport.set_active()
-        
-        # set the viewport up for rendering
-        self.viewport.setup_for_3d()
-        
-        # process the scene graph
-        self.root.render()
+        # iterate through our windows
+        for window in self.windows:
+            # render each window
+            window.render()
     
     def flip( self ):
-        self.window.flip()
+        for window in self.windows:
+            window.flip()
     
