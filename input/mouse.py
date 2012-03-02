@@ -50,20 +50,19 @@ class Mouse( object ):
     def axis_y( self ):
         return self.axis[ Mouse.y ]
 
-    def get_absolute_position( self ):
+    @property
+    def absolute_position( self ):
         return [
             self.axis[ Mouse.x ].value,
             self.axis[ Mouse.y ].value
             ]
 
-    def get_relative_position( self ):
+    @property
+    def relative_position( self ):
         return [
             self.axis[ Mouse.x ].delta,
             self.axis[ Mouse.y ].delta
             ]
-    
-    absolute_position = property( get_absolute_position, None )
-    relative_position = property( get_relative_position, None )
 
 
 if __name__ == '__main__':
