@@ -50,7 +50,6 @@ class Keyboard( object ):
         'on_key_press' method.
         Do NOT rename this function.
         """
-        print 'dispatch press'
         self.digital.dispatch_event(
             Keyboard.down,
             (symbol, modifiers)
@@ -64,7 +63,6 @@ class Keyboard( object ):
         'on_key_release' method.
         Do NOT rename this function.
         """
-        print 'dispatch release'
         self.digital.dispatch_event(
             Keyboard.up,
             (symbol, modifiers)
