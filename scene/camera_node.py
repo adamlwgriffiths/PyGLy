@@ -11,6 +11,7 @@ from pyglet.gl import *
 import maths.quaternion
 import maths.matrix44
 
+from renderer.view_matrix import ViewMatrix
 from scene_node import SceneNode
 import debug_cube
 
@@ -19,29 +20,16 @@ class CameraNode( SceneNode ):
     render_debug_cube = False
     
     
-    def __init__( self, name, fov = 60.0, near_clip = 1.0, far_clip = 100.0 ):
+    def __init__( self, name, view_matrix ):
         super( CameraNode, self ).__init__( name )
         
-        self.fov = fov
-        self.near_clip = near_clip
-        self.far_clip = far_clip
-    
-    def apply_projection_matrix( self, window_width, window_height ):
-        # http://www.songho.ca/opengl/gl_transform.html
-        tangent = math.radians( self.fov )
-        
-        # tangent of half fovY
-        aspect_ratio = float(window_width) / float(window_height)
-        
-        # half height of near plane
-        height = self.near_clip * tangent
-        
-        # half width of near plane
-        width = height * aspect_ratio
-        
-        glFrustum( -width, width, -height, height, self.near_clip, self.far_clip )
+        self.view_matrix = view_matrix
     
     def apply_model_view( self ):
+        # setup our model view matrix
+        glMatrixMode( GL_MODELVIEW )
+        glLoadIdentity()
+
         # convert our quaternion to a matrix
         #matrix = maths.matrix44.from_inertial_to_object_quaternion( self.orientation )
         matrix = maths.matrix44.from_inertial_to_object_quaternion( self.world_orientation )

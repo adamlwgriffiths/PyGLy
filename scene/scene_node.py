@@ -23,8 +23,13 @@ class SceneNode( object ):
     TODO: Add scale inheritance
     """
     
+    """
+    If set to true, each scene node will
+    render a debug cube to show its
+    position within the scene.
+    """
     render_debug_cube = False
-    
+
     
     def __init__( self, name ):
         super( SceneNode, self ).__init__()
