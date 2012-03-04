@@ -84,6 +84,14 @@ class Viewport( object ):
         """
         pass
 
+    def tear_down_viewport( self ):
+        """
+        Over-ride this method to undo
+        any customizations done in
+        'setup_viewport'
+        """
+        pass
+
     @property
     def x( self ):
         return self.dimensions[ 0 ]

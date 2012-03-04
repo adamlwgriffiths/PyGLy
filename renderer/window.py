@@ -76,6 +76,7 @@ class Window( object ):
             viewport.apply_view_matrix( self.window )
             viewport.setup_viewport()
             viewport.render( self.window )
+            viewport.tear_down_viewport()
     
     def flip( self ):
         self.window.flip()
