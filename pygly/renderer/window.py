@@ -37,19 +37,6 @@ class Window( object ):
     def close( self ):
         return self.window.close()
 
-    def on_resize( self, width, height ):
-        """
-        Pyglet event handler method.
-        """
-        pass
-    
-    def on_context_lost( self ):
-        """
-        Pyglet event handler method.
-        """
-        # notify the scene graph
-        scene_node.root.on_context_lost()
-
     def on_close( self ):
         pass
 
