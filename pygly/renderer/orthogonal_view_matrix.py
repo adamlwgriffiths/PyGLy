@@ -4,12 +4,14 @@ Created on 20/06/2011
 @author: adam
 '''
 
-import weakref
 import math
 
 from pyglet.gl import *
 
-class OrthogonalViewMatrix( object ):
+from view_matrix import ViewMatrix
+
+
+class OrthogonalViewMatrix( ViewMatrix ):
 
 
     def __init__(

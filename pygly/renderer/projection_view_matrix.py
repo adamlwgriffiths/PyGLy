@@ -4,12 +4,14 @@ Created on 20/06/2011
 @author: adam
 '''
 
-import weakref
 import math
 
 from pyglet.gl import *
 
-class ProjectionViewMatrix( object ):
+from view_matrix import ViewMatrix
+
+
+class ProjectionViewMatrix( ViewMatrix ):
 
 
     def __init__(
