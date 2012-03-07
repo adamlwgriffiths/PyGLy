@@ -16,7 +16,10 @@ class Plane( object ):
     def __init__( self, position, normal, up  ):
         """
         Creates a plane at position with the normal being above the plane
-        and up being
+        and up being the rotation of the plane.
+        This is required as a plane must be defined by
+        3 vectors otherwise rotation is undefined.
+
         @param position: Must be a numpy array
         @param normal: Must be a numpy array. The normal will be normalised
         during construction.
