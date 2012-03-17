@@ -47,7 +47,8 @@ class Application( object ):
     
     def step( self, dt ):
         # update the scene
-        self.window.render( [] )
+        viewports = []
+        self.window.render( viewports )
 
         # display the frame buffer
         self.window.flip()

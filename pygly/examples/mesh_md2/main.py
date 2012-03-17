@@ -72,10 +72,6 @@ class Application( object ):
         
         print "Rendering at %iHz" % int(frequency)
 
-    def __del__( self ):
-        if self.window != None:
-            self.window.close()
-    
     def setup_scene( self ):
         # create a scene
         self.scene = Scene( 'default scene' )
@@ -180,7 +176,8 @@ class Application( object ):
         self.mesh_node.yaw( dt )
         
         # render the scene
-        self.window.render( [ self.viewport ] )
+        viewports = [ self.viewport ]
+        self.window.render( viewports )
         
         # display the frame buffer
         self.window.flip()
@@ -190,6 +187,7 @@ def main():
     # create app
     app = Application()
     app.run()
+    app.window.close()
 
 
 if __name__ == "__main__":
