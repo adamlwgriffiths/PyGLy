@@ -17,10 +17,9 @@ class BoxWrap( UV_Generator ):
         """
         Creates a Box with the bottom left corner at position with the normal
         being the depth and up the height
-        @param position: Must be a numpy array
-        @param normal: Must be a numpy array. The normal will be normalised
-        during construction.
-        @param up: Must be a numpy array and must be co-planar. The up vector
+        @param position: The 3d vector representing the centre of the box.
+        @param forward: The forward vector of the box. Must be co-planar with the up vector.
+        @param up: The up vector of the box. Must be co-planar with the forward vector.
         will be normalised during construction.
         @param size: The size of the box where X is right, Y is forward, Z is up 
         @raise ValueError: raised if the up vector is not co-planar
