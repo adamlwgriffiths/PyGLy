@@ -24,7 +24,6 @@ class MD2_Mesh( object ):
         self.display_lists = []
     
     def load( self ):
-        #md2_data = mesh.md2.load( self.filename )
         md2_data = md2.load( self.filename )
         
         # clear the existing display lists
