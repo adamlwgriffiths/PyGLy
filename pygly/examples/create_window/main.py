@@ -2,9 +2,6 @@
 Created on 15/06/2011
 
 @author: adam
-
-TODO: use resource locations
-http://www.pyglet.org/doc/programming_guide/loading_resources.html
 '''
 
 from pyglet.gl import *
