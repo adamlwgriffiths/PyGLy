@@ -25,7 +25,6 @@ from scene.scene import Scene
 from scene.scene_node import SceneNode
 from scene.camera_node import CameraNode
 from scene.render_callback_node import RenderCallbackNode
-import scene.debug_cube
 from scene.fps_camera import FPS_Camera
 from input.keyboard import Keyboard
 from input.mouse import Mouse
