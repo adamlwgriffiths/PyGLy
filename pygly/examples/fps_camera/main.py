@@ -128,11 +128,9 @@ class Application( object ):
         if self.keyboard[ self.keyboard.keys.W ] or self.keyboard[ self.keyboard.keys.UP ]:
             # move forward
             self.camera_controller.translate_inertial_forward( camera_speed * dt )
-            #self.camera_controller.translate_forward( camera_speed * dt )
         if self.keyboard[ self.keyboard.keys.S ] or self.keyboard[ self.keyboard.keys.DOWN ]:
             # move backward
             self.camera_controller.translate_inertial_backward( camera_speed * dt )
-            #self.camera_controller.translate_backward( camera_speed * dt )
         if self.keyboard[ self.keyboard.keys.D ] or self.keyboard[ self.keyboard.keys.RIGHT ]:
             # move right
             self.camera_controller.translate_right( camera_speed * dt )
@@ -142,11 +140,9 @@ class Application( object ):
         if self.keyboard[ self.keyboard.keys.SPACE ]:
             # move up
             self.camera_controller.translate_inertial_up( camera_speed * dt )
-            #self.camera_controller.translate_up( camera_speed * dt )
         if self.keyboard[ self.keyboard.keys.LSHIFT ]:
             # move up
             self.camera_controller.translate_inertial_down( camera_speed * dt )
-            #self.camera_controller.translate_down( camera_speed * dt )
         
         # handle camera rotation
         # get the relative movement of the mouse
