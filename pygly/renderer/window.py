@@ -4,67 +4,30 @@ Created on 02/03/2012
 @author: adam
 '''
 
-import heapq
-
 from pyglet.gl import *
 
 from viewport import Viewport
-from scene.scene_node import SceneNode
 
 
-class Window( object ):
+def clearColourAndDepth():
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    
-    def __init__( self, window ):
-        super( Window, self ).__init__()
+def render( window, viewports ):
+    # set ourself as the active window
+    window.switch_to()
 
-        if window is None:
-            raise ValueError( 'Window received a null window object' )
-        
-        self.window = window
-        
-        # register to handle window events
-        # we can't over-ride the on_resize method of window or OGL will
-        # stop rendering
-        window.push_handlers( self )
+    # clear the screen
+    # we'll get the viewports to clear the depth buffers
+    glClear( GL_COLOR_BUFFER_BIT )
 
-    def push_handlers( self, *args, **kwargs ):
-        self.window.push_handlers( *args, **kwargs )
+    for viewport in viewports:
+        viewport.switch_to( window )
+        viewport.clear(
+            window,
+            values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
+            )
+        viewport.apply_view_matrix( window )
+        viewport.setup_viewport()
+        viewport.render( window )
+        viewport.tear_down_viewport()
 
-    def remove_handlers( self, *args, **kwargs ):
-        self.window.remove_handlers( *args, **kwargs )
-
-    def close( self ):
-        return self.window.close()
-
-    def on_close( self ):
-        pass
-
-    def set_active( self ):
-        self.window.switch_to()
-
-    def clear( self, values = GL_COLOR_BUFFER_BIT ):
-        self.set_active()
-        glClear( values )
-
-    def render( self, viewports ):
-        # set ourself as the active window
-        self.set_active()
-
-        # clear the screen
-        self.clear( values = GL_COLOR_BUFFER_BIT )
-
-        for viewport in viewports:
-            viewport.set_active( self.window )
-            viewport.clear(
-                self.window,
-                values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                )
-            viewport.apply_view_matrix( self.window )
-            viewport.setup_viewport()
-            viewport.render( self.window )
-            viewport.tear_down_viewport()
-    
-    def flip( self ):
-        self.window.flip()
-    
