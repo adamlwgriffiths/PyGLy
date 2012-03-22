@@ -29,7 +29,7 @@ class Viewport( object ):
         self.scene = scene
         self.camera = weakref.ref( camera )
     
-    def set_active( self, window ):
+    def switch_to( self, window ):
         # update our viewport size
         glViewport(
             int( self.x * window.width ),
