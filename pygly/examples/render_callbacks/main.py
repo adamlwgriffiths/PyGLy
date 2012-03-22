@@ -11,7 +11,7 @@ import pyglet
 
 # over-ride the default pyglet idle loop
 import renderer.idle
-from renderer.window import Window
+import renderer.window
 from renderer.viewport import Viewport
 from renderer.projection_view_matrix import ProjectionViewMatrix
 from scene.scene import Scene
@@ -34,13 +34,11 @@ class Application( object ):
             )
 
         # create our window
-        self.window = Window(
-            pyglet.window.Window(
-                fullscreen = False,
-                width = 1024,
-                height = 768,
-                config = config
-                )
+        self.window = pyglet.window.Window(
+            fullscreen = False,
+            width = 1024,
+            height = 768,
+            config = config
             )
 
         # create a viewport that spans
@@ -53,12 +51,15 @@ class Application( object ):
         self.setup_scene()
         
         # setup our update loop the app
+        # we'll render at 60 fps
         frequency = 60.0
         self.update_delta = 1.0 / frequency
+        # use a pyglet callback for our render loop
         pyglet.clock.schedule_interval(
             self.step,
             self.update_delta
             )
+
         print "Rendering at %iHz" % int(frequency)
 
     def setup_scene( self ):
@@ -75,6 +76,8 @@ class Application( object ):
 
         # rotate the mesh so it is tilting forward
         self.grid_node.pitch( math.pi / 4.0 )
+
+        # move the grid backward so we can see it
         self.grid_node.translate(
             [ 0.0, 0.0, -80.0 ]
             )
@@ -98,12 +101,12 @@ class Application( object ):
         pyglet.app.run()
     
     def step( self, dt ):
-        # rotate the mesh
+        # rotate the mesh about it's own vertical axis
         self.grid_node.yaw( dt )
 
-        # update the scene
+        # render the scene
         viewports = [ self.viewport ]
-        self.window.render( viewports )
+        renderer.window.render( self.window, viewports )
 
         # display the frame buffer
         self.window.flip()

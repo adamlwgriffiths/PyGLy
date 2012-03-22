@@ -12,7 +12,7 @@ import pyglet
 
 # over-ride the default pyglet idle loop
 import renderer.idle
-from renderer.window import Window
+import renderer.window
 
 
 class Application( object ):
@@ -27,28 +27,35 @@ class Application( object ):
             )
 
         # create our window
-        self.window = Window(
-            pyglet.window.Window(
-                fullscreen = False,
-                width = 1024,
-                height = 768,
-                config = config
-                )
+        self.window = pyglet.window.Window(
+            fullscreen = False,
+            width = 1024,
+            height = 768,
+            config = config
             )
         
         # setup our update loop the app
+        # we don't need to do this to get the window
+        # up, but it's nice to show the basic application
+        # structure in such a simple app
+        # we'll render at 60 fps
         frequency = 60.0
         self.update_delta = 1.0 / frequency
-        pyglet.clock.schedule_interval( self.step, self.update_delta )
+        # use a pyglet callback for our render loop
+        pyglet.clock.schedule_interval(
+            self.step,
+            self.update_delta
+            )
+
         print "Rendering at %iHz" % int(frequency)
     
     def run( self ):
         pyglet.app.run()
     
     def step( self, dt ):
-        # update the scene
+        # render the scene
         viewports = []
-        self.window.render( viewports )
+        renderer.window.render( self.window, viewports )
 
         # display the frame buffer
         self.window.flip()

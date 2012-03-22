@@ -15,7 +15,7 @@ from pyglet.gl import *
 import pyglet
 
 import renderer.idle
-from renderer.window import Window
+import renderer.window
 from renderer.viewport import Viewport
 from renderer.projection_view_matrix import ProjectionViewMatrix
 from scene.scene import Scene
@@ -40,13 +40,11 @@ class Application( object ):
             )
 
         # create our window
-        self.window = Window(
-            pyglet.window.Window(
-                fullscreen = False,
-                width = 1024,
-                height = 768,
-                config = config
-                )
+        self.window = pyglet.window.Window(
+            fullscreen = False,
+            width = 1024,
+            height = 768,
+            config = config
             )
 
         # create a viewport
@@ -63,8 +61,10 @@ class Application( object ):
         self.setup_scene()
         
         # setup our update loop the app
+        # we'll render at 60 fps
         frequency = 60.0
         self.update_delta = 1.0 / frequency
+        # use a pyglet callback for our render loop
         pyglet.clock.schedule_interval(
             self.step,
             self.update_delta
@@ -172,12 +172,12 @@ class Application( object ):
             md2.mesh.frame %= md2.mesh.frames
             self.animation_time = 0.0
 
-        # rotate the mesh
+        # rotate the mesh about it's own vertical axis
         self.mesh_node.yaw( dt )
         
         # render the scene
         viewports = [ self.viewport ]
-        self.window.render( viewports )
+        renderer.window.render( self.window, viewports )
         
         # display the frame buffer
         self.window.flip()
