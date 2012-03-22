@@ -22,7 +22,6 @@ from scene.scene import Scene
 from scene.scene_node import SceneNode
 from scene.camera_node import CameraNode
 from scene.render_callback_node import RenderCallbackNode
-from scene.six_dof_camera import SixDOF_Camera
 import maths.quaternion
 
 import md2
