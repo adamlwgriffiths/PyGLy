@@ -11,13 +11,13 @@ import maths.quaternion
 import maths.matrix33
 
 
-class FPS_Camera( object ):
+class FPS_Controller( object ):
     piOver2 = math.pi / 2.0
     
     def __init__( self ):
-        super( FPS_Camera, self ).__init__()
+        super( FPS_Controller, self ).__init__()
         
-        self.camera = None
+        self.scene_node = None
         self.pitch = 0.0
         self.yaw = 0.0
     
@@ -64,21 +64,21 @@ class FPS_Camera( object ):
         
         quat = maths.quaternion.cross_product( pitchQuat, yawQuat )
         maths.quaternion.normalise( quat )
-        self.camera.orientation = quat
+        self.scene_node.orientation = quat
     
     def translate_object_forward( self, amount ):
         """
         Moves the object forward relative to
         it's own orientation.
         """
-        self.camera.translate_forward( amount )
+        self.scene_node.translate_forward( amount )
     
     def translate_object_backward( self, amount ):
         """
         Moves the object backward relative to
         it's own orientation.
         """
-        self.camera.translateBackward( amount )
+        self.scene_node.translateBackward( amount )
     
     def translate_inertial_forward( self, amount ):
         """
@@ -92,7 +92,7 @@ class FPS_Camera( object ):
         forwardVec = maths.matrix33.inertial_to_object( vec, matrix )
         forwardVec *= amount
         
-        self.camera.translate( forwardVec )
+        self.scene_node.translate( forwardVec )
     
     def translate_inertial_backward( self, amount ):
         """
@@ -106,35 +106,35 @@ class FPS_Camera( object ):
         backwardVec = maths.matrix33.inertial_to_object( vec, matrix )
         backwardVec *= amount
         
-        self.camera.translate( backwardVec )
+        self.scene_node.translate( backwardVec )
     
     def translate_inertial_up( self, amount ):
         """
         Moves the object up the Z axis
         ignoring the objects orientation.
         """
-        self.camera.translate( [ 0.0, amount, 0.0 ] )
+        self.scene_node.translate( [ 0.0, amount, 0.0 ] )
     
     def translate_inertial_down( self, amount ):
         """
         Moves the object down the Z axis
         ignoring the objects orientation.
         """
-        self.camera.translate( [ 0.0, -amount, 0.0 ] )
+        self.scene_node.translate( [ 0.0, -amount, 0.0 ] )
     
     def translate_object_up( self, amount ):
         """
         Moves the object upward relative to
         it's own orientation.
         """
-        self.camera.translate_up( amount )
+        self.scene_node.translate_up( amount )
     
     def translate_object_down( self, amount ):
         """
         Moves the object downward relative to
         it's own orientation.
         """
-        self.camera.translate_down( amount )
+        self.scene_node.translate_down( amount )
 
     def translate_forward( self, amount ):
         """
@@ -154,15 +154,15 @@ class FPS_Camera( object ):
     
     def translate_left( self, amount ):
         """
-        In FPS camera, theres is no difference
+        In FPS, theres is no difference
         between intertial left, and object left.
         """
-        self.camera.translate_left( amount )
+        self.scene_node.translate_left( amount )
     
     def translate_right( self, amount ):
         """
-        In FPS camera, theres is no difference
+        In FPS, theres is no difference
         between intertial right, and object right.
         """
-        self.camera.translate_right( amount )
+        self.scene_node.translate_right( amount )
     
