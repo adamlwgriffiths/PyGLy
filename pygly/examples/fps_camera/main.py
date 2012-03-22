@@ -25,7 +25,7 @@ from scene.scene import Scene
 from scene.scene_node import SceneNode
 from scene.camera_node import CameraNode
 from scene.render_callback_node import RenderCallbackNode
-from scene.fps_camera import FPS_Camera
+from scene.fps_controller import FPS_Controller
 from input.keyboard import Keyboard
 from input.mouse import Mouse
 
@@ -106,8 +106,8 @@ class Application( object ):
         
         # assign a camera controller
         # we'll use the FPS camera for this one
-        self.camera_controller = FPS_Camera()
-        self.camera_controller.camera = self.camera
+        self.camera_controller = FPS_Controller()
+        self.camera_controller.scene_node = self.camera
         
         # set the viewports camera
         self.viewport.set_camera( self.scene, self.camera )
