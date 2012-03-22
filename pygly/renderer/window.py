@@ -9,9 +9,6 @@ from pyglet.gl import *
 from viewport import Viewport
 
 
-def clearColourAndDepth():
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
 def render( window, viewports ):
     # set ourself as the active window
     window.switch_to()
