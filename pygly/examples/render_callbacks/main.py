@@ -14,7 +14,7 @@ import renderer.idle
 import renderer.window
 from renderer.viewport import Viewport
 from renderer.projection_view_matrix import ProjectionViewMatrix
-from scene.scene import Scene
+from scene.scene_node import SceneNode
 from scene.render_callback_node import RenderCallbackNode
 from scene.camera_node import CameraNode
 import maths.quaternion
@@ -64,7 +64,7 @@ class Application( object ):
 
     def setup_scene( self ):
         # create a scene
-        self.scene = Scene( 'default scene' )
+        self.scene_node = SceneNode( '/root' )
 
         # create a grid to render
         self.grid_node = RenderCallbackNode(
@@ -72,7 +72,7 @@ class Application( object ):
             grid.initialise_grid,
             grid.render_grid
             )
-        self.scene.node.add_child( self.grid_node )
+        self.scene_node.add_child( self.grid_node )
 
         # rotate the mesh so it is tilting forward
         self.grid_node.pitch( math.pi / 4.0 )
@@ -92,10 +92,10 @@ class Application( object ):
             '/camera',
             self.view_matrix
             )
-        self.scene.node.add_child( self.camera )
+        self.scene_node.add_child( self.camera )
 
         # set the viewports camera
-        self.viewport.set_camera( self.scene, self.camera )
+        self.viewport.set_camera( self.scene_node, self.camera )
     
     def run( self ):
         pyglet.app.run()

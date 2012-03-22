@@ -18,7 +18,6 @@ import renderer.idle
 import renderer.window
 from renderer.viewport import Viewport
 from renderer.projection_view_matrix import ProjectionViewMatrix
-from scene.scene import Scene
 from scene.scene_node import SceneNode
 from scene.camera_node import CameraNode
 from scene.render_callback_node import RenderCallbackNode
@@ -73,7 +72,7 @@ class Application( object ):
 
     def setup_scene( self ):
         # create a scene
-        self.scene = Scene( 'default scene' )
+        self.scene_node = SceneNode( '/root' )
 
         # add a grid so we can see wtf we're doing
         self.mesh_node = RenderCallbackNode(
@@ -81,7 +80,7 @@ class Application( object ):
             md2.initialise_mesh,
             md2.render_mesh
             )
-        self.scene.node.add_child( self.mesh_node )
+        self.scene_node.add_child( self.mesh_node )
 
         # move the mesh so we can see it
         self.mesh_node.translate(
@@ -99,10 +98,10 @@ class Application( object ):
             '/camera',
             self.view_matrix
             )
-        self.scene.node.add_child( self.camera )
+        self.scene_node.add_child( self.camera )
         
         # set the viewports camera
-        self.viewport.set_camera( self.scene, self.camera )
+        self.viewport.set_camera( self.scene_node, self.camera )
         
         # the md2 is oriented at 90 degrees about X
         # re-orient the mesh

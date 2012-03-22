@@ -21,7 +21,6 @@ import renderer.idle
 import renderer.window
 from renderer.viewport import Viewport
 from renderer.projection_view_matrix import ProjectionViewMatrix
-from scene.scene import Scene
 from scene.scene_node import SceneNode
 from scene.camera_node import CameraNode
 from scene.render_callback_node import RenderCallbackNode
@@ -76,14 +75,14 @@ class Application( object ):
 
     def setup_scene( self ):
         # create a scene
-        self.scene = Scene( 'default scene' )
+        self.scene_node = SceneNode( '/root' )
 
         self.grid_node = RenderCallbackNode(
             '/grid',
             grid.initialise_grid,
             grid.render_grid
             )
-        self.scene.node.add_child( self.grid_node )
+        self.scene_node.add_child( self.grid_node )
 
         # move the grid backward so we can see it
         # and move it down so we start above it
@@ -102,7 +101,7 @@ class Application( object ):
             '/camera',
             self.view_matrix
             )
-        self.scene.node.add_child( self.camera )
+        self.scene_node.add_child( self.camera )
         
         # assign a camera controller
         # we'll use the FPS camera for this one
@@ -110,7 +109,7 @@ class Application( object ):
         self.camera_controller.scene_node = self.camera
         
         # set the viewports camera
-        self.viewport.set_camera( self.scene, self.camera )
+        self.viewport.set_camera( self.scene_node, self.camera )
         
     def run( self ):
         pyglet.app.run()
