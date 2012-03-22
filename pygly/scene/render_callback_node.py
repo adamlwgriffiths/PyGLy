@@ -7,11 +7,11 @@ Created on Mon Aug 22 19:01:19 2011
 
 from pyglet.gl import *
 
-from render_node import RenderNode
+from scene_node import SceneNode
 import debug_cube
 
 
-class RenderCallbackNode( RenderNode ):
+class RenderCallbackNode( SceneNode ):
     
     
     def __init__( self, name, initialise_callback, render_callback ):
