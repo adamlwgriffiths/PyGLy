@@ -49,15 +49,13 @@ class Layer( CocosLayer ):
             values = GL_DEPTH_BUFFER_BIT
             )
 
+        # apply our projection matrix
         # cocos only sets the view matrix up once
         # so we must store the existing view matrix
         # so we can re-apply it at the end of our render
         # store the current projection matrix
-        matrix = [ 0.0 for i in range(16)]
-        glMatrix = (GLfloat * 16)(*matrix)
-        glGetFloatv( GL_PROJECTION_MATRIX, glMatrix )
-
-        # apply our projection matrix
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
         self.pygly_viewport.apply_view_matrix()
 
         # switch back to model view
@@ -65,7 +63,6 @@ class Layer( CocosLayer ):
         # we can pop it off afterward
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
-        glLoadIdentity()
 
         # apply the camera transforms
         self.transform()
@@ -75,6 +72,8 @@ class Layer( CocosLayer ):
         self.pygly_viewport.render( director.window )
         self.pygly_viewport.tear_down_viewport()
 
+        # pop our view matrix back to the
+        # original cocos matrix
         glPopMatrix()
 
         # disable depth testing
@@ -82,7 +81,6 @@ class Layer( CocosLayer ):
 
         # re-apply the original projection matrix
         glMatrixMode( GL_PROJECTION )
-        glLoadIdentity()
-        glMultMatrixf( glMatrix )
+        glPopMatrix()
         glMatrixMode(GL_MODELVIEW)
 
