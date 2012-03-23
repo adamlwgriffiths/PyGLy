@@ -17,7 +17,7 @@ class Viewport( object ):
 
         self.camera = None
         self.dimensions = None
-        self.scene = None
+        self.scene_node = None
         self.dimensions = (
             rect[ 0 ],
             rect[ 1 ],
@@ -25,8 +25,8 @@ class Viewport( object ):
             rect[ 3 ]
             )
 
-    def set_camera( self, scene, camera ):
-        self.scene = scene
+    def set_camera( self, scene_node, camera ):
+        self.scene_node = scene_node
         self.camera = weakref.ref( camera )
     
     def switch_to( self, window ):
@@ -60,7 +60,7 @@ class Viewport( object ):
 
         glDisable( GL_SCISSOR_TEST )
     
-    def apply_view_matrix( self, window ):
+    def apply_view_matrix( self ):
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
@@ -69,13 +69,19 @@ class Viewport( object ):
             # setup our projection matrix
             camera.view_matrix.apply_view_matrix( self )
         
+    def apply_model_view( self ):
+        # the camera is a weak pointer
+        # so we need to get a reference to it
+        if self.camera != None:
+            camera = self.camera()
+        
             # apply the camera's model view
             camera.apply_model_view()
 
     def render( self, window ):
         # render the current scene
-        if self.scene != None:
-            self.scene.render()
+        if self.scene_node != None:
+            self.scene_node.render()
 
     def setup_viewport( self ):
         """

@@ -18,13 +18,25 @@ def render( window, viewports ):
     glClear( GL_COLOR_BUFFER_BIT )
 
     for viewport in viewports:
+        # activate the viewport
         viewport.switch_to( window )
+
+        # clear the existing depth buffer
+        # we need to do this incase the viewports
+        # overlap
         viewport.clear(
             window,
             values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
             )
-        viewport.apply_view_matrix( window )
+
+        # apply the cameras projection matrix
+        viewport.apply_view_matrix()
+        # apply the cameras model view
+        viewport.apply_model_view()
+        # setup our open gl state for the viewport
         viewport.setup_viewport()
+        # render the scene
         viewport.render( window )
+        # undo any opengl state we set for the viewport
         viewport.tear_down_viewport()
 
