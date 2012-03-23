@@ -32,8 +32,7 @@ class Layer( CocosLayer ):
         """
         Apply the model view transform for the camera
         """
-        if self.pygly_viewport.camera != None:
-            self.pygly_viewport.camera().apply_model_view()
+        self.pygly_viewport.apply_model_view()
 
     def draw(self, *args, **kwargs):
         """
@@ -59,9 +58,12 @@ class Layer( CocosLayer ):
         glGetFloatv( GL_PROJECTION_MATRIX, glMatrix )
 
         # apply our projection matrix
-        self.pygly_viewport.camera().view_matrix.apply_view_matrix( self.pygly_viewport )
-        glMatrixMode(GL_MODELVIEW)
+        self.pygly_viewport.apply_view_matrix()
 
+        # switch back to model view
+        # and store the current matrix so
+        # we can pop it off afterward
+        glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()
 
