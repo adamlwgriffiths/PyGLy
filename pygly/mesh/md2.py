@@ -316,9 +316,6 @@ frame_offsets = [
     ]
 
 
-class InvalidMeshException( Exception ):
-    pass
-
 
 def load( filename ):
     # this guarantees the file will be closed
@@ -355,11 +352,11 @@ def read_header( f ):
         )
     
     if header.ident != id:
-        raise InvalidMeshException(
+        raise ValueError(
             'MD2 identifier is incorrect: %i' % (header.ident)
             )
     if header.version != version:
-        raise InvalidMeshException(
+        raise ValueError(
             'MD2 version is incorrect: %i' % (header.version)
             )
     
