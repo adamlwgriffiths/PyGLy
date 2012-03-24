@@ -42,9 +42,6 @@ class OBJ_Mesh( object ):
         tcs = []
         normals = []
 
-        def grouper( seq, size ):
-            return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
-
         def process_line( line ):
             # remove whitespace
             line = line.lstrip()
