@@ -25,9 +25,10 @@ class CameraNode( SceneNode ):
         
         self.view_matrix = view_matrix
     
-    def apply_model_view( self ):
+    def push_model_view( self ):
         # setup our model view matrix
         glMatrixMode( GL_MODELVIEW )
+        glPushMatrix()
         glLoadIdentity()
 
         # convert our quaternion to a matrix
@@ -54,6 +55,10 @@ class CameraNode( SceneNode ):
             -world_translation[ 1 ],
             -world_translation[ 2 ]
             )
+
+    def pop_model_view( self ):
+        glMatrixMode( GL_MODELVIEW )
+        glPopMatrix()
     
     def render( self ):
         # apply our transforms

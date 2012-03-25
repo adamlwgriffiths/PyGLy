@@ -26,9 +26,10 @@ class ProjectionViewMatrix( ViewMatrix ):
         self.near_clip = near_clip
         self.far_clip = far_clip
 
-    def apply_view_matrix( self, viewport ):
+    def push_view_matrix( self, viewport ):
         # setup our projection matrix
         glMatrixMode( GL_PROJECTION )
+        glPushMatrix()
         glLoadIdentity()
 
         # http://www.songho.ca/opengl/gl_transform.html
@@ -48,4 +49,8 @@ class ProjectionViewMatrix( ViewMatrix ):
             -height, height,
             self.near_clip, self.far_clip
             )
+    
+    def pop_view_matrix( self ):
+        glMatrixMode( GL_PROJECTION )
+        glPopMatrix()
 

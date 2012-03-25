@@ -14,7 +14,9 @@ class ViewMatrix( object ):
     def __init__( self ):
         super( ViewMatrix, self ).__init__()
 
-    def apply_view_matrix( self, viewport ):
+    def push_view_matrix( self, viewport ):
         pass
 
+    def pop_view_matrix( self ):
+        pass
 

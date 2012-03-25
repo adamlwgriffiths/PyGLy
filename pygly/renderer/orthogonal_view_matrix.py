@@ -24,9 +24,10 @@ class OrthogonalViewMatrix( ViewMatrix ):
         self.near_clip = near_clip
         self.far_clip = far_clip
 
-    def apply_view_matrix( self, viewport ):
+    def push_view_matrix( self, viewport ):
         # setup our projection matrix
         glMatrixMode( GL_PROJECTION )
+        glPushMatrix()
         glLoadIdentity()
 
         # set the ortho matrix to be from
@@ -39,4 +40,8 @@ class OrthogonalViewMatrix( ViewMatrix ):
             0, viewport.height,
             -1.0, 1.0
             )
+
+    def pop_view_matrix( self ):
+        glMatrixMode( GL_PROJECTION )
+        glPopMatrix()
 

@@ -60,23 +60,33 @@ class Viewport( object ):
 
         glDisable( GL_SCISSOR_TEST )
     
-    def apply_view_matrix( self ):
+    def push_view_matrix( self ):
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
-            camera = self.camera()
-        
-            # setup our projection matrix
-            camera.view_matrix.apply_view_matrix( self )
-        
-    def apply_model_view( self ):
+            # apply our projection matrix
+            self.camera().view_matrix.push_view_matrix( self )
+
+    def pop_view_matrix( self ):
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
-            camera = self.camera()
+            # unapply our projection matrix
+            self.camera().view_matrix.pop_view_matrix()
         
+    def push_model_view( self ):
+        # the camera is a weak pointer
+        # so we need to get a reference to it
+        if self.camera != None:
             # apply the camera's model view
-            camera.apply_model_view()
+            self.camera().push_model_view()
+
+    def pop_model_view( self ):
+        # the camera is a weak pointer
+        # so we need to get a reference to it
+        if self.camera != None:
+            # unapply the camera's model view
+            self.camera().pop_model_view()
 
     def render( self, window ):
         # render the current scene
