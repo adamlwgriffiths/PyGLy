@@ -83,6 +83,12 @@ def inertial_to_object( vector, matrix, out = None ):
     
     return out
 
+def multiply( m1, m2, out = None ):
+    if out == None:
+        out = numpy.empty( (4, 4), dtype = float )
+    out[:] = numpy.dot( m1, m2 )
+    return out
+
 def set_translation( matrix, vector, out = None ):
     if out == None:
         out = numpy.empty( (4, 4), dtype = float )
@@ -95,14 +101,16 @@ def set_translation( matrix, vector, out = None ):
 
 def scale( matrix, scale, out = None ):
     if out == None:
-        out = numpy.empty( (4, 4), dtype = float )
+        out = identity() 
     
-    out[:] = matrix
+    scale_matrix = identity()
     # apply the scale to the values diagonally
     # down the matrix
-    out[ 0,0 ] *= scale[ 0 ]
-    out[ 1,1 ] *= scale[ 1 ]
-    out[ 2,2 ] *= scale[ 2 ]
+    scale_matrix[ 0,0 ] *= scale[ 0 ]
+    scale_matrix[ 1,1 ] *= scale[ 1 ]
+    scale_matrix[ 2,2 ] *= scale[ 2 ]
+
+    multiply( matrix, scale_matrix, out = out )
     
     return out
 

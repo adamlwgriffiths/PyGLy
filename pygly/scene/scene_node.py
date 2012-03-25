@@ -301,14 +301,21 @@ class SceneNode( object ):
             child.on_context_lost()
     
     def apply_translations( self ):
+        # matrix transformations must be done in order
+        # orientation and scaling
+        # finally translation
+
         # convert our quaternion to a matrix
-        matrix = maths.matrix44.from_inertial_to_object_quaternion( self._orientation )
-        
-        # add our translation to the matrix
-        maths.matrix44.set_translation( matrix, self._translation, out = matrix )
+        matrix = maths.matrix44.from_inertial_to_object_quaternion(
+            self._orientation
+            )
 
         # apply our scale
-        maths.matrix44.scale( matrix, self.scale, out = matrix )
+        maths.matrix44.scale( matrix, self.scale, matrix )
+
+        # apply our translation
+        # we MUST do this after the orientation
+        maths.matrix44.set_translation( matrix, self._translation, out = matrix )
         
         # convert to ctype for OpenGL
         glMatrix = (GLfloat * matrix.size)(*matrix.flat) 
