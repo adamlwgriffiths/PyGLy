@@ -21,7 +21,8 @@ TODO: lines
 from pyglet.gl import *
 
 
-class OBJ_Mesh( object ):
+
+cly_list = glGenLists( 1 )ass OBJ_Mesh( object ):
     
     def __init__( self, filename ):
         super( OBJ_Mesh, self ).__init__()
@@ -33,9 +34,8 @@ class OBJ_Mesh( object ):
         # open the file in ascii mode
         with open( self.filename, 'r' ) as f:
             self.load_data( f )
-
     def load_data( self, data ):
-        self.display_list = glGenLists( 1 );
+        self.display_list = glGenLists( 1 )
         glNewList( self.display_list, GL_COMPILE )
 
         vertices = []
