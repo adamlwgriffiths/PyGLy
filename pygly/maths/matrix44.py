@@ -93,7 +93,7 @@ def set_translation( matrix, vector, out = None ):
     
     return out
 
-def set_scale( matrix, scale, out = None ):
+def scale( matrix, scale, out = None ):
     if out == None:
         out = numpy.empty( (4, 4), dtype = float )
     
