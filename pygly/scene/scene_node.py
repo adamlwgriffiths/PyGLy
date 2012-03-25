@@ -20,8 +20,6 @@ import debug_axis
 class SceneNode( object ):
     """
     Base class for Scene Graph objects.
-    
-    TODO: Add scale inheritance
     """
     
     """
@@ -71,7 +69,7 @@ class SceneNode( object ):
             parent_world_translation = parent._get_world_translation()
             parent_world_orientation = parent._get_world_orientation()
             
-            # rotate our translation by our paren't world orientation
+            # rotate our translation by our parent's world orientation
             parent_world_matrix = maths.matrix33.from_inertial_to_object_quaternion( parent_world_orientation )
             world_translation = maths.matrix33.inertial_to_object( self._translation, parent_world_matrix )
             self._world_translation[:] = parent_world_translation + world_translation
@@ -303,16 +301,14 @@ class SceneNode( object ):
             child.on_context_lost()
     
     def apply_translations( self ):
-        # apply our scale
-        glScalef( self.scale[ 0 ], self.scale[ 1 ], self.scale[ 2 ] )
-        
         # convert our quaternion to a matrix
         matrix = maths.matrix44.from_inertial_to_object_quaternion( self._orientation )
         
         # add our translation to the matrix
         maths.matrix44.set_translation( matrix, self._translation, out = matrix )
 
-        # TODO: add our scale to the matrix
+        # apply our scale
+        maths.matrix44.scale( matrix, self.scale, out = matrix )
         
         # convert to ctype for OpenGL
         glMatrix = (GLfloat * matrix.size)(*matrix.flat) 
