@@ -41,45 +41,39 @@ def initialise():
     # can't put them in display lists
     # so we'll do some leet hax and draw our letters
     # X label = \ + /
-    glTranslatef( 2.0, 0.0, 0.0 )
     glBegin( GL_LINES )
     # \
-    glVertex3f(-1.0, 1.0, 0.0 )
-    glVertex3f( 1.0,-1.0, 0.0 )
+    glVertex3f(-1.0 + 2.0, 1.0, 0.0 )
+    glVertex3f( 1.0 + 2.0,-1.0, 0.0 )
     # /
-    glVertex3f(-1.0,-1.0, 0.0 )
-    glVertex3f( 1.0, 1.0, 0.0 )
+    glVertex3f(-1.0 + 2.0,-1.0, 0.0 )
+    glVertex3f( 1.0 + 2.0, 1.0, 0.0 )
     glEnd()
-    glTranslatef(-2.0, 0.0, 0.0 )
 
     # Y label = V + |
-    glTranslatef( 0.0, 2.0, 0.0 )
     glBegin( GL_LINE_STRIP )
     # V
-    glVertex3f(-1.0, 1.0, 0.0 )
-    glVertex3f( 0.0, 0.0, 0.0 )
-    glVertex3f( 1.0, 1.0, 0.0 )
+    glVertex3f(-1.0, 1.0 + 2.0, 0.0 )
+    glVertex3f( 0.0, 0.0 + 2.0, 0.0 )
+    glVertex3f( 1.0, 1.0 + 2.0, 0.0 )
     glEnd()
     # |
     glBegin( GL_LINES )
-    glVertex3f( 0.0, 0.0, 0.0 )
-    glVertex3f( 0.0,-1.0, 0.0 )
+    glVertex3f( 0.0, 0.0 + 2.0, 0.0 )
+    glVertex3f( 0.0,-1.0 + 2.0, 0.0 )
     glEnd()
-    glTranslatef( 0.0,-2.0, 0.0 )
 
     # Z label = - + / + -
     # we shall draw the z label along the Y/Z axis, not X/Y
     # -
-    glTranslatef( 0.0, 0.0, 2.0 )
     glBegin( GL_LINE_STRIP )
-    glVertex3f( 0.0, 1.0,-1.0 )
-    glVertex3f( 0.0, 1.0, 1.0 )
+    glVertex3f( 0.0, 1.0,-1.0 + 2.0 )
+    glVertex3f( 0.0, 1.0, 1.0 + 2.0 )
     # /
-    glVertex3f( 0.0,-1.0,-1.0 )
+    glVertex3f( 0.0,-1.0,-1.0 + 2.0 )
     # -
-    glVertex3f( 0.0,-1.0, 1.0 )
+    glVertex3f( 0.0,-1.0, 1.0 + 2.0 )
     glEnd()
-    glTranslatef( 0.0, 0.0,-2.0 )
 
     glEndList()
 
