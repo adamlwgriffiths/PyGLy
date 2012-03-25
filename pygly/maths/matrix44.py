@@ -93,10 +93,22 @@ def set_translation( matrix, vector, out = None ):
     
     return out
 
+def set_scale( matrix, scale, out = None ):
+    if out == None:
+        out = numpy.empty( (4, 4), dtype = float )
+    
+    out[:] = matrix
+    # apply the scale to the values diagonally
+    # down the matrix
+    out[ 0,0 ] *= scale[ 0 ]
+    out[ 1,1 ] *= scale[ 1 ]
+    out[ 2,2 ] *= scale[ 2 ]
+    
+    return out
 
 if __name__ == "__main__":
     mat44 = identity()
-    # TODO:
+    # TODO: add more tests
     
     eulers = numpy.array( [ 1.0, 2.0, 0.5 ], dtype = float )
     setup( eulers, out = mat44 )
