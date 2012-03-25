@@ -40,8 +40,9 @@ class RenderCallbackNode( SceneNode ):
         
         self.apply_translations()
         
-        if self.render_debug_cube == True:
-            debug_cube.render_debug_cube()
+        # check if we should render some debug info
+        if SceneNode.debug == True:
+            self.render_debug_info()
         
         self.render_callback()
         

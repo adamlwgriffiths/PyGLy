@@ -13,6 +13,7 @@ import maths.quaternion
 import maths.matrix33
 import maths.matrix44
 import debug_cube
+import debug_axis
 
 
     
@@ -28,7 +29,7 @@ class SceneNode( object ):
     render a debug cube to show its
     position within the scene.
     """
-    render_debug_cube = False
+    debug = False
 
     
     def __init__( self, name ):
@@ -232,8 +233,7 @@ class SceneNode( object ):
         matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
         forwardVec = maths.matrix33.inertial_to_object( [ 0.0, 0.0, -1.0 ], matrix )
         forwardVec *= amount
-        self._translation += forwardVec
-        self._set_dirty()
+        self.translate( forwardVec )
     
     def translate_backward( self, amount ):
         self.translate_forward( -amount )
@@ -245,8 +245,7 @@ class SceneNode( object ):
         matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
         rightVec = maths.matrix33.inertial_to_object( [ 1.0, 0.0, 0.0 ], matrix )
         rightVec *= amount
-        self._translation += rightVec
-        self._set_dirty()
+        self.translate( rightVec )
     
     def translate_left( self, amount ):
         self.translate_right( -amount )
@@ -258,8 +257,7 @@ class SceneNode( object ):
         matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
         upVec = maths.matrix33.inertial_to_object( [ 0.0, 1.0, 0.0 ], matrix )
         upVec *= amount
-        self._translation += upVec
-        self._set_dirty()
+        self.translate( upVec )
     
     def translate_down( self, amount ):
         self.translate_up( -amount )
@@ -282,8 +280,12 @@ class SceneNode( object ):
         node._set_dirty()
     
     def remove_child( self, node ):
+        # remove from our list of children
         self.children.remove( node )
+        # unset the node's parent
         node._parent = None
+        # mark the node as dirty
+        node._set_dirty()
     
     @property
     def parent( self ):
@@ -292,8 +294,9 @@ class SceneNode( object ):
         return None
     
     def on_context_lost( self ):
-        # TODO: replace this with a mesh pool
+        # TODO: replace this with a mesh pool or event callback
         # that does this for only objects that need it
+
         # we don't need to do anything
         # but our children might
         for child in self.children:
@@ -308,6 +311,8 @@ class SceneNode( object ):
         
         # add our translation to the matrix
         maths.matrix44.set_translation( matrix, self._translation, out = matrix )
+
+        # TODO: add our scale to the matrix
         
         # convert to ctype for OpenGL
         glMatrix = (GLfloat * matrix.size)(*matrix.flat) 
@@ -316,11 +321,11 @@ class SceneNode( object ):
     def render( self ):
         # apply our transforms
         glPushMatrix()
-        
         self.apply_translations()
         
-        if self.render_debug_cube == True:
-            debug_cube.render_debug_cube()
+        # check if we should render some debug info
+        if SceneNode.debug == True:
+            self.render_debug_info()
         
         # continue on to our children
         for child in self.children:
@@ -328,6 +333,11 @@ class SceneNode( object ):
         
         # undo our transforms
         glPopMatrix()
+
+    def render_debug_info( self ):
+        # render any debug info
+        debug_cube.render()
+        debug_axis.render()
     
 
 
