@@ -65,104 +65,60 @@ class FPS_Controller( object ):
         quat = maths.quaternion.cross_product( pitchQuat, yawQuat )
         maths.quaternion.normalise( quat )
         self.scene_node.orientation = quat
-    
-    def translate_object_forward( self, amount ):
+
+    def translate_up( self, amount ):
         """
-        Moves the object forward relative to
-        it's own orientation.
+        Translates the object up the Y inertial axis.
         """
-        self.scene_node.translate_forward( amount )
-    
-    def translate_object_backward( self, amount ):
+        self.scene_node.translate_inertial_y( amount )
+
+    def translate_down( self, amount ):
         """
-        Moves the object backward relative to
-        it's own orientation.
+        Translates the object down the Y inertial axis.
         """
-        self.scene_node.translateBackward( amount )
-    
-    def translate_inertial_forward( self, amount ):
-        """
-        Moves the object forward along the X,Z
-        plane ignoring the objects orientation.
-        """
-        vec = [ 0.0, 0.0, -1.0 ]
-        rotationQuat = maths.quaternion.set_to_rotation_about_y( self.yaw )
-        
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( rotationQuat )
-        forwardVec = maths.matrix33.inertial_to_object( vec, matrix )
-        forwardVec *= amount
-        
-        self.scene_node.translate( forwardVec )
-    
-    def translate_inertial_backward( self, amount ):
-        """
-        Moves the object backward along the X,Z
-        plane ignoring the objects orientation.
-        """
-        vec = [ 0.0, 0.0, 1.0 ]
-        rotationQuat = maths.quaternion.set_to_rotation_about_y( self.yaw )
-        
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( rotationQuat )
-        backwardVec = maths.matrix33.inertial_to_object( vec, matrix )
-        backwardVec *= amount
-        
-        self.scene_node.translate( backwardVec )
-    
-    def translate_inertial_up( self, amount ):
-        """
-        Moves the object up the Z axis
-        ignoring the objects orientation.
-        """
-        self.scene_node.translate( [ 0.0, amount, 0.0 ] )
-    
-    def translate_inertial_down( self, amount ):
-        """
-        Moves the object down the Z axis
-        ignoring the objects orientation.
-        """
-        self.scene_node.translate( [ 0.0, -amount, 0.0 ] )
-    
-    def translate_object_up( self, amount ):
-        """
-        Moves the object upward relative to
-        it's own orientation.
-        """
-        self.scene_node.translate_up( amount )
-    
-    def translate_object_down( self, amount ):
-        """
-        Moves the object downward relative to
-        it's own orientation.
-        """
-        self.scene_node.translate_down( amount )
+        self.scene_node.translate_inertial_y( -amount )
 
     def translate_forward( self, amount ):
         """
-        The same as translate_inertial_forward.
-        Moves the object forward along the X,Z
+        Translates the object forward along the inertial X,Z
         plane.
         """
-        self.translate_inertial_forward( amount )
+        quat = maths.quaternion.set_to_rotation_about_y( self.yaw )
+
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
+        vec = maths.matrix33.inertial_to_object(
+            [0.0, 0.0,-1.0],
+            matrix
+            )
+        vec *= amount
+        self.scene_node.translate_inertial( vec )
 
     def translate_backward( self, amount ):
         """
-        The same as translate_inertial_backward.
-        Moves the object backward along the X,Z
+        Translates the object backward along the inertial X,Z
         plane.
         """
-        self.translate_inertial_backward( amount )
+        quat = maths.quaternion.set_to_rotation_about_y( self.yaw )
+
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
+        vec = maths.matrix33.inertial_to_object(
+            [0.0, 0.0, 1.0],
+            matrix
+            )
+        vec *= amount
+        self.scene_node.translate_inertial( vec )
     
     def translate_left( self, amount ):
         """
-        In FPS, theres is no difference
-        between intertial left, and object left.
+        Translates the object left along the inertial X,Z
+        plane.
         """
-        self.scene_node.translate_left( amount )
+        self.scene_node.translate_object_x( -amount )
     
     def translate_right( self, amount ):
         """
-        In FPS, theres is no difference
-        between intertial right, and object right.
+        Translates the object right along the inertial X,Z
+        plane.
         """
-        self.scene_node.translate_right( amount )
+        self.scene_node.translate_object_x( amount )
     

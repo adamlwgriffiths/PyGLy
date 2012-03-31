@@ -64,43 +64,37 @@ class SixDOF_Controller( object ):
     
     def translate_forward( self, amount ):
         """
-        Translates the object forward
-        based upon it's current orientation.
+        Translates the object along the -Z object axis.
         """
-        self.scene_node.translate_forward( amount )
+        self.scene_node.translate_object_z( -amount )
     
     def translate_backward( self, amount ):
         """
-        Translates the object backward
-        based upon it's current orientation.
+        Translates the object along the +Z object axis.
         """
-        self.scene_node.translate_backward( amount )
+        self.scene_node.translate_object_z( amount )
     
     def translate_up( self, amount ):
         """
-        Translates the object up
-        based upon it's current orientation.
+        Translates the object along the +Y object axis.
         """
-        self.scene_node.translate_up( amount )
+        self.scene_node.translate_object_y( amount )
     
     def translate_down( self, amount ):
         """
-        Translates the object down
-        based upon it's current orientation.
+        Translates the object along the -Y object axis.
         """
-        self.scene_node.translate_down( amount )
+        self.scene_node.translate_object_y( -amount )
     
     def translate_left( self, amount ):
         """
-        Translates the object left
-        based upon it's current orientation.
+        Translates the object along the -X object axis.
         """
-        self.scene_node.translate_left( amount )
+        self.scene_node.translate_object_x( -amount )
     
     def translate_right( self, amount ):
         """
-        Translates the object right
-        based upon it's current orientation.
+        Translates the object along the +X object axis.
         """
-        self.scene_node.translate_right( amount )
+        self.scene_node.translate_object_x( amount )
     
