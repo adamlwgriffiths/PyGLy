@@ -22,7 +22,7 @@ from pyglet.gl import *
 
 
 
-cly_list = glGenLists( 1 )ass OBJ_Mesh( object ):
+class OBJ_Mesh( object ):
     
     def __init__( self, filename ):
         super( OBJ_Mesh, self ).__init__()
