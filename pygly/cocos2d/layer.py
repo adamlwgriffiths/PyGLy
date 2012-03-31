@@ -32,7 +32,7 @@ class Layer( CocosLayer ):
         """
         Apply the model view transform for the camera
         """
-        self.pygly_viewport.apply_model_view()
+        self.pygly_viewport.push_model_view()
 
     def draw(self, *args, **kwargs):
         """
@@ -54,18 +54,13 @@ class Layer( CocosLayer ):
         # so we must store the existing view matrix
         # so we can re-apply it at the end of our render
         # store the current projection matrix
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        self.pygly_viewport.apply_view_matrix()
+        self.pygly_viewport.push_view_matrix()
 
         # switch back to model view
         # and store the current matrix so
         # we can pop it off afterward
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-
         # apply the camera transforms
-        self.transform()
+        self.pygly_viewport.push_model_view()
 
         # setup the viewport
         self.pygly_viewport.setup_viewport()
@@ -74,13 +69,12 @@ class Layer( CocosLayer ):
 
         # pop our view matrix back to the
         # original cocos matrix
-        glPopMatrix()
+        self.pygly_viewport.pop_model_view()
 
         # disable depth testing
         director.set_depth_test( False )
 
         # re-apply the original projection matrix
-        glMatrixMode( GL_PROJECTION )
-        glPopMatrix()
+        self.pygly_viewport.pop_view_matrix()
         glMatrixMode(GL_MODELVIEW)
 
