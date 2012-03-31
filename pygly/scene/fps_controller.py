@@ -64,7 +64,7 @@ class FPS_Controller( object ):
         
         quat = maths.quaternion.cross_product( pitchQuat, yawQuat )
         maths.quaternion.normalise( quat )
-        self.scene_node.orientation = quat
+        self.scene_node.object_orientation = quat
 
     def translate_up( self, amount ):
         """

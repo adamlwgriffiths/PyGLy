@@ -26,8 +26,8 @@ class SixDOF_Controller( object ):
             quat = maths.quaternion.set_to_rotation_about_y( yaw )
             maths.quaternion.cross_product(
                 quat,
-                self.scene_node.orientation,
-                out = self.scene_node.orientation
+                self.scene_node.object_orientation,
+                out = self.scene_node.object_orientation
                 )
             # we MUST manually set the node as dirty
             # when we update the quaternion in
@@ -39,8 +39,8 @@ class SixDOF_Controller( object ):
             quat = maths.quaternion.set_to_rotation_about_x( pitch )
             maths.quaternion.cross_product(
                 quat,
-                self.scene_node.orientation,
-                out = self.scene_node.orientation
+                self.scene_node.object_orientation,
+                out = self.scene_node.object_orientation
                 )
             # we MUST manually set the node as dirty
             # when we update the quaternion in
@@ -52,8 +52,8 @@ class SixDOF_Controller( object ):
             quat = maths.quaternion.set_to_rotation_about_z( roll )
             maths.quaternion.cross_product(
                 quat,
-                self.scene_node.orientation,
-                out = self.scene_node.orientation
+                self.scene_node.object_orientation,
+                out = self.scene_node.object_orientation
                 )
             # we MUST manually set the node as dirty
             # when we update the quaternion in
