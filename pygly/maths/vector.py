@@ -7,11 +7,7 @@ Created on 30/05/2011
 import numpy
 
 
-x = 0
-y = 1
-z = 2
-
-def setup():
+def zeros():
     return numpy.zeros( 3, dtype = float )
 
 def normalise( vec ):
