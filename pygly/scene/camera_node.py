@@ -13,7 +13,7 @@ import maths.matrix44
 
 from renderer.view_matrix import ViewMatrix
 from scene_node import SceneNode
-import debug_cube
+import debug_axis
 
 
 class CameraNode( SceneNode ):
@@ -32,13 +32,12 @@ class CameraNode( SceneNode ):
         glLoadIdentity()
 
         # convert our quaternion to a matrix
-        #matrix = maths.matrix44.from_inertial_to_object_quaternion( self.orientation )
         matrix = maths.matrix44.from_inertial_to_object_quaternion( self.world_orientation )
-        
+
         # we need to apply the inverse of the matrix
         # we do this by simply transposing the matrix
         matrix = matrix.T
-        
+
         # convert to ctype for OpenGL
         # http://groups.google.com/group/pyglet-users/browse_thread/thread/a2374f3b51263bc0
         glMatrix = (GLfloat * matrix.size)(*matrix.flat)
@@ -48,7 +47,6 @@ class CameraNode( SceneNode ):
         # translate the scene in the opposite direction
         # we have to do this after the orientation
         # use the world translation incase we're attached to something
-        #glTranslatef( -self.translation[ 0 ], -self.translation[ 1 ], -self.translation[ 2 ] )
         world_translation = self.world_translation
         glTranslatef(
             -world_translation[ 0 ],
@@ -63,11 +61,11 @@ class CameraNode( SceneNode ):
     def render( self ):
         # apply our transforms
         glPushMatrix()
-        
         self.apply_translations()
         
-        if self.render_debug_cube == True:
-            debug_cube.render_debug_cube()
+        # check if we should render some debug info
+        if SceneNode.debug == True:
+            self.render_debug_info()
         
         # continue on to our children
         for child in self.children:
@@ -75,4 +73,13 @@ class CameraNode( SceneNode ):
         
         # undo our transforms
         glPopMatrix()
+
+    def render_debug_info( self ):
+        """
+        Renders debug information at the current
+        gl translation.
+        The camera doesn't want to blind itself
+        with a cube, so we don't render that.
+        """
+        debug_axis.render()
     
