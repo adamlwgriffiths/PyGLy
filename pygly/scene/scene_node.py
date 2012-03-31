@@ -2,6 +2,13 @@
 Created on 20/06/2011
 
 @author: adam
+
+TODO: rotate by matrix
+TODO: rotate by eulers
+TODO: rotate_about_axis( axis, radians )
+TODO: look_at_world
+TODO: look_at_local
+TODO: look_at_inertial
 '''
 
 import weakref
@@ -29,7 +36,6 @@ class SceneNode( object ):
     """
     debug = False
 
-    
     def __init__( self, name ):
         super( SceneNode, self ).__init__()
         
@@ -46,7 +52,7 @@ class SceneNode( object ):
         
         self.scale = numpy.ones( (3), dtype = float )
         self.dirty = True
-    
+
     def _set_dirty( self ):
         self.dirty = True
         
@@ -156,112 +162,193 @@ class SceneNode( object ):
             )
         self._set_dirty()
     
-    def rotate_matrix( self, orientation ):
-        # TODO: check for identity matrix
-        # check for the orientation not changing
-        self._set_dirty()
-        raise NotImplementedError(
-            "SceneNode.rotate_matrix not implemented for non local translations"
-            )
-    
-    def rotate_eulers( self, orientation ):
-        self._set_dirty()
-        raise NotImplementedError(
-            "SceneNode.rotate_eulers not implemented for non local translations"
-            )
-    
-    def rotate_about_axis( self, radians, axis ):
-        self._set_dirty()
-        raise NotImplementedError(
-            "SceneNode.rotateAboutAxis not implemented for non local translations"
-            )
-    
-    def pitch( self, amount ):
+    def rotate_object_x( self, radians ):
         """
+        Pitch the node about it's X axis.
+
         Amount > 0 == pitch down
         Amount < 0 == pitch up
         """
-        pitch_quat = maths.quaternion.set_to_rotation_about_x( amount )
-        self.rotate_quaternion( pitch_quat )
-    
-    def pitch_forward( self, amount ):
-        self.pitch( amount )
-    
-    def pitch_backward( self, amount ):
-        self.pitch( -amount )
-    
-    def yaw( self, amount ):
+        quat = maths.quaternion.set_to_rotation_about_x( radians )
+        self.rotate_quaternion( quat )
+
+    def rotate_object_y( self, radians ):
         """
-        Amount < 0 == yaw left.
+        Yaw the node about it's Y axis.
+
         Amount > 0 == yaw right.
+        Amount < 0 == yaw left.
         """
-        yaw_quat = maths.quaternion.set_to_rotation_about_y( amount )
-        self.rotate_quaternion( yaw_quat )
+        quat = maths.quaternion.set_to_rotation_about_y( radians )
+        self.rotate_quaternion( quat )
     
-    def yaw_right( self, amount ):
-        self.yaw( -amount )
-    
-    def yaw_left( self, amount ):
-        self.yaw( amount )
-    
-    def roll( self, amount ):
-        roll_quat = maths._quaternion.set_to_rotation_about_z( amount )
-        self.rotate_quaternion( roll_quat )
-    
-    def roll_right( self, amount ):
-        self.roll( -amount )
-    
-    def roll_left( self, amount ):
-        self.roll( amount )
-        
-    def look_at_world( self, target, upAxis ):
-        self._set_dirty()
-        raise NotImplementedError(
-            "SceneNode.lookAt not implemented for non local translations"
+    def rotate_object_z( self, radians ):
+        """
+        Roll the node about it's Z axis.
+
+        Amount > 0 == roll left.
+        Amount < 0 == roll right.
+        """
+        quat = maths._quaternion.set_to_rotation_about_z( radians )
+        self.rotate_quaternion( quat )
+
+    def _rotate_vector_by_quaternion( self, quat, vec ):
+        matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
+        result_vec = maths.matrix33.inertial_to_object( vec, matrix )
+        return result_vec
+
+    def object_x_axis( self ):
+        """
+        Returns the object's local X axis.
+        This is the X axis rotated by the objects
+        orientation. This is NOT the world orientation.
+        To get inertial X axis, simply use [1.0, 0.0, 0.0].
+        """
+        return self._rotate_vector_by_quaternion(
+            self.orientation,
+            [1.0, 0.0, 0.0]
             )
-    
-    def translate( self, vector ):
-        self._translation += vector
+
+    def object_y_axis( self ):
+        """
+        Returns the object's local Y axis.
+        This is the Y axis rotated by the objects
+        orientation. This is NOT the world orientation.
+        To get inertial Y axis, simply use [0.0, 1.0, 0.0].
+        """
+        return self._rotate_vector_by_quaternion(
+            self.orientation,
+            [0.0, 1.0, 0.0]
+            )
+
+    def object_z_axis( self ):
+        """
+        Returns the object's local Z axis.
+        This is the Z axis rotated by the objects
+        orientation. This is NOT the world orientation.
+        To get inertial Z axis, simply use [0.0, 0.0, 1.0].
+        """
+        return self._rotate_vector_by_quaternion(
+            self.orientation,
+            [0.0, 0.0, 1.0]
+            )
+
+    def world_x_axis( self ):
+        """
+        Returns the object's world X axis.
+        """
+        return self._rotate_vector_by_quaternion(
+            self.world_orientation,
+            [1.0, 0.0, 0.0]
+            )
+
+    def world_y_axis( self ):
+        """
+        Returns the object's world Y axis.
+        """
+        return self._rotate_vector_by_quaternion(
+            self.world_orientation,
+            [0.0, 1.0, 0.0]
+            )
+
+    def world_z_axis( self ):
+        """
+        Returns the object's world Z axis.
+        """
+        return self._rotate_vector_by_quaternion(
+            self.world_orientation,
+            [0.0, 0.0, 1.0]
+            )
+
+    def translate_inertial( self, vec ):
+        """
+        Translates the node along it's inertial axis.
+        The inertial axis of the object does not include
+        it's local orientation.
+        """
+        # apply the translation
+        self._translation += vec
+        self._set_dirty()
+
+    def translate_inertial_x( self, amount ):
+        self._translation += [ float(amount), 0.0, 0.0 ]
+        self._set_dirty()
+
+    def translate_inertial_y( self, amount ):
+        self._translation += [ 0.0, float(amount), 0.0 ]
+        self._set_dirty()
+
+    def translate_inertial_z( self, amount ):
+        self._translation += [ 0.0, 0.0, float(amount) ]
         self._set_dirty()
     
-    def translate_forward( self, amount ):
+    def translate_object( self, vec ):
+        """
+        Translates the node locally.
+        The vector will have the node's current orientation
+        applied to it and then be added to the translation.
+        """
+        # multiply the vector by our local orientation
+        localVec = self._rotate_vector_by_quaternion( self.orientation, vec )
+
+        # apply the translation
+        self._translation += localVec
+        self._set_dirty()
+    
+    def translate_object_x( self, amount ):
+        """
+        Translates the node forward or backward along
+        it's local X axis.
+
+        +X is right.
+        -X is left.
+        """
         if amount == 0.0:
             return
         
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
-        forwardVec = maths.matrix33.inertial_to_object( [ 0.0, 0.0, -1.0 ], matrix )
-        forwardVec *= amount
-        self.translate( forwardVec )
+        vec = [float(amount), 0.0, 0.0]
+        self.translate_object( vec )
     
-    def translate_backward( self, amount ):
-        self.translate_forward( -amount )
-    
-    def translate_right( self, amount ):
+    def translate_object_y( self, amount ):
+        """
+        Translates the node upward or downward along
+        it's local Y axis.
+
+        +Y is upward.
+        -Y is downward
+        """
         if amount == 0.0:
             return
         
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
-        rightVec = maths.matrix33.inertial_to_object( [ 1.0, 0.0, 0.0 ], matrix )
-        rightVec *= amount
-        self.translate( rightVec )
+        vec = [0.0, float(amount), 0.0]
+        self.translate_object( vec )
     
-    def translate_left( self, amount ):
-        self.translate_right( -amount )
-    
-    def translate_up( self, amount ):
+    def translate_object_z( self, amount ):
+        """
+        Translates the node forward or backward along
+        it's local Z axis.
+
+        +Z is backward.
+        -Z is forward.
+        """
         if amount == 0.0:
             return
         
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( self._orientation )
-        upVec = maths.matrix33.inertial_to_object( [ 0.0, 1.0, 0.0 ], matrix )
-        upVec *= amount
-        self.translate( upVec )
-    
-    def translate_down( self, amount ):
-        self.translate_up( -amount )
+        vec = [0.0, 0.0, float(amount)]
+        self.translate_object( vec )
     
     def set_scale( self, scale ):
+        """
+        Sets the current scale.
+        """
         self.scale[:] = scale
+
+    def apply_scale( self, scale ):
+        """
+        Multiplies the existing scale by the
+        specified value.
+        """
+        self.scale *= scale
     
     def add_child( self, node ):
         previous_parent = node.parent
@@ -345,6 +432,23 @@ class SceneNode( object ):
 
 
 if __name__ == "__main__":
+    import common.list
+    import math
+
+    def compare_float_vector( a, b, tolerance = 0.1 ):
+        for i, j in zip( a, b ):
+            if (i - tolerance) > j:
+                return False
+            if (i + tolerance) < j:
+                return False
+        return True
+    # test our above test function
+    # test-ception
+    assert compare_float_vector( [1.0,0.0], [1.0,0.0] )
+    assert compare_float_vector( [1.0,0.0], [0.0,1.0] ) == False
+    assert compare_float_vector( [1.0,0.0], [1.01,0.0] )
+    assert compare_float_vector( [1.0,0.0], [1.11,0.0] ) == False
+
     """
     Tree methods
     """
@@ -378,4 +482,94 @@ if __name__ == "__main__":
     assert child2_2 in child1_1.children
     assert child2_2 not in child1_2.children
     
+    """
+    Rotation and Inheritance
+    """
+
+    # we'll add a child to a root node
+    # we'll move the child
+    # rotate the root
+    # and check the child is where it should be
+    # the child should be moved somewhere that will
+    # make it easy to check
+
+    root = SceneNode( '/root' )
+    assert common.list.are_equivalent(root.object_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(root.object_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(root.object_z_axis(), [0.0,0.0,1.0])
+    assert common.list.are_equivalent(root.world_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(root.world_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(root.world_z_axis(), [0.0,0.0,1.0])
+
+    child = SceneNode( '/child' )
+    assert common.list.are_equivalent(child.object_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(child.object_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(child.object_z_axis(), [0.0,0.0,1.0])
+    assert common.list.are_equivalent(child.world_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(child.world_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(child.world_z_axis(), [0.0,0.0,1.0])
+
+    root.add_child( child )
+    assert common.list.are_equivalent(root.object_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(root.object_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(root.object_z_axis(), [0.0,0.0,1.0])
+    assert common.list.are_equivalent(root.world_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(root.world_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(root.world_z_axis(), [0.0,0.0,1.0])
+    assert common.list.are_equivalent(child.object_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(child.object_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(child.object_z_axis(), [0.0,0.0,1.0])
+    assert common.list.are_equivalent(child.world_x_axis(), [1.0,0.0,0.0])
+    assert common.list.are_equivalent(child.world_y_axis(), [0.0,1.0,0.0])
+    assert common.list.are_equivalent(child.world_z_axis(), [0.0,0.0,1.0])
+
+    # rotate 180 deg / 1pi about the y axis (yaw)
+    root.rotate_object_y( math.pi )
+    # ensure the object x axis has rotated to the left
+    assert compare_float_vector(root.object_x_axis(), [-1.0,0.0,0.0])
+    assert compare_float_vector(root.object_y_axis(), [0.0,1.0,0.0])
+    assert compare_float_vector(root.object_z_axis(), [0.0,0.0,-1.0])
+    assert compare_float_vector(root.world_x_axis(), [-1.0,0.0,0.0])
+    assert compare_float_vector(root.world_y_axis(), [0.0,1.0,0.0])
+    assert compare_float_vector(root.world_z_axis(), [0.0,0.0,-1.0])
+    # ensure the child's object x axis has remaind unchanged
+    assert compare_float_vector(child.object_x_axis(), [1.0,0.0,0.0])
+    assert compare_float_vector(child.object_y_axis(), [0.0,1.0,0.0])
+    assert compare_float_vector(child.object_z_axis(), [0.0,0.0,1.0])
+    assert compare_float_vector(child.world_x_axis(), [-1.0,0.0,0.0])
+    assert compare_float_vector(child.world_y_axis(), [0.0,1.0,0.0])
+    assert compare_float_vector(child.world_z_axis(), [0.0,0.0,-1.0])
+
+    # rotate 180 deg / 1pi about the x axis (pitch)
+    root.rotate_object_x( math.pi )
+    # ensure the object y axis has inverted to the bottom
+    # the z axis will have inverted again
+    assert compare_float_vector(root.object_x_axis(), [-1.0,0.0,0.0])
+    assert compare_float_vector(root.object_y_axis(), [0.0,-1.0,0.0])
+    assert compare_float_vector(root.object_z_axis(), [0.0,0.0,1.0])
+    assert compare_float_vector(root.world_x_axis(), [-1.0,0.0,0.0])
+    assert compare_float_vector(root.world_y_axis(), [0.0,-1.0,0.0])
+    assert compare_float_vector(root.world_z_axis(), [0.0,0.0,1.0])
+    # ensure the child's object y axis has remaind unchanged
+    assert compare_float_vector(child.object_x_axis(), [1.0,0.0,0.0])
+    assert compare_float_vector(child.object_y_axis(), [0.0,1.0,0.0])
+    assert compare_float_vector(child.object_z_axis(), [0.0,0.0,1.0])
+    assert compare_float_vector(child.world_x_axis(), [-1.0,0.0,0.0])
+    assert compare_float_vector(child.world_y_axis(), [0.0,-1.0,0.0])
+    assert compare_float_vector(child.world_z_axis(), [0.0,0.0,1.0])
+
+
+    """
+    Scale
+    """
+    root = SceneNode( '/root' )
+    assert common.list.are_equivalent(root.scale, [1.0,1.0,1.0])
+    root.set_scale( [2.0, 2.0, 2.0] )
+    assert common.list.are_equivalent(root.scale, [2.0,2.0,2.0])
+    root.set_scale( [1.0, 1.0, 1.0] )
+    assert common.list.are_equivalent(root.scale, [1.0,1.0,1.0])
+    root.apply_scale( [2.0, 2.0, 2.0] )
+    assert common.list.are_equivalent(root.scale, [2.0,2.0,2.0])
+    root.apply_scale( [2.0, 2.0, 2.0] )
+    assert common.list.are_equivalent(root.scale, [4.0,4.0,4.0])
 
