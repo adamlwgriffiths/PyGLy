@@ -273,14 +273,29 @@ class SceneNode( object ):
         self._set_dirty()
 
     def translate_inertial_x( self, amount ):
+        """
+        Translates the node along it's inertial X axis.
+        The inertial axis of the object does not include
+        it's local orientation.
+        """
         self._translation += [ float(amount), 0.0, 0.0 ]
         self._set_dirty()
 
     def translate_inertial_y( self, amount ):
+        """
+        Translates the node along it's inertial Y axis.
+        The inertial axis of the object does not include
+        it's local orientation.
+        """
         self._translation += [ 0.0, float(amount), 0.0 ]
         self._set_dirty()
 
     def translate_inertial_z( self, amount ):
+        """
+        Translates the node along it's inertial Z axis.
+        The inertial axis of the object does not include
+        it's local orientation.
+        """
         self._translation += [ 0.0, 0.0, float(amount) ]
         self._set_dirty()
     
@@ -353,6 +368,9 @@ class SceneNode( object ):
         self.scale *= scale
     
     def add_child( self, node ):
+        """
+        Attaches a child to the node.
+        """
         previous_parent = node.parent
         if previous_parent != None:
             previous_parent.remove_child( node )
@@ -367,6 +385,12 @@ class SceneNode( object ):
         node._set_dirty()
     
     def remove_child( self, node ):
+        """
+        Removes a child from the node.
+
+        @raise KeyError: Raised if the node
+        is not a child of the node.
+        """
         # remove from our list of children
         self.children.remove( node )
         # unset the node's parent
@@ -376,11 +400,24 @@ class SceneNode( object ):
     
     @property
     def parent( self ):
+        """
+        A property accessable as a member.
+        Returns the parent of the node or None
+        if there isn't one.
+        """
         if self._parent != None:
             return self._parent()
         return None
     
     def on_context_lost( self ):
+        """
+        Called when the window loses it's graphical
+        context.
+        TODO: This needs to be replaced with a per-window
+        call, not per tree. As there can be multiple
+        windows. Moving windows across desktops can
+        trigger this.
+        """
         # TODO: replace this with a mesh pool or event callback
         # that does this for only objects that need it
 
@@ -390,6 +427,11 @@ class SceneNode( object ):
             child.on_context_lost()
     
     def apply_translations( self ):
+        """
+        Applies the node's translation, orientation and
+        scale to the current opengl matrix.
+        Does NOT call glPushMatrix or glPopMatrix.
+        """
         # matrix transformations must be done in order
         # orientation and scaling
         # finally translation
@@ -411,6 +453,14 @@ class SceneNode( object ):
         glMultMatrixf( glMatrix )
     
     def render( self ):
+        """
+        Does the following in order:
+         Pushes the current gl matrix.
+         Applies the node's translations.
+         Renders debug info if enabled.
+         Calls 'render' on all children.
+         Pops the gl matrix.
+        """
         # apply our transforms
         glPushMatrix()
         self.apply_translations()
@@ -427,6 +477,10 @@ class SceneNode( object ):
         glPopMatrix()
 
     def render_debug_info( self ):
+        """
+        Renders debug information at the current
+        gl translation.
+        """
         # render any debug info
         debug_cube.render()
         debug_axis.render()
