@@ -54,6 +54,11 @@ class SceneNode( object ):
         self.dirty = True
 
     def _set_dirty( self ):
+        """
+        Marks the node and all children as 'dirty'.
+        A 'dirty' node is one that needs to have its
+        world translation and orientation updated.
+        """
         self.dirty = True
         
         # mark our children as dirty
@@ -61,6 +66,12 @@ class SceneNode( object ):
             child._set_dirty()
     
     def _update_world_translations( self ):
+        """
+        Called on 'dirty' nodes.
+        Re-calculates the node's world orientation and
+        translation based upon the node's parent and its
+        own orientation and translation.
+        """
         if self.dirty == False:
             return
         
@@ -87,10 +98,16 @@ class SceneNode( object ):
                 )
         self.dirty = False
     
-    def _get_local_translation( self ):
+    def _get_inertial_translation( self ):
+        """
+        Returns the current inertial translation.
+        """
         return self._translation
     
-    def _set_local_translation( self, translation ):
+    def _set_inertial_translation( self, translation ):
+        """
+        Sets the inertial translation of the node.
+        """
         # check for the translation not changing
         if numpy.array_equal( translation, [ 0.0, 0.0, 0.0 ] ):
             # don't bother to update anything
@@ -99,9 +116,22 @@ class SceneNode( object ):
         self._translation[:] = translation
         self._set_dirty()
     
-    translation = property( _get_local_translation, _set_local_translation )
+    """
+    Property that enables access to the inertial translation
+    of the node directly.
+    Uses the _get_inertial_translation and
+    _set_inertial_translation methods.
+    """
+    inertial_translation = property( _get_inertial_translation, _set_inertial_translation )
     
     def _get_world_translation( self ):
+        """
+        Returns the node's world translation.
+
+        If the node is marked as 'dirty', will
+        automatically call _update_world_translations
+        and return the calculated value.
+        """
         if self.dirty == False:
             # world translation is up to date
             return self._world_translation
@@ -118,10 +148,16 @@ class SceneNode( object ):
     
     world_translation = property( _get_world_translation, _set_world_translation )
     
-    def _get_local_orientation( self ):
+    def _get_object_orientation( self ):
+        """
+        Returns the node's object orientation
+        """
         return self._orientation
     
-    def _set_local_orientation( self, orientation ):
+    def _set_object_orientation( self, orientation ):
+        """
+        Stores the node's object orientation
+        """
         # check for the orientation not changing
         if numpy.array_equal( self._orientation, orientation ):
             # don't bother to update anything
@@ -130,9 +166,22 @@ class SceneNode( object ):
         self._orientation[:] = orientation
         self._set_dirty()
     
-    orientation = property( _get_local_orientation, _set_local_orientation )
+    """
+    Property that enables access to the node's
+    object rotation.
+    Uses the _get_object_orientation and
+    _set_object_orientation methods.
+    """
+    object_orientation = property( _get_object_orientation, _set_object_orientation )
     
     def _get_world_orientation( self ):
+        """
+        Returns the node's world orientation.
+
+        Automatically calls _update_world_translations
+        if the node is marked as 'dirty' and returns
+        the calculated result.
+        """
         if self.dirty == False:
             return self._world_orientation
         else:
@@ -142,14 +191,27 @@ class SceneNode( object ):
             return self._world_orientation
     
     def _set_world_orientation( self, orientation ):
+        """
+        Set's the node's world orientation.
+        """
         self._set_dirty()
         raise NotImplementedError(
             "SceneNode._setWorldOrientation not implemented"
             )
     
+    """
+    Property that enables access to the node's
+    world orientation.
+    Uses the _get_world_orientation and
+    _set_world_orientation methods.
+    """
     world_orientation = property( _get_world_orientation, _set_world_orientation )
     
-    def rotate_quaternion( self, orientation ):
+    def rotate_object_quaternion( self, orientation ):
+        """
+        Rotates the node by the specified orientation.
+        The quaternion is in object space.
+        """
         # check for the orientation not changing
         if numpy.array_equal( orientation, [ 1.0, 0.0, 0.0, 0.0 ] ):
             # don't bother to update anything
@@ -172,7 +234,7 @@ class SceneNode( object ):
         Amount < 0 == pitch up
         """
         quat = maths.quaternion.set_to_rotation_about_x( radians )
-        self.rotate_quaternion( quat )
+        self.rotate_object_quaternion( quat )
 
     def rotate_object_y( self, radians ):
         """
@@ -182,7 +244,7 @@ class SceneNode( object ):
         Amount < 0 == yaw left.
         """
         quat = maths.quaternion.set_to_rotation_about_y( radians )
-        self.rotate_quaternion( quat )
+        self.rotate_object_quaternion( quat )
     
     def rotate_object_z( self, radians ):
         """
@@ -192,7 +254,7 @@ class SceneNode( object ):
         Amount < 0 == roll right.
         """
         quat = maths._quaternion.set_to_rotation_about_z( radians )
-        self.rotate_quaternion( quat )
+        self.rotate_object_quaternion( quat )
 
     def _rotate_vector_by_quaternion( self, quat, vec ):
         matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
@@ -207,7 +269,7 @@ class SceneNode( object ):
         To get inertial X axis, simply use [1.0, 0.0, 0.0].
         """
         return self._rotate_vector_by_quaternion(
-            self.orientation,
+            self.object_orientation,
             [1.0, 0.0, 0.0]
             )
 
@@ -219,7 +281,7 @@ class SceneNode( object ):
         To get inertial Y axis, simply use [0.0, 1.0, 0.0].
         """
         return self._rotate_vector_by_quaternion(
-            self.orientation,
+            self.object_orientation,
             [0.0, 1.0, 0.0]
             )
 
@@ -231,7 +293,7 @@ class SceneNode( object ):
         To get inertial Z axis, simply use [0.0, 0.0, 1.0].
         """
         return self._rotate_vector_by_quaternion(
-            self.orientation,
+            self.object_orientation,
             [0.0, 0.0, 1.0]
             )
 
@@ -306,7 +368,10 @@ class SceneNode( object ):
         applied to it and then be added to the translation.
         """
         # multiply the vector by our local orientation
-        localVec = self._rotate_vector_by_quaternion( self.orientation, vec )
+        localVec = self._rotate_vector_by_quaternion(
+            self.object_orientation,
+            vec
+            )
 
         # apply the translation
         self._translation += localVec
