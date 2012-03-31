@@ -34,11 +34,11 @@ def render( window, viewports ):
         # apply the cameras model view
         viewport.push_model_view()
         # setup our open gl state for the viewport
-        viewport.setup_viewport()
+        viewport.push_viewport_attributes()
         # render the scene
         viewport.render( window )
         # undo any opengl state we set for the viewport
-        viewport.tear_down_viewport()
+        viewport.pop_viewport_attributes()
         # undo our camera model view
         viewport.pop_model_view()
         # undo our camera projection matrix

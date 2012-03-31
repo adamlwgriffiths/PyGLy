@@ -93,18 +93,17 @@ class Viewport( object ):
         if self.scene_node != None:
             self.scene_node.render()
 
+    def push_viewport_attributes( self ):
+        glPushAttrib( GL_ALL_ATTRIB_BITS )
+        self.setup_viewport()
+
+    def pop_viewport_attributes( self ):
+        glPopAttrib()
+
     def setup_viewport( self ):
         """
         Over-ride this method to customise
         the opengl settings for this viewport
-        """
-        pass
-
-    def tear_down_viewport( self ):
-        """
-        Over-ride this method to undo
-        any customizations done in
-        'setup_viewport'
         """
         pass
 
