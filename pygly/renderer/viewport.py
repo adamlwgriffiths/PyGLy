@@ -103,9 +103,20 @@ class Viewport( object ):
     def setup_viewport( self ):
         """
         Over-ride this method to customise
-        the opengl settings for this viewport
+        the opengl settings for this viewport.
+
+        The default method sets the following:
+        -glEnable( GL_DEPTH_TEST )
+        -glShadeModel( GL_SMOOTH )
+        -glEnable( GL_LIGHTING )
         """
-        pass
+        # enable some default options
+        # use the z-buffer when drawing
+        glEnable( GL_DEPTH_TEST )
+        # enable smooth shading
+        glShadeModel( GL_SMOOTH )
+        # setup lighting for our viewport
+        glEnable( GL_LIGHTING )
 
     @property
     def x( self ):
