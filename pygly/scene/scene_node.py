@@ -155,9 +155,11 @@ class SceneNode( object ):
             # don't bother to update anything
             return
         
+        # order of operations matters here
+        # our orientation must be the second parameter
         maths.quaternion.cross_product(
-            self._orientation,
             orientation,
+            self._orientation,
             out = self._orientation
             )
         self._set_dirty()
