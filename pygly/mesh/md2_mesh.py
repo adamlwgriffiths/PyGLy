@@ -299,9 +299,12 @@ class MD2_Mesh( object ):
         # read all the data from the file
         self.header = self.read_header( f )
         self.skins = self.read_skins( f, self.header )
-        self.tcs = self.read_texture_coordinates( f, self.header )
+        raw_tcs = self.read_texture_coordinates( f, self.header )
         self.triangles = self.read_triangles( f, self.header )
         raw_frames = self.read_frames( f, self.header )
+
+        # convert our tcs to their actual values
+        self.tcs = raw_tcs[ self.triangles.tc_indices ]
 
         # we don't store the raw frame data, instead we'll make
         # rendering faster and convert the frame indices to
@@ -512,21 +515,13 @@ class MD2_Mesh( object ):
             # ensure our normals are vector length
             normals = maths.vector.normalise( normals )
 
-        # convert our tcs to their actual values
-        tcs = self.tcs[ self.triangles.tc_indices ]
-
-        # flatten our arrays
-        vertex_flat = vertices.flatten()
-        normal_flat = normals.flatten()
-        tcs_flat = tcs.flatten()
-
         # pass to opengl
         pyglet.graphics.draw(
             vertices.size / 3,
             GL_TRIANGLES,
-            ('v3f/static', vertex_flat),
-            ('n3f/static', normal_flat),
-            ('t2f/static', tcs_flat)
+            ('v3f/static', vertices.flatten()),
+            ('n3f/static', normals.flatten()),
+            ('t2f/static', self.tcs.flatten())
             )
 
     def render( self ):
@@ -553,7 +548,7 @@ class MD2_Mesh( object ):
         glEnd()
 
         # find the TCs for each triangle
-        tcs_triangles = self.tcs[ self.triangles.tc_indices ]
+        tcs_triangles = numpy.array( self.tcs )
         tcs_triangles *= size
         tcs_triangles += origin
 
