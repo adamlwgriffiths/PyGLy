@@ -114,6 +114,14 @@ class Viewport( object ):
         glEnable( GL_DEPTH_TEST )
         # enable smooth shading
         glShadeModel( GL_SMOOTH )
+        # because we use glScale for scene graph
+        # scaling, normals will get affected too.
+        # GL_RESCALE_NORMAL applies the inverse
+        # value of the current matrice's scale
+        # this is new in OGL1.2 and SHOULD be
+        # faster than glEnable( GL_NORMALIZE )
+        # http://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
+        glEnable( GL_RESCALE_NORMAL )
 
     @property
     def x( self ):
