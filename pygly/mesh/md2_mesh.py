@@ -445,8 +445,6 @@ class MD2_Mesh( object ):
         # remove any \x00 characters as they confuse python
         name = name.strip( '\x00' )
 
-        print "MD2_Mesh: Reading frame %s" % name
-
         # frame has 3 unsigned bytes for the vertex coordinates
         # and 1 unsigned byte for the normal index
         frame_vertex_data = numpy.array(
@@ -537,7 +535,7 @@ class MD2_Mesh( object ):
 
         # we want to draw just the lines of the triangles
         # so change our polymode to line only
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
 
         # draw an ourline of the texture
         glBegin( GL_QUADS )
