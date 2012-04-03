@@ -498,12 +498,10 @@ class MD2_Mesh( object ):
         vertices = self.frames[ current_frame ].vertices
         normals = self.frames[ current_frame ].normals
 
-        #vertices = vertices * 5.0
-
         # interpolate between this frame and the next
         # only do this is the time is not 0.0
         # and we're not at the end of the list
-        if (delta > 0.0) and (current_frame < (len(self.frames) - 1)):
+        if delta > 0.0:
             next_vertices = self.frames[ current_frame + 1 ].vertices
             next_normals = self.frames[ current_frame + 1 ].normals
 
