@@ -11,21 +11,26 @@ def zeros():
     return numpy.zeros( 3, dtype = float )
 
 def normalise( vec ):
-    # single vector
-    vec /= numpy.linalg.norm( vec )
-    return vec
-
-def normalise_list( list ):
     """
-    @param a: a 1d array with 3 elements (a vector) (eg. numpy.array([ x, y, z ]) or a
-    Nx3 array (eg. numpy.array([ [x1, y1, z1], [x2, y2, z2] ]).
+    Normalises a vector or a list of vectors to unit length.
+    The value will be changed in place. The return value
+    is for convenience.
+
+    @param vec: a 1d array with 3 elements (a vector)
+    (eg. numpy.array([ x, y, z ]) or a Nx3 array
+    (eg. numpy.array([ [x1, y1, z1], [x2, y2, z2] ]).
     @return the normalised value
     """
-    # list of vectors
-    lengths = numpy.apply_along_axis( numpy.linalg.norm, 1, list )
-    list /= lengths.reshape( (-1, 1) )
-    return list
-    
+    if vec.ndim > 1:
+        # list of vectors
+        lengths = numpy.apply_along_axis( numpy.linalg.norm, 1, vec )
+        vec /= lengths.reshape( (-1, 1) )
+        return vec
+    else:
+        # single vector
+        vec /= numpy.linalg.norm( vec )
+        return vec
+
 def length( vec ):
     # single vector
     return numpy.linalg.norm( vec )
@@ -72,7 +77,7 @@ if __name__ == "__main__":
         [ 0.0, 2.0, 0.0 ]
         ])
     print "input %s" % str(vecs)
-    normalise_list( vecs )
+    normalise( vecs )
     print "output %s" % str(vecs)
     
     for vec in vecs:
