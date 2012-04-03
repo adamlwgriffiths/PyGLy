@@ -37,7 +37,6 @@ class RenderCallbackNode( SceneNode ):
     def render( self ):
         # apply our transforms
         glPushMatrix()
-        
         self.apply_translations()
         
         # check if we should render some debug info
