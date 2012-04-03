@@ -59,6 +59,25 @@ def cross( vector1, vector2 ):
     """
     return numpy.cross( vector1, vector2 )
 
+def interpolate( v1, v2, delta ):
+    """
+    Interpolates between 2 arrays of vectors (shape = N,3)
+    by the specified delta (0.0 <= delta <= 1.0).
+    """
+    # scale the difference based on the time
+    # we must do it this 'unreadable' way to avoid
+    # loss of precision.
+    # the 'readable' method (f_now = f_0 + (f1 - f0) * delta)
+    # causes floating point errors due to the small values used
+    # in md2 files and the values become corrupted.
+    # this horrible code curtousey of this comment:
+    # http://stackoverflow.com/questions/5448322/temporal-interpolation-in-numpy-matplotlib
+    t = delta
+    t0 = 0.0
+    t1 = 1.0
+    delta_t = t1 - t0
+    return (t1 - t) / delta_t * v1 + (t - t0) / delta_t * v2
+
 
 if __name__ == "__main__":
     import math
