@@ -3,8 +3,13 @@ Created on 23/03/2012
 
 @author: adam
 
-TODO: the viewport will need to handle cocos
-translations of the layer itself
+TODO: add support for layer translation
+TODO: add support for layer rotation
+TODO: add support for layer scaling
+To do these we need to use the current view
+matrix to determine how far to move it to
+get '1 pixel' accuracy as cocos works on
+a pixel scale.
 '''
 
 from cocos.layer.base_layers import Layer as CocosLayer
