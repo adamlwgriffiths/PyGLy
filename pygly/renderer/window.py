@@ -47,3 +47,8 @@ def render( window, viewports ):
     # reset the viewport to the full window
     glViewport( 0, 0, window.width, window.height )
 
+    # set matrix back to model view just incase
+    # the last call was to pop_view_matrix which
+    # sets it to GL_PROJECTION
+    glMatrixMode( GL_MODELVIEW )
+
