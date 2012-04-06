@@ -4,7 +4,7 @@ Created on 23/03/2012
 @author: adam
 
 TODO: apply layer rotation to the model view
-TODO: replace viewport scaling to instead modify the view matrix
+TODO: apply layer scaling to the model view
 '''
 
 import numpy
@@ -53,37 +53,26 @@ class Layer( CocosLayer ):
         # the position and anchor is in pixels
         # our viewport is 0->1
         # so we must convert from pixels to %
-        anchor = numpy.array(
-            [
-                self.anchor_x,
-                self.anchor_y
-                ],
-            dtype = numpy.float32
-            )
 
         # convert the bottom left and top right
         # to a vector
+        # make them relative to the anchor point
         # bottom left
         bl = numpy.array(
             [
-                matrix.c,
-                matrix.g
+                self.anchor_x - matrix.c,
+                self.anchor_y - matrix.g
                 ],
             dtype = numpy.float32
             )
         # top right
-        # assume our size == window size
         tr = numpy.array(
             [
-                director.window.width,
-                director.window.height
+                director.window.width - anchor_x
+                director.window.height - anchor_y
                 ],
             dtype = numpy.float32
             )
-
-        # make them relative to the anchor point
-        bl -= anchor
-        tr -= anchor
 
         # scale the vectors by the layer's scale
         # matrix.a = X scale
@@ -91,31 +80,23 @@ class Layer( CocosLayer ):
         bl *= [ matrix.a, matrix.f ]
         tr *= [ matrix.a, matrix.f ]
 
-        # convert the anchor to a % value
-        window_size = [
-            director.window.width,
-            director.window.height
-            ]
-
-        # convert back to window co-ordinates
-        # instead of being relative to anchor
-        bl += anchor
-        tr += anchor
-
         # make the vectors a % value
         bl /= director.window.width
         tr /= director.window.width
 
-        # convert our top right to width / height
-        tr -= bl
+        # convert the anchor to a % value
+        relative_anchor = (
+            self.anchor_x / director.window.width,
+            self.anchor_y / director.window.height
+            )
 
         # matrix.c = X pos
         # matrix.g = Y pos
         self.pygly_viewport.dimensions = (
-            bl[ 0 ],
-            bl[ 1 ],
-            tr[ 0 ],
-            tr[ 1 ]
+            anchor[ 0 ] + bl[ 0 ],
+            anchor[ 1 ] + bl[ 1 ],
+            anchor[ 0 ] + tr[ 0 ],
+            anchor[ 1 ] + tr[ 1 ]
             )
 
         # enable depth testing
