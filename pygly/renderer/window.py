@@ -13,10 +13,10 @@ def render( window, viewports ):
     # set ourself as the active window
     window.switch_to()
 
-    # clear the screen
-    # we'll get the viewports to clear the depth buffers
-    glClear( GL_COLOR_BUFFER_BIT )
+    # don't clear the screen incase there are
+    # more viewports than just these
 
+    # iterate through all of our viewports
     for viewport in viewports:
         # activate the viewport
         viewport.switch_to( window )
@@ -44,6 +44,6 @@ def render( window, viewports ):
         # undo our camera projection matrix
         viewport.pop_view_matrix()
 
-    # set the viewport to the full window
+    # reset the viewport to the full window
     glViewport( 0, 0, window.width, window.height )
 
