@@ -30,7 +30,7 @@ def render( window, viewports ):
             )
 
         # apply the cameras projection matrix
-        viewport.push_view_matrix()
+        viewport.push_view_matrix( window )
         # apply the cameras model view
         viewport.push_model_view()
         # setup our open gl state for the viewport

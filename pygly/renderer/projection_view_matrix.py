@@ -29,23 +29,30 @@ class ProjectionViewMatrix( ViewMatrix ):
         self.near_clip = near_clip
         self.far_clip = far_clip
 
-    def push_view_matrix( self, viewport ):
+    def _calculate_near_plane_size( self, window, viewport ):
+        # http://www.songho.ca/opengl/gl_transform.html
+        # http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
+        # http://steinsoft.net/index.php?site=Programming/Code%20Snippets/OpenGL/gluperspective&printable=1
+        aspect_ratio = viewport.aspect_ratio( window )
+        tangent = math.radians( self.fov )
+        height = self.near_clip * tangent
+        width = height * aspect_ratio
+
+        return width * 2.0, height * 2.0
+
+    def push_view_matrix( self, window, viewport ):
         # setup our projection matrix
         glMatrixMode( GL_PROJECTION )
         glPushMatrix()
         glLoadIdentity()
 
-        # http://www.songho.ca/opengl/gl_transform.html
-        tangent = math.radians( self.fov )
-
-        # tangent of half fovY
-        aspect_ratio = float(viewport.width) / float(viewport.height)
-
-        # half height of near plane
-        height = self.near_clip * tangent
-
-        # half width of near plane
-        width = height * aspect_ratio
+        # calculate the near plane's size
+        width, height = self._calculate_near_plane_size(
+            window,
+            viewport
+            )
+        width /= 2.0
+        height /= 2.0
 
         glFrustum(
             -width, width,

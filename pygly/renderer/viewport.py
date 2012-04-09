@@ -38,6 +38,22 @@ class Viewport( object ):
             int( self.height * window.height )
             )
 
+    def aspect_ratio( self, window ):
+        """
+        Returns the aspect ratio of the viewport.
+
+        Aspect ratio is the ratio of width to height
+        a value of 2.0 means width is 2*height
+        """
+        size = self.size_in_pixels( window )
+        return size[ 0 ] / size[ 1 ]
+
+    def size_in_pixels( self, window ):
+        return [
+            int( self.width * window.width ),
+            int( self.height * window.height )
+            ]
+
     def clear(
         self,
         window,
@@ -60,12 +76,15 @@ class Viewport( object ):
 
         glDisable( GL_SCISSOR_TEST )
     
-    def push_view_matrix( self ):
+    def push_view_matrix( self, window ):
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
             # apply our projection matrix
-            self.camera().view_matrix.push_view_matrix( self )
+            self.camera().view_matrix.push_view_matrix(
+                window,
+                self
+                )
 
     def pop_view_matrix( self ):
         # the camera is a weak pointer
