@@ -174,10 +174,14 @@ if __name__ == "__main__":
     lengths = length( vecs )
     for value in lengths:
         assert value == 2.0
-    
+
     vec = numpy.array([ 1.0, 1.0, 1.0 ])
     normalise( vec )
     value = length( vec )
     assert value == 1.0
+
+    set_length( vec, 2.0 )
+    value = length( vec )
+    assert value == 2.0
 
 
