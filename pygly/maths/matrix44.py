@@ -64,7 +64,7 @@ def from_object_to_inertial_quaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    Matrix33.from_object_to_inertial_quaternion( quat, out = mat33 )
+    maths.matrix33.from_object_to_inertial_quaternion( quat, out = mat33 )
     
     return out
 
@@ -79,7 +79,7 @@ def inertial_to_object( vector, matrix, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    Matrix33.inertial_to_object( vector, out = mat33 )
+    maths.matrix33.inertial_to_object( vector, out = mat33 )
     
     return out
 
