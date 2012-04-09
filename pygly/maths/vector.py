@@ -32,13 +32,23 @@ def normalise( vec ):
         return vec
 
 def length( vec ):
-    # single vector
-    return numpy.linalg.norm( vec )
+    """
+    Returns the length of a vector or a list of vectors
 
-def lengths( list ):
-    # list of vectors
-    lengths = numpy.apply_along_axis( numpy.linalg.norm, 1, list )
-    return lengths.reshape( (-1, 1) )
+    @param vec: a 1d array with 3 elements (a vector)
+    (eg. numpy.array([ x, y, z ]) or a Nx3 array
+    (eg. numpy.array([ [x1, y1, z1], [x2, y2, z2] ]).
+    @return The length of the vectors.
+    If a 1d array was passed, it will be an integer.
+    If a 2d array was passed, it will be a list.
+    """
+    if vec.ndim > 1:
+        # list of vectors
+        lengths = numpy.apply_along_axis( numpy.linalg.norm, 1, vec )
+        return lengths.reshape( (-1, 1) )
+    else:
+        # single vector
+        return numpy.linalg.norm( vec )
 
 def dot( a, b, out = None ):
     """
@@ -109,7 +119,7 @@ if __name__ == "__main__":
         assert length( vec ) == 1.0
     
     # group length calc
-    lengths = lengths( vecs )
+    lengths = length( vecs )
     for value in lengths:
         assert value == 1.0
     
