@@ -64,6 +64,37 @@ def length( vec ):
 
     return lengths
 
+def set_length( vec, length ):
+    """
+    Changes the length of an Nd list of vectors or
+    a single vector to 'length'.
+    The value will be changed in place. The return value
+    is for convenience.
+
+    @param vec: an Nd array with the final dimension
+    being size 3 (a vector).
+    (eg. numpy.array([ x, y, z ]) or a Nx3 array
+    (eg. numpy.array([ [x1, y1, z1], [x2, y2, z2] ]).
+    This value will be updated in place.
+    @return the updated vectors
+    """
+    lengths = numpy.apply_along_axis(
+        numpy.linalg.norm,
+        vec.ndim - 1,
+        vec
+        )
+    shape = list( vec.shape )
+    shape[ -1 ] = 1
+    lengths.reshape( shape )
+
+    scale = numpy.empty_like( lengths )
+    scale.fill( length )
+    scale /= lengths
+
+    vec *= scale.reshape( shape )
+
+    return vec
+
 def dot( a, b, out = None ):
     """
     @param a: a 1d array with 3 elements (a vector)
@@ -138,6 +169,11 @@ if __name__ == "__main__":
     lengths = length( vecs )
     for value in lengths:
         assert value == 1.0
+
+    set_length( vecs, 2.0 )
+    lengths = length( vecs )
+    for value in lengths:
+        assert value == 2.0
     
     vec = numpy.array([ 1.0, 1.0, 1.0 ])
     normalise( vec )
