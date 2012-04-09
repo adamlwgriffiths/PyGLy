@@ -22,6 +22,9 @@ class ProjectionViewMatrix( ViewMatrix ):
         ):
         super( ProjectionViewMatrix, self ).__init__()
 
+        if far_clip <= near_clip:
+            raise ValueError( "Far clip cannot be less than near clip" )
+
         self.fov = fov
         self.near_clip = near_clip
         self.far_clip = far_clip
