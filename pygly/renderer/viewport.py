@@ -46,7 +46,8 @@ class Viewport( object ):
         a value of 2.0 means width is 2*height
         """
         size = self.size_in_pixels( window )
-        return size[ 0 ] / size[ 1 ]
+        aspect_ratio = float(size[ 0 ]) / float(size[ 1 ])
+        return aspect_ratio
 
     def position_in_pixels( self, window ):
         return [
