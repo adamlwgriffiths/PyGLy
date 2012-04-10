@@ -511,7 +511,7 @@ class MD2_Mesh( object ):
             normals = maths.vector.interpolate( normals, next_normals, delta )
 
             # ensure our normals are vector length
-            normals = maths.vector.normalise( normals )
+            maths.vector.normalise( normals )
 
         # pass to opengl
         pyglet.graphics.draw(
