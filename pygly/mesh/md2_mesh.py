@@ -230,7 +230,7 @@ class MD2_Mesh( object ):
             [-0.587785,-0.425325,-0.688191 ],
             [-0.688191,-0.587785,-0.425325 ]
         ],
-        dtype = numpy.float32
+        dtype = numpy.float
         )
 
     # List of frame types used by Quake 2
@@ -388,7 +388,7 @@ class MD2_Mesh( object ):
         # TCs are composed of 2 signed shorts
         tcs = numpy.array(
             MD2_Mesh._load_block( f, '< 2h', header.num_st ),
-            dtype = numpy.float32
+            dtype = numpy.float
             )
         tcs.shape = (-1, 2)
 
@@ -433,7 +433,7 @@ class MD2_Mesh( object ):
         # frame scale and translation are 2x3 32 bit floats
         frame_translations = numpy.array(
             MD2_Mesh._load_block( f, '< 3f', 2 ),
-            dtype = numpy.float32
+            dtype = numpy.float
             )
         # extract the scale and translation vector
         scale = frame_translations[ 0 ]
@@ -455,7 +455,7 @@ class MD2_Mesh( object ):
 
         # extract the vertex values
         vertices_short = frame_vertex_data[ :, :3 ]
-        vertices = vertices_short.astype( numpy.float32 )
+        vertices = vertices_short.astype( numpy.float )
         vertices.shape = (-1, 3)
 
         # apply the frame translation
