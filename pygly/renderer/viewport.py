@@ -32,10 +32,10 @@ class Viewport( object ):
     def switch_to( self, window ):
         # update our viewport size
         glViewport(
-            int( self.x * window.width ),
-            int( self.y * window.height ),
-            int( self.width * window.width ),
-            int( self.height * window.height )
+            int( self.x_ratio * window.width ),
+            int( self.y_ratio * window.height ),
+            int( self.width_ratio * window.width ),
+            int( self.height_ratio * window.height )
             )
 
     def aspect_ratio( self, window ):
@@ -48,11 +48,17 @@ class Viewport( object ):
         size = self.size_in_pixels( window )
         return size[ 0 ] / size[ 1 ]
 
+    def position_in_pixels( self, window ):
+        return (
+            int( self.x_ratio * window.width ),
+            int( self.y_ratio * window.height )
+            )
+
     def size_in_pixels( self, window ):
-        return [
-            int( self.width * window.width ),
-            int( self.height * window.height )
-            ]
+        return (
+            int( self.width_ratio * window.width ),
+            int( self.height_ratio * window.height )
+            )
 
     def clear(
         self,
@@ -64,11 +70,13 @@ class Viewport( object ):
         # we want to affect
         glEnable( GL_SCISSOR_TEST )
 
+        position = self.position_in_pixels( window )
+        size = self.size_in_pixels( window )
         glScissor( 
-            int( self.x * window.width ),
-            int( self.y * window.height ),
-            int( self.width * window.width ),
-            int( self.height * window.height )
+            position[ 0 ],
+            position[ 1 ],
+            size[ 0 ],
+            size[ 1 ]
             )
         # clear the background or we will just draw
         # ontop of other viewports
@@ -131,8 +139,10 @@ class Viewport( object ):
         # enable some default options
         # use the z-buffer when drawing
         glEnable( GL_DEPTH_TEST )
+
         # enable smooth shading
         glShadeModel( GL_SMOOTH )
+
         # because we use glScale for scene graph
         # scaling, normals will get affected too.
         # GL_RESCALE_NORMAL applies the inverse
@@ -143,35 +153,40 @@ class Viewport( object ):
         glEnable( GL_RESCALE_NORMAL )
 
     @property
-    def x( self ):
+    def x_ratio( self ):
         return self.dimensions[ 0 ]
 
     @property
-    def y( self ):
+    def y_ratio( self ):
         return self.dimensions[ 1 ]
     
     @property
-    def width( self ):
+    def width_ratio( self ):
         return self.dimensions[ 2 ]
     
     @property
-    def height( self ):
+    def height_ratio( self ):
         return self.dimensions[ 3 ]
 
-    @property
-    def bottom_left( self ):
-        return self.x, self.y
 
-    @property
-    def top_left( self ):
-        return self.x, self.y + self.height
+if __name__ == '__main__':
+    window = pyglet.window.Window(
+        fullscreen = False,
+        width = 1024,
+        height = 512
+        )
+    viewport = Viewport( [0.0, 0.0, 1.0, 1.0] )
+    assert viewport.x_ratio == 0.0
+    assert viewport.y_ratio == 0.0
+    assert viewport.width_ratio == 1.0
+    assert viewport.height_ratio == 1.0
 
-    @property
-    def bottom_right( self ):
-        return self.x + self.width, self.y
+    assert viewport.aspect_ratio( window ) == 2.0
 
-    @property
-    def top_right( self ):
-        return self.x + self.width, self.y + self.height
-    
+    pixel_position = viewport.position_in_pixels( window )
+    assert pixel_position[ 0 ] == 0
+    assert pixel_position[ 1 ] == 0
 
+    pixel_size = viewport.size_in_pixels( window )
+    assert pixel_size[ 0 ] == 1024
+    assert pixel_size[ 1 ] == 512
