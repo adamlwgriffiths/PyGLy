@@ -32,7 +32,7 @@ class Layer( CocosLayer ):
         # create a default viewport that
         # stretches the entire screen
         self.pygly_viewport = Viewport(
-            [ 0.0, 0.0, 1.0, 1.0 ]
+            [ [0.0, 0.0], [1.0, 1.0] ]
             )
 
     def transform( self ):

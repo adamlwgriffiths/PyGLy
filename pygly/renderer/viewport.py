@@ -9,22 +9,35 @@ import weakref
 import numpy
 from pyglet.gl import *
 
+import maths.rect
+
 
 class Viewport( object ):
     
     
     def __init__( self, rect ):
+        """
+        Creates a viewport with the size of rect.
+
+        @param rect: An array with the shape (2,2).
+        Values are from 0.0 -> 1.0.
+        Values may exceed this but will be off the screen.
+        A rect of [ [0.0,0.0],[1.0,1.0] ] is the equivalent
+        of a whole window.
+        """
         super( Viewport, self ).__init__()
 
         self.camera = None
-        self.dimensions = None
         self.scene_node = None
-        self.dimensions = (
-            rect[ 0 ],
-            rect[ 1 ],
-            rect[ 2 ],
-            rect[ 3 ]
+        self.viewport_ratio = numpy.array(
+            rect,
+            dtype = numpy.float
             )
+
+        if self.viewport_ratio.shape != (2,2):
+            raise ValueError(
+                "Viewport rect must be numpy array with shape (2,2)"
+                )
 
     def set_camera( self, scene_node, camera ):
         self.scene_node = scene_node
@@ -32,11 +45,12 @@ class Viewport( object ):
     
     def switch_to( self, window ):
         # update our viewport size
+        pixel_rect = self.pixel_rect( window )
         glViewport(
-            int( self.x_ratio * window.width ),
-            int( self.y_ratio * window.height ),
-            int( self.width_ratio * window.width ),
-            int( self.height_ratio * window.height )
+            int(pixel_rect[ (0,0) ]),
+            int(pixel_rect[ (0,1) ]),
+            int(pixel_rect[ (1,0) ]),
+            int(pixel_rect[ (1,1) ])
             )
 
     def aspect_ratio( self, window ):
@@ -46,17 +60,9 @@ class Viewport( object ):
         Aspect ratio is the ratio of width to height
         a value of 2.0 means width is 2*height
         """
-        dimensions = self.dimension_in_pixels( window )
-        aspect_ratio = float(dimensions[ 2 ]) / float(dimensions[ 3 ])
+        pixel_rect = self.pixel_rect( window )
+        aspect_ratio = float(pixel_rect[ (1,0) ]) / float(pixel_rect[ (1,1) ])
         return aspect_ratio
-
-    def dimension_in_pixels( self, window ):
-        return [
-            int( self.x_ratio * window.width ),
-            int( self.y_ratio * window.height ),
-            int( self.width_ratio * window.width ),
-            int( self.height_ratio * window.height )
-            ]
 
     def clear(
         self,
@@ -68,12 +74,12 @@ class Viewport( object ):
         # we want to affect
         glEnable( GL_SCISSOR_TEST )
 
-        dimensions = self.dimension_in_pixels( window )
+        pixel_rect = self.pixel_rect( window )
         glScissor( 
-            dimensions[ 0 ],
-            dimensions[ 1 ],
-            dimensions[ 2 ],
-            dimensions[ 3 ]
+            int(pixel_rect[ (0,0) ]),
+            int(pixel_rect[ (0,1) ]),
+            int(pixel_rect[ (1,0) ]),
+            int(pixel_rect[ (1,1) ])
             )
         # clear the background or we will just draw
         # ontop of other viewports
@@ -149,7 +155,7 @@ class Viewport( object ):
         # http://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
         glEnable( GL_RESCALE_NORMAL )
 
-    def viewport_point_to_ray( self, window, point ):
+    def relative_point_to_ray( self, window, point ):
         """
         Returns a ray cast from 2d window co-ordinates
         into the world.
@@ -160,83 +166,50 @@ class Viewport( object ):
         @returns A ray consisting of 2 vectors (shape = 2,3).
         """
         # check that the point resides within the viewport
-        if self.is_viewport_point_within_viewport(
-            window,
-            point
-            ):
+        pixel_rect = self.pixel_rect( window )
+        if maths.rect.is_relative_point_within_rect( point, pixel_rect ):
             # tell our camera to cast the ray
             if self.camera != None:
                 return self.camera().point_to_ray( window, self, point )
         else:
             raise ValueError( "Point does not lie within viewport" )
 
-        return None
-
-    def window_point_to_ray( self, window, point ):
-        """
-        Returns a ray cast from 2d window co-ordinates
-        into the world.
-        This is the equivalent of converting the point to
-        viewport co-ordinates and calling 'viewport_point_to_ray'.
-
-        @param viewport: The window being used to cast the ray.
-        @param point: The 2D point on the window to project a
-        ray from. A list of 2 float values.
-        @returns A ray consisting of 2 vectors (shape = 2,3).
-        """
+    def point_relative_to_viewport( self, window, point ):
         # convert to viewport co-ordinates
-        relative_point = self.window_to_viewport_point( window, point )
-
-        return self.viewport_point_to_ray( window, relative_point )
-
-    def window_to_viewport_point( self, window, point ):
-        # convert to viewport co-ordinates
-        relative_point = numpy.array( point, dtype = numpy.int )
-
-        dimensions = self.dimension_in_pixels( window )
-        relative_point -= [ dimensions[ 0 ], dimensions[ 1 ] ]
-
-        return relative_point
-
-    def is_viewport_point_within_viewport( self, window, point ):
-        dimensions = self.dimension_in_pixels( window )
-
-        if point[ 0 ] < 0:
-            return False
-        elif point[ 1 ] < 0:
-            return False
-        elif point[ 0 ] > dimensions[ 2 ]:
-            return False
-        elif point[ 1 ] > dimensions[ 3 ]:
-            return False
-        return True
-
-    def is_window_point_within_viewport( self, window, point ):
-        # make the point relative to the viewport
-        relative_point = self.window_to_viewport_point(
-            window,
-            point
+        pixel_rect = self.pixel_rect( window )
+        return maths.rect.make_point_relative(
+            point,
+            pixel_rect
             )
-        return self.is_viewport_point_within_viewport(
-            window,
-            relative_point
+
+    def is_point_within_viewport( self, window, point ):
+        pixel_rect = self.pixel_rect( window )
+        return maths.rect.is_point_within_rect(
+            point,
+            pixel_rect
+            )
+
+    def pixel_rect( self, window ):
+        return maths.rect.scale_by_vector(
+            self.viewport_ratio,
+            [ window.width, window.height ]
             )
 
     @property
-    def x_ratio( self ):
-        return self.dimensions[ 0 ]
+    def ratio_x( self ):
+        return self.viewport_ratio[ (0,0) ]
 
     @property
-    def y_ratio( self ):
-        return self.dimensions[ 1 ]
+    def ratio_y( self ):
+        return self.viewport_ratio[ (0,1) ]
     
     @property
-    def width_ratio( self ):
-        return self.dimensions[ 2 ]
+    def ratio_width( self ):
+        return self.viewport_ratio[ (1,0) ]
     
     @property
-    def height_ratio( self ):
-        return self.dimensions[ 3 ]
+    def ratio_height( self ):
+        return self.viewport_ratio[ (1,1) ]
 
 
 if __name__ == '__main__':
@@ -246,15 +219,16 @@ if __name__ == '__main__':
         height = 512
         )
     viewport = Viewport( [0.0, 0.0, 1.0, 1.0] )
-    assert viewport.x_ratio == 0.0
-    assert viewport.y_ratio == 0.0
-    assert viewport.width_ratio == 1.0
-    assert viewport.height_ratio == 1.0
+    assert viewport.ratio_x == 0.0
+    assert viewport.ratio_y == 0.0
+    assert viewport.ratio_width == 1.0
+    assert viewport.ratio_height == 1.0
 
     assert viewport.aspect_ratio( window ) == 2.0
 
-    dimensions = viewport.dimension_in_pixels( window )
-    assert dimensions[ 0 ] == 0
-    assert dimensions[ 1 ] == 0
-    assert dimensions[ 2 ] == 1024
-    assert dimensions[ 3 ] == 512
+    pixel_rect = viewport.pixel_rect( window )
+    assert pixel_rect[ (0,0) ] == 0
+    assert pixel_rect[ (0,1) ] == 0
+    assert pixel_rect[ (1,0) ] == 1024
+    assert pixel_rect[ (1,1) ] == 512
+

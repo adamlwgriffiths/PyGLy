@@ -39,8 +39,8 @@ class OrthogonalViewMatrix( ViewMatrix ):
         # of +1
         # http://stackoverflow.com/questions/4269079/mixing-2d-and-3d-in-opengl-using-pyglet
         glOrtho(
-            0, viewport.width,
-            0, viewport.height,
+            0, viewport.ratio_width,
+            0, viewport.ratio_height,
             -1.0, 1.0
             )
 
