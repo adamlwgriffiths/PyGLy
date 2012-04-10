@@ -36,14 +36,27 @@ class Viewport( object ):
 
         if self.viewport_ratio.shape != (2,2):
             raise ValueError(
-                "Viewport rect must be numpy array with shape (2,2)"
+                "Viewport rect must be an array with shape (2,2)"
                 )
 
     def set_camera( self, scene_node, camera ):
+        """
+        Set's the camera of the viewport and the
+        viewport's root scene node.
+
+        @param scene_node: The root scene_node used
+        to render the viewport.
+        @param camera: The camera to render the scene_node
+        from.
+        """
         self.scene_node = scene_node
         self.camera = weakref.ref( camera )
     
     def switch_to( self, window ):
+        """
+        Calls glViewport which sets up the viewport
+        for rendering.
+        """
         # update our viewport size
         pixel_rect = self.pixel_rect( window )
         glViewport(
@@ -69,6 +82,10 @@ class Viewport( object ):
         window,
         values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
         ):
+        """
+        Uses glScissor to perform glClear on the viewport
+        only.
+        """
         # clear the region
         # we use glScissor to set the pixels
         # we want to affect
@@ -88,6 +105,11 @@ class Viewport( object ):
         glDisable( GL_SCISSOR_TEST )
     
     def push_view_matrix( self, window ):
+        """
+        Pushes the viewport's active camera's
+        view matrix onto the stack.
+        If there is no camera, no matrix is pushed.
+        """
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
@@ -98,6 +120,11 @@ class Viewport( object ):
                 )
 
     def pop_view_matrix( self ):
+        """
+        Pops the viewport's active camera's
+        view matrix from the stack.
+        If there is no camera, no matrix is poped.
+        """
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
@@ -105,6 +132,11 @@ class Viewport( object ):
             self.camera().view_matrix.pop_view_matrix()
         
     def push_model_view( self ):
+        """
+        Pushes the viewport's active camera's
+        model matrix from the stack.
+        If there is no camera, no matrix is pushed.
+        """
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
@@ -112,6 +144,11 @@ class Viewport( object ):
             self.camera().push_model_view()
 
     def pop_model_view( self ):
+        """
+        Pops the viewport's active camera's
+        model matrix from the stack.
+        If there is no camera, no matrix is poped.
+        """
         # the camera is a weak pointer
         # so we need to get a reference to it
         if self.camera != None:
@@ -119,15 +156,31 @@ class Viewport( object ):
             self.camera().pop_model_view()
 
     def render( self, window ):
+        """
+        Triggers a render on the viewport's
+        current scene node.
+        It is up to the caller to ensure the
+        correct window is currently active and
+        the viewport has been setup.
+        """
         # render the current scene
         if self.scene_node != None:
             self.scene_node.render()
 
     def push_viewport_attributes( self ):
+        """
+        Pushes the current OGL attributes
+        and then calls self.setup_viewport.
+        """
         glPushAttrib( GL_ALL_ATTRIB_BITS )
         self.setup_viewport()
 
     def pop_viewport_attributes( self ):
+        """
+        Pops the OGL attributes.
+        Called when tearing down viewport.
+        This method mirrors 'push_viewport_attributes'
+        """
         glPopAttrib()
 
     def setup_viewport( self ):
@@ -138,6 +191,7 @@ class Viewport( object ):
         The default method sets the following:
         -glEnable( GL_DEPTH_TEST )
         -glShadeModel( GL_SMOOTH )
+        -glEnable( GL_RESCALE_NORMAL )
         """
         # enable some default options
         # use the z-buffer when drawing
@@ -175,6 +229,10 @@ class Viewport( object ):
             raise ValueError( "Point does not lie within viewport" )
 
     def point_relative_to_viewport( self, window, point ):
+        """
+        Converts a point relative to the window, to a point
+        relative to the viewport.
+        """
         # convert to viewport co-ordinates
         pixel_rect = self.pixel_rect( window )
         return maths.rect.make_point_relative(
@@ -183,6 +241,10 @@ class Viewport( object ):
             )
 
     def is_point_within_viewport( self, window, point ):
+        """
+        Checks if a point relative to the window is
+        within the viewport.
+        """
         pixel_rect = self.pixel_rect( window )
         return maths.rect.is_point_within_rect(
             point,
@@ -190,6 +252,9 @@ class Viewport( object ):
             )
 
     def pixel_rect( self, window ):
+        """
+        Returns the size in pixels of the viewport.
+        """
         return maths.rect.scale_by_vector(
             self.viewport_ratio,
             [ window.width, window.height ]
