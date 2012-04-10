@@ -48,3 +48,28 @@ class OrthogonalViewMatrix( ViewMatrix ):
         glMatrixMode( GL_PROJECTION )
         glPopMatrix()
 
+    def point_to_ray( self, window, viewport, point ):
+        """
+        Returns a local ray cast from the camera co-ordinates
+        at 'point'.
+
+        The ray is in intertial space and must be transformed
+        to the objects intended translation and orientation.
+
+        @param window: The window the viewport resides on. This is ignored.
+        @param viewport: The viewport used for picking.
+        @param point: The 2D point, relative to this view matrix,
+        to project a ray from. A list of 2 float values.
+        [0.0, 0.0] is the Bottom Left.
+        [viewport.width, viewport.height] is the Top Right.
+        @returns A ray consisting of 2 vectors (shape = 2,3).
+        The vector will extend from Z = near_clip -> near_clip - 1.0
+        """
+        return numpy.array(
+            [
+                [ point[ 0 ], point[ 1 ], self.near_clip ],
+                [ point[ 0 ], point[ 1 ],-self.far_clip ]
+                ],
+            dtype = numpy.float32
+            )
+

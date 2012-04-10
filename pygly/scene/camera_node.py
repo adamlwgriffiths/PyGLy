@@ -82,4 +82,37 @@ class CameraNode( SceneNode ):
         with a cube, so we don't render that.
         """
         debug_axis.render()
+
+    def point_to_ray( self, window, viewport, point ):
+        """
+        Returns a ray cast from 2d camera co-ordinates
+        into the world.
+
+        @param window: The window the viewport resides on.
+        @param viewport: The viewport being used to cast the ray.
+        @param point: The 2D point, relative to this camera,
+        to project a ray from. A list of 2 float values.
+        [0, 0] is the Bottom Left of the viewport
+        [viewport.width, viewport.height] is the Top Right of
+        the viewport.
+        @returns A ray consisting of 2 vectors (shape = 2,3).
+        """
+        # convert the point to a ray
+        # the ray is in the format
+        # [ [near.x,near.y,near.z], [far.x,far.y,far.z] ]
+        local_ray = self.view_matrix.point_to_ray( window, viewport, point )
+        #print "local_ray",local_ray
+
+        # convert our quaternion to a matrix
+        matrix = maths.matrix44.from_inertial_to_object_quaternion(
+            self.world_orientation
+            )
+        maths.matrix44.scale( matrix, self.scale, matrix )
+        maths.matrix44.set_translation( matrix,
+            self.world_translation,
+            out = matrix
+            )
+        maths.matrix44.inertial_to_object( local_ray[ 0 ], matrix )
+        maths.matrix44.inertial_to_object( local_ray[ 1 ], matrix )
+        return local_ray
     

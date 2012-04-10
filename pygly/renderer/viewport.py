@@ -6,6 +6,7 @@ Created on 20/06/2011
 
 import weakref
 
+import numpy
 from pyglet.gl import *
 
 
@@ -152,6 +153,81 @@ class Viewport( object ):
         # faster than glEnable( GL_NORMALIZE )
         # http://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
         glEnable( GL_RESCALE_NORMAL )
+
+    def viewport_point_to_ray( self, window, point ):
+        """
+        Returns a ray cast from 2d window co-ordinates
+        into the world.
+
+        @param viewport: The viewport being used to cast the ray.
+        @param point: The 2D point, relative to this camera,
+        to project a ray from. A list of 2 float values.
+        @returns A ray consisting of 2 vectors (shape = 2,3).
+        """
+        # check that the point resides within the viewport
+        size = numpy.array(
+            self.size_in_pixels( window ),
+            dtype = numpy.int
+            )
+        if self.is_viewport_point_within_viewport(
+            window,
+            point
+            ):
+            # tell our camera to cast the ray
+            if self.camera != None:
+                return self.camera().point_to_ray( window, self, point )
+        else:
+            raise ValueError( "Point does not lie within viewport" )
+
+        return None
+
+    def window_point_to_ray( self, window, point ):
+        """
+        Returns a ray cast from 2d window co-ordinates
+        into the world.
+        This is the equivalent of converting the point to
+        viewport co-ordinates and calling 'viewport_point_to_ray'.
+
+        @param viewport: The window being used to cast the ray.
+        @param point: The 2D point on the window to project a
+        ray from. A list of 2 float values.
+        @returns A ray consisting of 2 vectors (shape = 2,3).
+        """
+        # convert to viewport co-ordinates
+        relative_point = self.window_to_viewport_point( window, point )
+
+        return self.viewport_point_to_ray( window, relative_point )
+
+    def window_to_viewport_point( self, window, point ):
+        # convert to viewport co-ordinates
+        np_point = numpy.array( point, dtype = numpy.int )
+        pos = numpy.array(
+            self.position_in_pixels( window ),
+            dtype = numpy.int
+            )
+        return numpy.array( point ) - pos
+
+    def is_viewport_point_within_viewport( self, window, point ):
+        size = self.size_in_pixels( window )
+
+        if point[ 0 ] < 0:
+            return False
+        elif point[ 1 ] < 0:
+            return False
+        elif point[ 0 ] > size[ 0 ]:
+            return False
+        elif point[ 1 ] > size[ 1 ]:
+            return False
+        return True
+
+    def is_window_point_within_viewport( self, window, point ):
+        # make the point relative to the viewport
+        relative_point = numpy.array( point, type = numpy.int )
+        relative_point -= self.position_in_pixels( window )
+        return self.is_viewport_point_within_viewport(
+            window,
+            relative_point
+            )
 
     @property
     def x_ratio( self ):
