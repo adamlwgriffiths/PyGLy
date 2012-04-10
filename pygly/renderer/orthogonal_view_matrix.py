@@ -70,6 +70,6 @@ class OrthogonalViewMatrix( ViewMatrix ):
                 [ point[ 0 ], point[ 1 ], self.near_clip ],
                 [ point[ 0 ], point[ 1 ],-self.far_clip ]
                 ],
-            dtype = numpy.float32
+            dtype = numpy.float
             )
 

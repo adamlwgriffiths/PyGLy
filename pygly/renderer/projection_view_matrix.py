@@ -97,7 +97,7 @@ class ProjectionViewMatrix( ViewMatrix ):
         viewport_size = viewport.dimension_in_pixels( window )
         scale = [ width / viewport_size[ 2 ], height / viewport_size[ 3 ] ]
 
-        plane_point = numpy.array( point, dtype = numpy.float32 )
+        plane_point = numpy.array( point, dtype = numpy.float )
         # scale the point from viewport coordinates to plane coordinates
         plane_point *= scale
 
@@ -147,7 +147,7 @@ class ProjectionViewMatrix( ViewMatrix ):
                 near_plane_point[ 1 ],
                 -self.near_clip
                 ],
-            dtype = numpy.float32
+            dtype = numpy.float
             )
         far_vec = numpy.array(
             [
@@ -155,7 +155,7 @@ class ProjectionViewMatrix( ViewMatrix ):
                 far_plane_point[ 1 ],
                 -self.far_clip
                 ],
-            dtype = numpy.float32
+            dtype = numpy.float
             )
 
         # convert the 2 vectors into a ray from
@@ -165,6 +165,6 @@ class ProjectionViewMatrix( ViewMatrix ):
                 near_vec,
                 far_vec
                 ],
-            dtype = numpy.float32
+            dtype = numpy.float
             )
 
