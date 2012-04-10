@@ -77,6 +77,21 @@ class Viewport( object ):
         aspect_ratio = float(pixel_rect[ (1,0) ]) / float(pixel_rect[ (1,1) ])
         return aspect_ratio
 
+    def scissor_to_viewport( self, window ):
+        """
+        Calls glScissor with the size of the viewport.
+        It is up to the user to call
+        glEnable(GL_SCISSOR_TEST).
+        To undo this, use renderer.window.scissor_to_window
+        """
+        pixel_rect = self.pixel_rect( window )
+        glScissor( 
+            int(pixel_rect[ (0,0) ]),
+            int(pixel_rect[ (0,1) ]),
+            int(pixel_rect[ (1,0) ]),
+            int(pixel_rect[ (1,1) ])
+            )
+
     def clear(
         self,
         window,
@@ -86,23 +101,16 @@ class Viewport( object ):
         Uses glScissor to perform glClear on the viewport
         only.
         """
+        assert True == glIsEnabled( GL_SCISSOR_TEST )
+
         # clear the region
         # we use glScissor to set the pixels
         # we want to affect
-        glEnable( GL_SCISSOR_TEST )
+        self.scissor_to_viewport( window )
 
-        pixel_rect = self.pixel_rect( window )
-        glScissor( 
-            int(pixel_rect[ (0,0) ]),
-            int(pixel_rect[ (0,1) ]),
-            int(pixel_rect[ (1,0) ]),
-            int(pixel_rect[ (1,1) ])
-            )
         # clear the background or we will just draw
         # ontop of other viewports
         glClear( values )
-
-        glDisable( GL_SCISSOR_TEST )
     
     def push_view_matrix( self, window ):
         """
@@ -192,6 +200,7 @@ class Viewport( object ):
         -glEnable( GL_DEPTH_TEST )
         -glShadeModel( GL_SMOOTH )
         -glEnable( GL_RESCALE_NORMAL )
+        -glEnable( GL_SCISSOR_TEST )
         """
         # enable some default options
         # use the z-buffer when drawing
@@ -208,6 +217,10 @@ class Viewport( object ):
         # faster than glEnable( GL_NORMALIZE )
         # http://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
         glEnable( GL_RESCALE_NORMAL )
+
+        # enable GL_SCISSOR_TEST so we can selectively
+        # clear areas of the window
+        glEnable( GL_SCISSOR_TEST )
 
     def relative_point_to_ray( self, window, point ):
         """
