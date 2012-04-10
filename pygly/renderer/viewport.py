@@ -49,16 +49,16 @@ class Viewport( object ):
         return size[ 0 ] / size[ 1 ]
 
     def position_in_pixels( self, window ):
-        return (
+        return [
             int( self.x_ratio * window.width ),
             int( self.y_ratio * window.height )
-            )
+            ]
 
     def size_in_pixels( self, window ):
-        return (
+        return [
             int( self.width_ratio * window.width ),
             int( self.height_ratio * window.height )
-            )
+            ]
 
     def clear(
         self,
