@@ -12,6 +12,9 @@ def are_equivalent( a, b ):
     difference = [i for i, j in zip(a, b) if i != j]
     return len(difference) == 0
 
+def not_equivalent( a, b ):
+    return not are_equivalent( a, b )
+
 if __name__ == '__main__':
     assert True == are_equivalent(
         [1,2,3],
@@ -24,4 +27,12 @@ if __name__ == '__main__':
     assert False == are_equivalent(
         [1,2,3],
         [4,5,6]
+        )
+    assert True == not_equivalent(
+        [-1,-1],
+        [ 0, 0]
+        )
+    assert False == not_equivalent(
+        [1,2,3],
+        [1,2,3]
         )
