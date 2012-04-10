@@ -72,8 +72,8 @@ class Viewport( object ):
         glScissor( 
             dimensions[ 0 ],
             dimensions[ 1 ],
-            dimensions[ 0 ],
-            dimensions[ 1 ]
+            dimensions[ 2 ],
+            dimensions[ 3 ]
             )
         # clear the background or we will just draw
         # ontop of other viewports
