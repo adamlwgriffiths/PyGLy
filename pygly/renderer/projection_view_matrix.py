@@ -94,8 +94,8 @@ class ProjectionViewMatrix( ViewMatrix ):
 
         # convert the point from a viewport point
         # to a near plane point
-        viewport_size = viewport.size_in_pixels( window )
-        scale = [ width / viewport_size[ 0 ], height / viewport_size[ 1 ] ]
+        viewport_size = viewport.dimension_in_pixels( window )
+        scale = [ width / viewport_size[ 2 ], height / viewport_size[ 3 ] ]
 
         plane_point = numpy.array( point, dtype = numpy.float32 )
         # scale the point from viewport coordinates to plane coordinates

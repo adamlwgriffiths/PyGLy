@@ -46,18 +46,14 @@ class Viewport( object ):
         Aspect ratio is the ratio of width to height
         a value of 2.0 means width is 2*height
         """
-        size = self.size_in_pixels( window )
-        aspect_ratio = float(size[ 0 ]) / float(size[ 1 ])
+        dimensions = self.dimension_in_pixels( window )
+        aspect_ratio = float(dimensions[ 2 ]) / float(dimensions[ 3 ])
         return aspect_ratio
 
-    def position_in_pixels( self, window ):
+    def dimension_in_pixels( self, window ):
         return [
             int( self.x_ratio * window.width ),
-            int( self.y_ratio * window.height )
-            ]
-
-    def size_in_pixels( self, window ):
-        return [
+            int( self.y_ratio * window.height ),
             int( self.width_ratio * window.width ),
             int( self.height_ratio * window.height )
             ]
@@ -72,13 +68,12 @@ class Viewport( object ):
         # we want to affect
         glEnable( GL_SCISSOR_TEST )
 
-        position = self.position_in_pixels( window )
-        size = self.size_in_pixels( window )
+        dimensions = self.dimension_in_pixels( window )
         glScissor( 
-            position[ 0 ],
-            position[ 1 ],
-            size[ 0 ],
-            size[ 1 ]
+            dimensions[ 0 ],
+            dimensions[ 1 ],
+            dimensions[ 0 ],
+            dimensions[ 1 ]
             )
         # clear the background or we will just draw
         # ontop of other viewports
@@ -165,10 +160,6 @@ class Viewport( object ):
         @returns A ray consisting of 2 vectors (shape = 2,3).
         """
         # check that the point resides within the viewport
-        size = numpy.array(
-            self.size_in_pixels( window ),
-            dtype = numpy.int
-            )
         if self.is_viewport_point_within_viewport(
             window,
             point
@@ -200,30 +191,32 @@ class Viewport( object ):
 
     def window_to_viewport_point( self, window, point ):
         # convert to viewport co-ordinates
-        np_point = numpy.array( point, dtype = numpy.int )
-        pos = numpy.array(
-            self.position_in_pixels( window ),
-            dtype = numpy.int
-            )
-        return numpy.array( point ) - pos
+        relative_point = numpy.array( point, dtype = numpy.int )
+
+        dimensions = self.dimension_in_pixels( window )
+        relative_point -= [ dimensions[ 0 ], dimensions[ 1 ] ]
+
+        return relative_point
 
     def is_viewport_point_within_viewport( self, window, point ):
-        size = self.size_in_pixels( window )
+        dimensions = self.dimension_in_pixels( window )
 
         if point[ 0 ] < 0:
             return False
         elif point[ 1 ] < 0:
             return False
-        elif point[ 0 ] > size[ 0 ]:
+        elif point[ 0 ] > dimensions[ 2 ]:
             return False
-        elif point[ 1 ] > size[ 1 ]:
+        elif point[ 1 ] > dimensions[ 3 ]:
             return False
         return True
 
     def is_window_point_within_viewport( self, window, point ):
         # make the point relative to the viewport
-        relative_point = numpy.array( point, type = numpy.int )
-        relative_point -= self.position_in_pixels( window )
+        relative_point = self.window_to_viewport_point(
+            window,
+            point
+            )
         return self.is_viewport_point_within_viewport(
             window,
             relative_point
@@ -260,10 +253,8 @@ if __name__ == '__main__':
 
     assert viewport.aspect_ratio( window ) == 2.0
 
-    pixel_position = viewport.position_in_pixels( window )
-    assert pixel_position[ 0 ] == 0
-    assert pixel_position[ 1 ] == 0
-
-    pixel_size = viewport.size_in_pixels( window )
-    assert pixel_size[ 0 ] == 1024
-    assert pixel_size[ 1 ] == 512
+    dimensions = viewport.dimension_in_pixels( window )
+    assert dimensions[ 0 ] == 0
+    assert dimensions[ 1 ] == 0
+    assert dimensions[ 2 ] == 1024
+    assert dimensions[ 3 ] == 512
