@@ -34,7 +34,7 @@ def setup( eulers, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    mat33 = maths.matrix33.setup( eulers, out = mat33 )
+    mat33 = maths.matrix33.setup( eulers, mat33 )
     
     return out
 
@@ -49,7 +49,7 @@ def from_inertial_to_object_quaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    maths.matrix33.from_inertial_to_object_quaternion( quat, out = mat33 )
+    maths.matrix33.from_inertial_to_object_quaternion( quat, mat33 )
     
     return out
 
@@ -64,7 +64,7 @@ def from_object_to_inertial_quaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    maths.matrix33.from_object_to_inertial_quaternion( quat, out = mat33 )
+    maths.matrix33.from_object_to_inertial_quaternion( quat, mat33 )
     
     return out
 
@@ -79,7 +79,7 @@ def inertial_to_object( vector, matrix, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    maths.matrix33.inertial_to_object( vector, out = mat33 )
+    maths.matrix33.inertial_to_object( vector, mat33 )
     
     return out
 
@@ -110,7 +110,7 @@ def scale( matrix, scale, out = None ):
     scale_matrix[ 1,1 ] *= scale[ 1 ]
     scale_matrix[ 2,2 ] *= scale[ 2 ]
 
-    multiply( matrix, scale_matrix, out = out )
+    multiply( matrix, scale_matrix, out )
     
     return out
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     # TODO: add more tests
     
     eulers = numpy.array( [ 1.0, 2.0, 0.5 ], dtype = float )
-    setup( eulers, out = mat44 )
+    setup( eulers, mat44 )
     assert mat44[ 3, 3 ] == 1.0
     
     out = numpy.empty( (4, 4), dtype = float )
