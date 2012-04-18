@@ -10,7 +10,6 @@ import numpy
 from pyglet.gl import *
 
 from view_matrix import ViewMatrix
-import maths.vector
 
 
 class ProjectionViewMatrix( ViewMatrix ):
