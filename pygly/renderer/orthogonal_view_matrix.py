@@ -27,7 +27,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
         self.near_clip = near_clip
         self.far_clip = far_clip
 
-    def push_view_matrix( self, viewport ):
+    def push_view_matrix( self, window, viewport ):
         # setup our projection matrix
         glMatrixMode( GL_PROJECTION )
         glPushMatrix()
