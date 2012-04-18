@@ -8,10 +8,10 @@ import math
 
 from pyglet.gl import *
 
-import maths.quaternion
-import maths.matrix44
+import pygly.maths.quaternion
+import pygly.maths.matrix44
 
-from renderer.view_matrix import ViewMatrix
+from pygly.renderer.view_matrix import ViewMatrix
 from scene_node import SceneNode
 import debug_axis
 
@@ -32,7 +32,7 @@ class CameraNode( SceneNode ):
         glLoadIdentity()
 
         # convert our quaternion to a matrix
-        matrix = maths.matrix44.from_inertial_to_object_quaternion( self.world_orientation )
+        matrix = pygly.maths.matrix44.from_inertial_to_object_quaternion( self.world_orientation )
 
         # we need to apply the inverse of the matrix
         # we do this by simply transposing the matrix
@@ -104,15 +104,15 @@ class CameraNode( SceneNode ):
         #print "local_ray",local_ray
 
         # convert our quaternion to a matrix
-        matrix = maths.matrix44.from_inertial_to_object_quaternion(
+        matrix = pygly.maths.matrix44.from_inertial_to_object_quaternion(
             self.world_orientation
             )
-        maths.matrix44.scale( matrix, self.scale, matrix )
-        maths.matrix44.set_translation( matrix,
+        pygly.maths.matrix44.scale( matrix, self.scale, matrix )
+        pygly.maths.matrix44.set_translation( matrix,
             self.world_translation,
             out = matrix
             )
-        maths.matrix44.inertial_to_object( local_ray[ 0 ], matrix )
-        maths.matrix44.inertial_to_object( local_ray[ 1 ], matrix )
+        pygly.maths.matrix44.inertial_to_object( local_ray[ 0 ], matrix )
+        pygly.maths.matrix44.inertial_to_object( local_ray[ 1 ], matrix )
         return local_ray
     

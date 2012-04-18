@@ -8,7 +8,7 @@ import math
 
 import numpy
 
-import maths.quaternion
+import quaternion
 
 
 def identity( out = None ):
@@ -80,10 +80,10 @@ def from_inertial_to_object_quaternion( quat, out = None ):
     if out == None:
         out = numpy.empty( (3, 3), dtype = float )
     
-    quatW = quat[ maths.quaternion.w ]
-    quatX = quat[ maths.quaternion.x ]
-    quatY = quat[ maths.quaternion.y ]
-    quatZ = quat[ maths.quaternion.z ]
+    quatW = quat[ quaternion.w ]
+    quatX = quat[ quaternion.x ]
+    quatY = quat[ quaternion.y ]
+    quatZ = quat[ quaternion.z ]
     
     out[:] = [
         # m1
@@ -124,10 +124,10 @@ def from_object_to_inertial_quaternion( quat, out = None ):
     if out == None:
         out = numpy.empty( (3, 3), dtype = float )
     
-    quatW = quat[ maths.quaternion.w ]
-    quatX = quat[ maths.quaternion.x ]
-    quatY = quat[ maths.quaternion.y ]
-    quatZ = quat[ maths.quaternion.z ]
+    quatW = quat[ quaternion.w ]
+    quatX = quat[ quaternion.x ]
+    quatY = quat[ quaternion.y ]
+    quatZ = quat[ quaternion.z ]
     
     out[:] = [
         # m1

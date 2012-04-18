@@ -16,9 +16,9 @@ import weakref
 import numpy
 from pyglet.gl import *
 
-import maths.quaternion
-import maths.matrix33
-import maths.matrix44
+from pygly.maths import quaternion
+from pygly.maths import matrix33
+from pygly.maths import matrix44
 import debug_cube
 import debug_axis
 
@@ -44,8 +44,8 @@ class SceneNode( object ):
         self._parent = None
         self.children = set()
         
-        self._orientation = maths.quaternion.identity()        
-        self._world_orientation = maths.quaternion.identity()
+        self._orientation = quaternion.identity()        
+        self._world_orientation = quaternion.identity()
         
         self._translation = numpy.zeros( 3, dtype = float )
         self._world_translation = numpy.zeros( 3, dtype = float )
@@ -87,12 +87,12 @@ class SceneNode( object ):
             parent_world_orientation = parent._get_world_orientation()
             
             # rotate our translation by our parent's world orientation
-            parent_world_matrix = maths.matrix33.from_inertial_to_object_quaternion( parent_world_orientation )
-            world_translation = maths.matrix33.inertial_to_object( self._translation, parent_world_matrix )
+            parent_world_matrix = matrix33.from_inertial_to_object_quaternion( parent_world_orientation )
+            world_translation = matrix33.inertial_to_object( self._translation, parent_world_matrix )
             self._world_translation[:] = parent_world_translation + world_translation
             
             # multiply our rotation by our parents
-            self._world_orientation = maths.quaternion.cross_product(
+            self._world_orientation = quaternion.cross_product(
                 self._orientation,
                 parent_world_orientation
                 )
@@ -219,7 +219,7 @@ class SceneNode( object ):
         
         # order of operations matters here
         # our orientation must be the second parameter
-        maths.quaternion.cross_product(
+        quaternion.cross_product(
             orientation,
             self._orientation,
             out = self._orientation
@@ -233,7 +233,7 @@ class SceneNode( object ):
         Amount > 0 == pitch down
         Amount < 0 == pitch up
         """
-        quat = maths.quaternion.set_to_rotation_about_x( radians )
+        quat = quaternion.set_to_rotation_about_x( radians )
         self.rotate_object_quaternion( quat )
 
     def rotate_object_y( self, radians ):
@@ -243,7 +243,7 @@ class SceneNode( object ):
         Amount > 0 == yaw right.
         Amount < 0 == yaw left.
         """
-        quat = maths.quaternion.set_to_rotation_about_y( radians )
+        quat = quaternion.set_to_rotation_about_y( radians )
         self.rotate_object_quaternion( quat )
     
     def rotate_object_z( self, radians ):
@@ -253,12 +253,12 @@ class SceneNode( object ):
         Amount > 0 == roll left.
         Amount < 0 == roll right.
         """
-        quat = maths._quaternion.set_to_rotation_about_z( radians )
+        quat = quaternion.set_to_rotation_about_z( radians )
         self.rotate_object_quaternion( quat )
 
     def _rotate_vector_by_quaternion( self, quat, vec ):
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
-        result_vec = maths.matrix33.inertial_to_object( vec, matrix )
+        matrix = matrix33.from_inertial_to_object_quaternion( quat )
+        result_vec = matrix33.inertial_to_object( vec, matrix )
         return result_vec
 
     def object_x_axis( self ):
@@ -502,16 +502,16 @@ class SceneNode( object ):
         # finally translation
 
         # convert our quaternion to a matrix
-        matrix = maths.matrix44.from_inertial_to_object_quaternion(
+        matrix = matrix44.from_inertial_to_object_quaternion(
             self._orientation
             )
 
         # apply our scale
-        maths.matrix44.scale( matrix, self.scale, matrix )
+        matrix44.scale( matrix, self.scale, matrix )
 
         # apply our translation
         # we MUST do this after the orientation
-        maths.matrix44.set_translation( matrix, self._translation, out = matrix )
+        matrix44.set_translation( matrix, self._translation, out = matrix )
         
         # convert to ctype for OpenGL
         glMatrix = (GLfloat * matrix.size)(*matrix.flat) 

@@ -129,6 +129,8 @@ def interpolate( v1, v2, delta ):
     # in md2 files and the values become corrupted.
     # this horrible code curtousey of this comment:
     # http://stackoverflow.com/questions/5448322/temporal-interpolation-in-numpy-matplotlib
+    return v1 + ((v2 - v1) * delta)
+    #return v1 * (1.0 - delta ) + v2 * delta
     t = delta
     t0 = 0.0
     t1 = 1.0

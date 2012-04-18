@@ -9,7 +9,7 @@ import weakref
 import numpy
 from pyglet.gl import *
 
-import maths.rect
+import pygly.maths.rectangle
 
 
 class Viewport( object ):
@@ -234,7 +234,7 @@ class Viewport( object ):
         """
         # check that the point resides within the viewport
         pixel_rect = self.pixel_rect( window )
-        if maths.rect.is_relative_point_within_rect( point, pixel_rect ):
+        if pygly.maths.rectangle.is_relative_point_within_rect( point, pixel_rect ):
             # tell our camera to cast the ray
             if self.camera != None:
                 return self.camera().point_to_ray( window, self, point )
@@ -248,7 +248,7 @@ class Viewport( object ):
         """
         # convert to viewport co-ordinates
         pixel_rect = self.pixel_rect( window )
-        return maths.rect.make_point_relative(
+        return pygly.maths.rectangle.make_point_relative(
             point,
             pixel_rect
             )
@@ -259,7 +259,7 @@ class Viewport( object ):
         within the viewport.
         """
         pixel_rect = self.pixel_rect( window )
-        return maths.rect.is_point_within_rect(
+        return pygly.maths.rectangle.is_point_within_rect(
             point,
             pixel_rect
             )
@@ -268,7 +268,7 @@ class Viewport( object ):
         """
         Returns the size in pixels of the viewport.
         """
-        return maths.rect.scale_by_vector(
+        return pygly.maths.rectangle.scale_by_vector(
             self.viewport_ratio,
             [ window.width, window.height ]
             )
@@ -296,7 +296,7 @@ if __name__ == '__main__':
         width = 1024,
         height = 512
         )
-    viewport = Viewport( [0.0, 0.0, 1.0, 1.0] )
+    viewport = Viewport( [[0.0, 0.0], [1.0, 1.0]] )
     assert viewport.ratio_x == 0.0
     assert viewport.ratio_y == 0.0
     assert viewport.ratio_width == 1.0

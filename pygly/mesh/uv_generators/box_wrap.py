@@ -6,7 +6,7 @@ Created on 31/05/2011
 
 import numpy
 
-import maths.vector
+from pygly.maths import vector
 from uv_generator import UV_Generator
 
 
@@ -32,8 +32,8 @@ class BoxWrap( UV_Generator ):
         self.forward = numpy.array( forward, dtype = float )
         self.up = numpy.array( up, dtype = float )
         
-        maths.vector.normalise( self.forward )
-        maths.vector.normalise( self.up )
+        vector.normalise( self.forward )
+        vector.normalise( self.up )
         
         if numpy.dot( self.forward, self.up ) != 0.0:
             raise ValueError( "Vectors are not co-planar" )
@@ -46,16 +46,16 @@ class BoxWrap( UV_Generator ):
         right = numpy.cross( self.forward, self.up )
         
         # scale our vectors
-        right *= self.size[ maths.vector.x ]
-        forward = self.forward * self.size[ maths.vector.y ]
-        up = self.up * self.size[ maths.vector.z ]
+        right *= self.size[ 0 ]
+        forward = self.forward * self.size[ 1 ]
+        up = self.up * self.size[ 2 ]
         
         # determine which axis a normal points toward
         dot_products = numpy.empty( (3, len(normals)), dtype = float )
         
-        dot_right = dot_products[ maths.vector.x, ... ]
-        dot_forward = dot_products[ maths.vector.y, ... ]
-        dot_up = dot_products[ maths.vector.z, ... ]
+        dot_right = dot_products[ 0, ... ]
+        dot_forward = dot_products[ 1, ... ]
+        dot_up = dot_products[ 2, ... ]
         
         numpy.dot( normals, right, out = dot_right )
         numpy.dot( normals, forward, out = dot_forward )

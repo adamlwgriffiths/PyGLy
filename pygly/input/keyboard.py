@@ -7,7 +7,7 @@ Created on 24/06/2011
 from pyglet.gl import *
 import pyglet.window.key
 
-from input.digital import Digital
+from digital import Digital
 
 
 class Keyboard( object ):

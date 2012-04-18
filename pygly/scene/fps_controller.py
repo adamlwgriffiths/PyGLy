@@ -7,8 +7,8 @@ Created on Tue Sep 13 20:20:11 2011
 
 import math
 
-import maths.quaternion
-import maths.matrix33
+from pygly.maths import quaternion
+from pygly.maths import matrix33
 
 
 class FPS_Controller( object ):
@@ -59,11 +59,11 @@ class FPS_Controller( object ):
         if self.pitch < -self.piOver2:
             self.pitch = -self.piOver2
         
-        pitchQuat = maths.quaternion.set_to_rotation_about_x( self.pitch )
-        yawQuat = maths.quaternion.set_to_rotation_about_y( self.yaw )
+        pitchQuat = quaternion.set_to_rotation_about_x( self.pitch )
+        yawQuat = quaternion.set_to_rotation_about_y( self.yaw )
         
-        quat = maths.quaternion.cross_product( pitchQuat, yawQuat )
-        maths.quaternion.normalise( quat )
+        quat = quaternion.cross_product( pitchQuat, yawQuat )
+        quaternion.normalise( quat )
         self.scene_node.object_orientation = quat
 
     def translate_up( self, amount ):
@@ -83,10 +83,10 @@ class FPS_Controller( object ):
         Translates the object forward along the inertial X,Z
         plane.
         """
-        quat = maths.quaternion.set_to_rotation_about_y( self.yaw )
+        quat = quaternion.set_to_rotation_about_y( self.yaw )
 
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
-        vec = maths.matrix33.inertial_to_object(
+        matrix = matrix33.from_inertial_to_object_quaternion( quat )
+        vec = matrix33.inertial_to_object(
             [0.0, 0.0,-1.0],
             matrix
             )
@@ -98,10 +98,10 @@ class FPS_Controller( object ):
         Translates the object backward along the inertial X,Z
         plane.
         """
-        quat = maths.quaternion.set_to_rotation_about_y( self.yaw )
+        quat = quaternion.set_to_rotation_about_y( self.yaw )
 
-        matrix = maths.matrix33.from_inertial_to_object_quaternion( quat )
-        vec = maths.matrix33.inertial_to_object(
+        matrix = matrix33.from_inertial_to_object_quaternion( quat )
+        vec = matrix33.inertial_to_object(
             [0.0, 0.0, 1.0],
             matrix
             )

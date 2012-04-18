@@ -13,7 +13,7 @@ from collections import namedtuple
 import numpy
 from pyglet.gl import *
 
-import maths.vector
+from pygly.maths import vector
 
 
 class MD2_Mesh( object ):
@@ -507,11 +507,11 @@ class MD2_Mesh( object ):
             next_normals = self.frames[ current_frame + 1 ].normals
 
             # scale the difference based on the time
-            vertices = maths.vector.interpolate( vertices, next_vertices, delta )
-            normals = maths.vector.interpolate( normals, next_normals, delta )
+            vertices = vector.interpolate( vertices, next_vertices, delta )
+            normals = vector.interpolate( normals, next_normals, delta )
 
             # ensure our normals are vector length
-            maths.vector.normalise( normals )
+            vector.normalise( normals )
 
         # pass to opengl
         pyglet.graphics.draw(

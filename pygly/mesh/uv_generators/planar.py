@@ -6,8 +6,8 @@ Created on 29/05/2011
 
 import numpy
 
-from maths.plane import Plane
-import maths.matrix as matrix
+from pygly.maths.plane import Plane
+from pygly.maths import matrix
 from uv_generator import UV_Generator
 
 

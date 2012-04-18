@@ -16,8 +16,8 @@ from cocos.layer.base_layers import Layer as CocosLayer
 from cocos.director import director
 from pyglet.gl import *
 
-from renderer.viewport import Viewport
-import renderer.window as window
+from pygly.renderer.viewport import Viewport
+import pygly.renderer.window
 
 
 class Layer( CocosLayer ):
@@ -50,7 +50,7 @@ class Layer( CocosLayer ):
         # enable depth testing
         director.set_depth_test( True )
 
-        window.render(
+        pygly.renderer.window.render(
             director.window,
             [ self.pygly_viewport ]
             )

@@ -8,7 +8,7 @@ import math
 
 import numpy
 
-import maths.matrix33
+import matrix33
 
 
 def identity( out = None ):
@@ -34,7 +34,7 @@ def setup( eulers, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    mat33 = maths.matrix33.setup( eulers, mat33 )
+    mat33 = matrix33.setup( eulers, mat33 )
     
     return out
 
@@ -49,7 +49,7 @@ def from_inertial_to_object_quaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    maths.matrix33.from_inertial_to_object_quaternion( quat, mat33 )
+    matrix33.from_inertial_to_object_quaternion( quat, mat33 )
     
     return out
 
@@ -64,7 +64,7 @@ def from_object_to_inertial_quaternion( quat, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    maths.matrix33.from_object_to_inertial_quaternion( quat, mat33 )
+    matrix33.from_object_to_inertial_quaternion( quat, mat33 )
     
     return out
 
@@ -79,7 +79,7 @@ def inertial_to_object( vector, matrix, out = None ):
     
     # we'll use Matrix33 for our conversion
     mat33 = out[ 0:3, 0:3 ]
-    maths.matrix33.inertial_to_object( vector, mat33 )
+    matrix33.inertial_to_object( vector, mat33 )
     
     return out
 
