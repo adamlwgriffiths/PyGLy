@@ -50,7 +50,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
         # set the ortho matrix
         # http://stackoverflow.com/questions/4269079/mixing-2d-and-3d-in-opengl-using-pyglet
         height = self.scale[ 1 ]
-        width = self.scale[ 0 ] * viewport.aspect_ratio()
+        width = self.scale[ 0 ] * viewport.aspect_ratio( window )
         half_width = width / 2.0
         half_height = height / 2.0
         glOrtho(
