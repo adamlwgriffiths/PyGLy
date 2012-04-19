@@ -48,16 +48,32 @@ class OrthogonalViewMatrix( ViewMatrix ):
         glLoadIdentity()
 
         # set the ortho matrix
-        # http://stackoverflow.com/questions/4269079/mixing-2d-and-3d-in-opengl-using-pyglet
-        height = self.scale[ 1 ]
-        width = self.scale[ 0 ] * viewport.aspect_ratio( window )
-        half_width = width / 2.0
-        half_height = height / 2.0
+        left, right, bottom, top = self.bounds( viewport )
         glOrtho(
-            -half_width, half_width,
-            -half_height, half_height,
+            left, right,
+            bottom, top,
             self.near_clip, self.far_clip
             )
+
+    def bounds( self, viewport ):
+        """
+        Returns the maximum extents of the orthographic view
+        based on the current viewport and the set scale.
+
+        @return: Returns the bounds as a tuple (left, right, bottom, top)
+        """
+        size = self.size( viewport )
+        half_width = size[ 0 ] / 2.0
+        half_height = size[ 1 ]/ 2.0
+        return -half_width, half_width, -half_height, half_height
+
+    def size( self, viewport ):
+        """
+        @return: Returns the size of the viewport as a vector
+        """
+        height = self.scale[ 1 ]
+        width = self.scale[ 0 ] * viewport.aspect_ratio( window )
+        return numpy.array( [width, height], dtype = numpy.float )
 
     def pop_view_matrix( self ):
         glMatrixMode( GL_PROJECTION )
@@ -80,10 +96,30 @@ class OrthogonalViewMatrix( ViewMatrix ):
         @returns A ray consisting of 2 vectors (shape = 2,3).
         The vector will extend from Z = near_clip -> near_clip - 1.0
         """
+        # convert the point from a viewport point
+        # to a point in the ortho projection plane
+        viewport_size = viewport.pixel_rect( window )
+        size = self.size( viewport )
+        width = size[ 0 ]
+        height = size[ 1 ]
+        scale = numpy.array(
+            [
+                width,
+                height
+                ],
+            dtype = numpy.float
+            )
+        plane_point = numpy.array( point, dtype = numpy.float )
+        plane_point *= scale
+
+        # 0,0 is bottom left, we need to make this the centre
+        plane_point[ 0 ] -= width / 2.0
+        plane_point[ 1 ] -= height / 2.0
+
         return numpy.array(
             [
-                [ point[ 0 ], point[ 1 ], self.near_clip ],
-                [ point[ 0 ], point[ 1 ],-self.far_clip ]
+                [ plane_point[ 0 ], plane_point[ 1 ], self.near_clip ],
+                [ plane_point[ 0 ], plane_point[ 1 ],-self.far_clip ]
                 ],
             dtype = numpy.float
             )
