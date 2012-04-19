@@ -2,17 +2,6 @@
 Created on 20/06/2011
 
 @author: adam
-
-TODO: create a "size" calculation tool.
-This would be like the controls available to
-setting a desktop background.
-This would receive a rectangle (the requested size)
-The viewport size in pixels
-And return a rectangle based on the following preferences:
-
-Original (just use size X for the orth size)
-Fit biggest (scale until the biggest dimension fits the screen)
-Fit smallest (scale until the smallest dimension fits the screen)
 '''
 
 import math
@@ -29,16 +18,19 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
     def __init__(
         self,
+        scale,
         near_clip = 1.0,
         far_clip = 100.0
         ):
         """
         Initialises an Orthographic (2D) view matrix.
 
-        @param scale: The scale to applie to the matrix.
-        The dimensions of the view matrix are based on the viewport
-        size in order to keep the view ratio correct.
-        A fullscreen viewport 
+        @param scale: The scale to apply to the width and
+        height of the orthogonal view.
+        The dimensions of the view matrix (left, right, bottom, top)
+        are calculated as follows:
+        height = 1.0 * scale.y
+        width = 1.0 * scale.z * viewport aspect ratio 
         """
         super( OrthogonalViewMatrix, self ).__init__()
 
@@ -47,6 +39,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
         self.near_clip = near_clip
         self.far_clip = far_clip
+        self.scale = numpy.array( scale, dtype = numpy.float )
 
     def push_view_matrix( self, window, viewport ):
         # setup our projection matrix
@@ -56,8 +49,10 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
         # set the ortho matrix
         # http://stackoverflow.com/questions/4269079/mixing-2d-and-3d-in-opengl-using-pyglet
-        half_width = viewport.ratio_width / 2.0
-        half_height = viewport.ratio_height / 2.0
+        height = self.scale[ 1 ]
+        width = self.scale[ 0 ] * viewport.aspect_ratio()
+        half_width = width / 2.0
+        half_height = height / 2.0
         glOrtho(
             -half_width, half_width,
             -half_height, half_height,
