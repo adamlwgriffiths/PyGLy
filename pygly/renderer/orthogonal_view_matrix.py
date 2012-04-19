@@ -59,7 +59,6 @@ class OrthogonalViewMatrix( ViewMatrix ):
         half_width = viewport.ratio_width / 2.0
         half_height = viewport.ratio_height / 2.0
         glOrtho(
-            self.rect
             -half_width, half_width,
             -half_height, half_height,
             self.near_clip, self.far_clip
