@@ -21,6 +21,9 @@ import pygly.renderer.window
 
 
 class Layer( CocosLayer ):
+    """
+    Provides a Cocos2D layer which renders a PyGLy scene.
+    """
 
     def __init__( self ):
         super( CocosLayer, self ).__init__()
@@ -44,6 +47,8 @@ class Layer( CocosLayer ):
     def draw(self, *args, **kwargs):
         """
         Draws a PyGLy scene as a Cocos2D layer
+
+        This is called by Cocos2D Director.
         """
         super( CocosLayer, self ).draw( *args, **kwargs )
 
