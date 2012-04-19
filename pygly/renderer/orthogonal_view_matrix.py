@@ -47,7 +47,6 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
         self.near_clip = near_clip
         self.far_clip = far_clip
-        self.scale = numpy.array( scale, dtype = numpy.float )
 
     def push_view_matrix( self, window, viewport ):
         # setup our projection matrix
