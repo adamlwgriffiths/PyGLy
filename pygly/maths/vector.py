@@ -4,8 +4,6 @@ Created on 30/05/2011
 @author: adam
 
 TODO: make the 'cross' function accept Nd arrays
-TODO: add tests for 'cross'
-TODO: add tests for 'dot'
 TODO: add tests for 'interpolate'
 '''
 
@@ -95,19 +93,14 @@ def set_length( vec, length ):
 
     return vec
 
-def dot( a, b, out = None ):
+def dot( a, b ):
     """
     @param a: a 1d array with 3 elements (a vector)
-    Nd array of vectors.
-    (eg. numpy.array([ x, y, z ])
-    (eg. numpy.array([ [x1, y1, z1], [x2, y2, z2] ])
     @param b: a 1d array with 3 elements (a vector)
-    @param out: a contiguous array with enough room  for the result.
-    If the array is not contiguous (a column from a 2d array) it will throw an
-    exception. Work around this by creating a contiguous array of a different
-    shape and then reshaping, re-arranging or transposing.
+    @return: the dot product of vectors a and b.
     """
-    return numpy.dot( a, b, out = out )
+    assert len( a ) == len( b ) == 3
+    return numpy.dot( a, b )
 
 def cross( vector1, vector2 ):
     """
@@ -141,6 +134,10 @@ def interpolate( v1, v2, delta ):
 if __name__ == "__main__":
     import math
     
+    #
+    # normalise / length
+    # single vectors
+    #
     print "Normalise vectors"
     vec = numpy.array( [ 1.0, 1.0, 1.0 ], dtype = float )
     normalise( vec )
@@ -148,8 +145,20 @@ if __name__ == "__main__":
     assert vecLength == 1.0
     # individual length calc
     assert length( vec ) == 1.0
+
+    vec = numpy.array([ 1.0, 1.0, 1.0 ])
+    normalise( vec )
+    value = length( vec )
+    assert value == 1.0
+
+    set_length( vec, 2.0 )
+    value = length( vec )
+    assert value == 2.0
     
+    #
+    # normalise / length
     # list of vectors
+    #
     vecs = numpy.array([
         [ 1.0, 1.0, 1.0 ],
         [ 0.0, 2.0, 0.0 ]
@@ -167,7 +176,9 @@ if __name__ == "__main__":
         # individual length calc
         assert length( vec ) == 1.0
     
+    #
     # group length calc
+    #
     lengths = length( vecs )
     for value in lengths:
         assert value == 1.0
@@ -177,13 +188,30 @@ if __name__ == "__main__":
     for value in lengths:
         assert value == 2.0
 
-    vec = numpy.array([ 1.0, 1.0, 1.0 ])
-    normalise( vec )
-    value = length( vec )
-    assert value == 1.0
+    #
+    # dot product
+    #
+    def dot_test( vec1, vec2 ):
+        return \
+            vec1[ 0 ] * vec2[ 0 ] + \
+            vec1[ 1 ] * vec2[ 1 ] + \
+            vec1[ 2 ] * vec2[ 2 ]
 
-    set_length( vec, 2.0 )
-    value = length( vec )
-    assert value == 2.0
+    vec1 = [ 1.0, 0.0, 0.0 ]
+    vec2 = [ 0.5, 0.5, 0.0 ]
+    assert dot( vec1, vec2 ) == dot_test( vec1, vec2 )
 
+    vec1 = [ 20.0, 0.0, 0.0 ]
+    vec2 = [ 0.5, 0.5, 0.0 ]
+    assert dot( vec1, vec2 ) == dot_test( vec1, vec2 )
+
+    #
+    # cross product
+    #
+    vec1 = [ 1.0, 0.0, 0.0 ]
+    vec2 = [ 0.0, 1.0, 0.0 ]
+    result = cross( vec1, vec2 )
+    assert result[ 0 ] == 0.0
+    assert result[ 1 ] == 0.0
+    assert result[ 2 ] == 1.0
 
