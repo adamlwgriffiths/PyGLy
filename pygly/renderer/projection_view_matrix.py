@@ -10,6 +10,7 @@ import numpy
 from pyglet.gl import *
 
 from view_matrix import ViewMatrix
+from pygly.maths import ray
 
 
 class ProjectionViewMatrix( ViewMatrix ):
@@ -127,7 +128,7 @@ class ProjectionViewMatrix( ViewMatrix ):
         [0.0, 0.0] is the Bottom Left.
         [viewport.width, viewport.height] is the Top Right.
         @returns A ray consisting of 2 vectors (shape = 2,3).
-        The vector will extend from Z = near_clip -> near_clip - 1.0
+        The ray will begin at the near clip plane.
         """
         # calculate the point on the near plane
         near_plane_point = self.calculate_point_on_plane(
@@ -165,11 +166,10 @@ class ProjectionViewMatrix( ViewMatrix ):
 
         # convert the 2 vectors into a ray from
         # near_vec to far_vec
-        return numpy.array(
+        return ray.line_to_ray(
             [
                 near_vec,
                 far_vec
-                ],
-            dtype = numpy.float
+                ]
             )
 

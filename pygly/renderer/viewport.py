@@ -231,6 +231,7 @@ class Viewport( object ):
         @param point: The 2D point, relative to this camera,
         to project a ray from. A list of 2 float values.
         @returns A ray consisting of 2 vectors (shape = 2,3).
+        The ray will begin at the near clip plane.
         """
         # check that the point resides within the viewport
         pixel_rect = self.pixel_rect( window )

@@ -11,6 +11,7 @@ import numpy
 
 from view_matrix import ViewMatrix
 from pygly.maths import rectangle
+from pygly.maths import ray
 
 
 class OrthogonalViewMatrix( ViewMatrix ):
@@ -94,7 +95,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
         [0.0, 0.0] is the Bottom Left.
         [viewport.width, viewport.height] is the Top Right.
         @returns A ray consisting of 2 vectors (shape = 2,3).
-        The vector will extend from Z = near_clip -> near_clip - 1.0
+        The ray will begin at the near clip plane.
         """
         # convert the point from a viewport point
         # to a point in the ortho projection plane
@@ -116,11 +117,10 @@ class OrthogonalViewMatrix( ViewMatrix ):
         plane_point[ 0 ] -= width / 2.0
         plane_point[ 1 ] -= height / 2.0
 
-        return numpy.array(
+        return ray.line_to_ray(
             [
                 [ plane_point[ 0 ], plane_point[ 1 ], self.near_clip ],
                 [ plane_point[ 0 ], plane_point[ 1 ],-self.far_clip ]
-                ],
-            dtype = numpy.float
+                ]
             )
 
