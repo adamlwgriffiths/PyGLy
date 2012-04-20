@@ -37,6 +37,17 @@ def normalise( vec ):
     vec /= lengths.reshape( shape )
     return vec
 
+def squared_length( vec ):
+    """
+    Calculates the squared length of a vector.
+    Useful when trying to avoid the performance
+    penalty of a square root operation.
+    """
+    return \
+        vec[ 0 ] * vec[ 0 ] + \
+        vec[ 1 ] * vec[ 1 ] + \
+        vec[ 2 ] * vec[ 2 ]
+
 def length( vec ):
     """
     Returns the length of an Nd list of vectors
