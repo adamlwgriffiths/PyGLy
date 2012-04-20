@@ -4,7 +4,7 @@ Created on 30/05/2011
 @author: adam
 
 TODO: make the 'cross' function accept Nd arrays
-TODO: add tests for 'interpolate'
+TODO: make the 'dot' function accept Nd arrays
 '''
 
 import numpy
@@ -225,4 +225,20 @@ if __name__ == "__main__":
     assert result[ 0 ] == 0.0
     assert result[ 1 ] == 0.0
     assert result[ 2 ] == 1.0
+
+    #
+    # interpolate
+    #
+    vec1 = numpy.array(
+        [ 0.0, 0.0, 0.0 ],
+        dtype = numpy.float
+        )
+    vec2 = numpy.array(
+        [ 1.0, 1.0, 1.0 ],
+        dtype = numpy.float
+        )
+    result = interpolate( vec1, vec2, 0.5 )
+    assert result[ 0 ] == 0.5
+    assert result[ 1 ] == 0.5
+    assert result[ 2 ] == 0.5
 
