@@ -41,7 +41,7 @@ def render( window, viewports ):
             )
 
         # apply the cameras projection matrix
-        viewport.push_view_matrix( window )
+        viewport.push_view_matrix()
         # apply the cameras model view
         viewport.push_model_view()
         # render the scene

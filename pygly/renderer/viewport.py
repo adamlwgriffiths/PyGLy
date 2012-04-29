@@ -112,7 +112,7 @@ class Viewport( object ):
         # ontop of other viewports
         glClear( values )
     
-    def push_view_matrix( self, window ):
+    def push_view_matrix( self ):
         """
         Pushes the viewport's active camera's
         view matrix onto the stack.
@@ -122,10 +122,7 @@ class Viewport( object ):
         # so we need to get a reference to it
         if self.camera != None:
             # apply our projection matrix
-            self.camera().view_matrix.push_view_matrix(
-                window,
-                self
-                )
+            self.camera().view_matrix.push_view_matrix()
 
     def pop_view_matrix( self ):
         """
