@@ -10,6 +10,7 @@ from pyglet.gl import *
 import numpy
 
 from view_matrix import ViewMatrix
+from pygly.maths import matrix44
 from pygly.maths import rectangle
 from pygly.maths import ray
 import pygly.common.list
@@ -59,31 +60,32 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
     scale = property( _get_scale, _set_scale )
 
-    def push_view_matrix( self ):
-        # setup our projection matrix
-        glMatrixMode( GL_PROJECTION )
-        glPushMatrix()
-        glLoadIdentity()
+    def _update( self ):
+        assert self.dirty == True
 
-        # set the ortho matrix
-        left, right, bottom, top = self.bounds()
-        glOrtho(
-            left, right,
-            bottom, top,
-            self.near_clip, self.far_clip
+        left, right, top, bottom = self.bounds()
+        self._matrix = matrix44.create_orthogonal_view_matrix(
+            left,
+            right,
+            top,
+            bottom,
+            self.near_clip,
+            self.far_clip,
+            out = self._matrix
             )
+        self.dirty = False
 
     def bounds( self ):
         """
         Returns the maximum extents of the orthographic view
         based on the current viewport and the set scale.
 
-        @return: Returns the bounds as a tuple (left, right, bottom, top)
+        @return: Returns the bounds as a tuple (left, right, top, bottom)
         """
         size = self.size()
         half_width = size[ 0 ] / 2.0
         half_height = size[ 1 ]/ 2.0
-        return -half_width, half_width, -half_height, half_height
+        return -half_width, half_width, half_height, -half_height
 
     def size( self ):
         """
@@ -92,10 +94,6 @@ class OrthogonalViewMatrix( ViewMatrix ):
         height = self.scale[ 1 ]
         width = self.scale[ 0 ] * self.aspect_ratio
         return numpy.array( [width, height], dtype = numpy.float )
-
-    def pop_view_matrix( self ):
-        glMatrixMode( GL_PROJECTION )
-        glPopMatrix()
 
     def point_to_ray( self, window, viewport, point ):
         """
