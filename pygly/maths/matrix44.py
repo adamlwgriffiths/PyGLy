@@ -117,6 +117,50 @@ def scale( matrix, scale, out = None ):
     
     return out
 
+def create_projection_view_matrix(
+    left,
+    right,
+    top,
+    bottom,
+    near,
+    far,
+    out = None
+    ):
+    """
+    http://www.gamedev.net/topic/264248-building-a-projection-matrix-without-api/
+    http://www.glprogramming.com/red/chapter03.html
+    E  0  A  0
+    0  F  B  0
+    0  0  C  D
+    0  0  -1 0
+
+    A = (right+left)/(right-left)
+    B = (top+bottom)/(top-bottom)
+    C = -(far+near)/(far-near)
+    D = -2*far*near/(far-near)
+    E = 2*near/(right-left)
+    F = 2*near/(top-bottom)
+    """
+    if out == None:
+        out = numpy.empty( (4, 4), dtype = float )
+
+    A = (right + left) / (right - left)
+    B = (top + bottom) / (top - bottom)
+    C = -(far + near) / (far - near)
+    D = -2.0 * far * near / (far - near)
+    E = 2.0 * near / (right - left)
+    F = 2.0 * near / (top - bottom)
+
+    out[:] = [
+        [   E, 0.0, 0.0, 0.0 ],
+        [ 0.0,   F, 0.0, 0.0 ],
+        [   A,   B,   C,-1.0 ],
+        [ 0.0, 0.0,   D, 0.0 ],
+        ]
+
+    return out
+
+
 if __name__ == "__main__":
     mat44 = identity()
     # TODO: add more tests
