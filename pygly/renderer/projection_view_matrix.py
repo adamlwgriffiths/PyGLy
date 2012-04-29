@@ -11,6 +11,8 @@ from pyglet.gl import *
 
 from view_matrix import ViewMatrix
 from pygly.maths import ray
+from pygly.maths import matrix44
+from pygly.maths import trig
 
 
 class ProjectionViewMatrix( ViewMatrix ):
@@ -18,6 +20,7 @@ class ProjectionViewMatrix( ViewMatrix ):
 
     def __init__(
         self,
+        aspect_ratio,
         fov = 60.0,
         near_clip = 1.0,
         far_clip = 100.0
@@ -31,30 +34,58 @@ class ProjectionViewMatrix( ViewMatrix ):
         self.near_clip = near_clip
         self.far_clip = far_clip
 
-    @staticmethod
-    def calculate_plane_size( window, viewport, fov, distance ):
-        # http://www.songho.ca/opengl/gl_transform.html
-        # http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
-        # http://steinsoft.net/index.php?site=Programming/Code%20Snippets/OpenGL/gluperspective&printable=1
-        aspect_ratio = viewport.aspect_ratio( window )
-        tangent = math.radians( fov )
-        height = distance * tangent
-        width = height * aspect_ratio
+        self._matrix = None
+        self._aspect_ratio = None
 
-        return width * 2.0, height * 2.0
+        # this will trigger an update of the matrix
+        self.aspect_ratio = aspect_ratio
 
-    def calculate_near_clip_plane_size( self, window, viewport ):
-        return self.calculate_plane_size(
-            window,
-            viewport,
+    def _get_aspect_ratio( self ):
+        return self._aspect_ratio
+
+    def _set_aspect_ratio( self, aspect_ratio ):
+        # don't continue if the value hasn't changed
+        if self._aspect_ratio == aspect_ratio:
+            return
+
+        self._aspect_ratio = aspect_ratio
+
+        # update our matrix
+        self._update_matrix()
+
+    # this will grant get / set access to the
+    # aspect ratio.
+    # any assignment operation will trigger the updating
+    # of our view matrix
+    aspect_ratio = property( _get_aspect_ratio, _set_aspect_ratio )
+
+    def _update_matrix( self ):
+        # re-calculate the near clip plane
+        width, height = self.calculate_near_clip_plane_size()
+        width /= 2.0
+        height /= 2.0
+
+        # update our frustrum matrix
+        self._matrix = matrix44.create_projection_view_matrix(
+            -width,
+            +width,
+            +height,
+            -height,
+            self.near_clip,
+            self.far_clip,
+            out = self._matrix
+            )
+
+    def calculate_near_clip_plane_size( self ):
+        return trig.calculate_plane_size(
+            self._aspect_ratio,
             self.fov,
             self.near_clip
             )
 
-    def calculate_far_clip_plane_size( self, window, viewport ):
-        return self.calculate_plane_size(
-            window,
-            viewport,
+    def calculate_far_clip_plane_size( self ):
+        return trig.calculate_plane_size(
+            self._aspect_ratio,
             self.fov,
             self.far_clip
             )
@@ -65,29 +96,19 @@ class ProjectionViewMatrix( ViewMatrix ):
         glPushMatrix()
         glLoadIdentity()
 
-        # calculate the near plane's size
-        width, height = self.calculate_near_clip_plane_size(
-            window,
-            viewport
-            )
-        width /= 2.0
-        height /= 2.0
-
-        glFrustum(
-            -width, width,
-            -height, height,
-            self.near_clip, self.far_clip
-            )
+        glMatrix = (GLfloat * self._matrix.size)(*self._matrix.flat)
+        glLoadMatrixf( glMatrix )
     
     def pop_view_matrix( self ):
         glMatrixMode( GL_PROJECTION )
         glPopMatrix()
 
     def calculate_point_on_plane( self, window, viewport, point, distance ):
+        # TODO: remove the need for viewport / window
+        # it shouldn't be necessary
         # calculate the near plane's size
-        width, height = self.calculate_plane_size(
-            window,
-            viewport,
+        width, height = trig.calculate_plane_size(
+            self._aspect_ratio,
             self.fov,
             distance
             )
