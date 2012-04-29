@@ -30,15 +30,14 @@ class ProjectionViewMatrix( ViewMatrix ):
         if far_clip <= near_clip:
             raise ValueError( "Far clip cannot be less than near clip" )
 
-        self.fov = fov
-        self.near_clip = near_clip
-        self.far_clip = far_clip
+        self._near_clip = near_clip
+        self._far_clip = far_clip
+        self._fov = fov
+        self._aspect_ratio = aspect_ratio
+
+        self.dirty = True
 
         self._matrix = None
-        self._aspect_ratio = None
-
-        # this will trigger an update of the matrix
-        self.aspect_ratio = aspect_ratio
 
     def _get_aspect_ratio( self ):
         return self._aspect_ratio
@@ -47,19 +46,47 @@ class ProjectionViewMatrix( ViewMatrix ):
         # don't continue if the value hasn't changed
         if self._aspect_ratio == aspect_ratio:
             return
-
         self._aspect_ratio = aspect_ratio
+        self.dirty = True
 
-        # update our matrix
-        self._update_matrix()
-
-    # this will grant get / set access to the
-    # aspect ratio.
-    # any assignment operation will trigger the updating
-    # of our view matrix
     aspect_ratio = property( _get_aspect_ratio, _set_aspect_ratio )
 
-    def _update_matrix( self ):
+    def _get_near_clip( self ):
+        return self._near_clip
+
+    def _set_near_clip( self, near_clip ):
+        if self._near_clip == near_clip:
+            return
+        self._near_clip = near_clip
+        self.dirty = True
+
+    near_clip = property( _get_near_clip, _set_near_clip )
+
+    def _get_far_clip( self ):
+        return self._far_clip
+
+    def _set_far_clip( self, far_clip ):
+        if self._far_clip == far_clip:
+            return
+        self._far_clip = far_clip
+        self.dirty = True
+
+    far_clip = property( _get_far_clip, _set_far_clip )
+
+    def _get_fov( self ):
+        return self._fov
+
+    def _set_fov( self, fov ):
+        if self._fov == fov:
+            return
+        self._fov = fov
+        self.dirty = True
+
+    fov = property( _get_fov, _set_fov )
+
+    def _update( self ):
+        assert self.dirty == True
+
         # re-calculate the near clip plane
         width, height = self.calculate_near_clip_plane_size()
         width /= 2.0
@@ -75,6 +102,7 @@ class ProjectionViewMatrix( ViewMatrix ):
             self.far_clip,
             out = self._matrix
             )
+        self.dirty = False
 
     def calculate_near_clip_plane_size( self ):
         return trig.calculate_plane_size(
@@ -95,6 +123,9 @@ class ProjectionViewMatrix( ViewMatrix ):
         glMatrixMode( GL_PROJECTION )
         glPushMatrix()
         glLoadIdentity()
+
+        if self.dirty == True:
+            self._update()
 
         glMatrix = (GLfloat * self._matrix.size)(*self._matrix.flat)
         glLoadMatrixf( glMatrix )
