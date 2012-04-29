@@ -160,6 +160,43 @@ def create_projection_view_matrix(
 
     return out
 
+def create_orthogonal_view_matrix(
+    left,
+    right,
+    top,
+    bottom,
+    near,
+    far,
+    out = None
+    ):
+    """
+    http://msdn.microsoft.com/en-us/library/dd373965(v=vs.85).aspx
+    A 0 0 Tx
+    0 B 0 Ty
+    0 0 C Tz
+    0 0 0 1
+
+    A = 2 / (right - left)
+    B = 2 / (top - bottom)
+    C = -2 / (far - near)
+    """
+    if out == None:
+        out = numpy.empty( (4, 4), dtype = float )
+
+    A = 2 / (right - left)
+    B = 2 / (top - bottom)
+    C = -2 / (far - near)
+
+    out[:] = [
+        [   A, 0.0, 0.0, 0.0 ],
+        [ 0.0,   B, 0.0, 0.0 ],
+        [ 0.0, 0.0,   C, 0.0 ],
+        [ 0.0, 0.0, 0.0, 1.0 ],
+        ]
+
+    return out
+
+
 
 if __name__ == "__main__":
     mat44 = identity()
