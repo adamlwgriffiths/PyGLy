@@ -103,13 +103,16 @@ def scale( matrix, scale, out = None ):
     if out == None:
         out = identity() 
     
-    scale_matrix = identity()
     # apply the scale to the values diagonally
     # down the matrix
-    scale_matrix[ 0,0 ] *= scale[ 0 ]
-    scale_matrix[ 1,1 ] *= scale[ 1 ]
-    scale_matrix[ 2,2 ] *= scale[ 2 ]
-
+    scale_matrix = numpy.diagflat(
+        [
+            scale[ 0 ],
+            scale[ 1 ],
+            scale[ 2 ],
+            1.0
+            ]
+        )
     multiply( matrix, scale_matrix, out )
     
     return out
