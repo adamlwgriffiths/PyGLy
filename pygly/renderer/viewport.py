@@ -90,7 +90,7 @@ class Viewport( object ):
             int(self._rect[ (1,1) ])
             )
 
-    def aspect_ratio( self, window ):
+    def aspect_ratio( self ):
         """
         Returns the aspect ratio of the viewport.
 
@@ -343,5 +343,5 @@ if __name__ == '__main__':
     assert viewport.width == 1024
     assert viewport.height == 512
 
-    assert viewport.aspect_ratio( window ) == 2.0
+    assert viewport.aspect_ratio() == 2.0
 
