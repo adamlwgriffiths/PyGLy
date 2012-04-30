@@ -13,6 +13,10 @@ row_major = 2
 
 def apply_direction_scale( vectors, direction, scale ):
     """
+    Applies a directional scaling to a set of vectors.
+    An example usage for this is to flatten a mesh against a
+    single plane.
+
     @param vectors: a 2d numpy array of vectors
     eg. numpy.array([ [x,y,z] ])
     @param direction: a 1d numpy array of the direction to scale
@@ -74,6 +78,8 @@ def apply_direction_scale( vectors, direction, scale ):
 
 def apply_scale( vectors, scalingVector ):
     """
+    Applies a 3 dimensional scale to a set of vectors.
+
     @param vectors: a 2d numpy array of vectors
     eg. numpy.array([ [x,y,z] ])
     @param scalingVector: the scale vector, can be a 1x3 array, list or tuple
