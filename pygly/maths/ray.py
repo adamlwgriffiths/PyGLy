@@ -37,9 +37,10 @@ def line_to_ray( line, out = None ):
         out = numpy.empty( (2,3), dtype = numpy.float )
 
     out[ 0 ] = line[ 0 ]
+    out[ 1 ] = line[ 1 ]
 
     # direction = vend - vstart
-    out[ 1 ] = line[ 1 ] - line[ 0 ]
+    out[ 1 ] -= out[ 0 ]
     vector.normalise( out[ 1 ] )
 
     return out
