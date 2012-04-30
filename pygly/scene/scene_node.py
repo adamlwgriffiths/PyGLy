@@ -122,7 +122,10 @@ class SceneNode( object ):
     Uses the _get_inertial_translation and
     _set_inertial_translation methods.
     """
-    inertial_translation = property( _get_inertial_translation, _set_inertial_translation )
+    inertial_translation = property(
+        _get_inertial_translation,
+        _set_inertial_translation
+        )
     
     def _get_world_translation( self ):
         """
@@ -146,7 +149,10 @@ class SceneNode( object ):
             "SceneNode._set_world_translation not implemented for non local translations"
             )
     
-    world_translation = property( _get_world_translation, _set_world_translation )
+    world_translation = property(
+        _get_world_translation,
+        _set_world_translation
+        )
     
     def _get_object_orientation( self ):
         """
@@ -172,7 +178,10 @@ class SceneNode( object ):
     Uses the _get_object_orientation and
     _set_object_orientation methods.
     """
-    object_orientation = property( _get_object_orientation, _set_object_orientation )
+    object_orientation = property(
+        _get_object_orientation,
+        _set_object_orientation
+        )
     
     def _get_world_orientation( self ):
         """
@@ -205,7 +214,10 @@ class SceneNode( object ):
     Uses the _get_world_orientation and
     _set_world_orientation methods.
     """
-    world_orientation = property( _get_world_orientation, _set_world_orientation )
+    world_orientation = property(
+        _get_world_orientation,
+        _set_world_orientation
+        )
     
     def rotate_object_quaternion( self, orientation ):
         """
