@@ -83,7 +83,7 @@ class CameraNode( SceneNode ):
         """
         debug_axis.render()
 
-    def point_to_ray( self, window, viewport, point ):
+    def viewport_point_to_ray( self, point ):
         """
         Returns a ray cast from 2d camera co-ordinates
         into the world.
@@ -100,8 +100,7 @@ class CameraNode( SceneNode ):
         # convert the point to a ray
         # the ray is in the format
         # [ [near.x,near.y,near.z], [far.x,far.y,far.z] ]
-        local_ray = self.view_matrix.point_to_ray( window, viewport, point )
-        #print "local_ray",local_ray
+        local_ray = self.view_matrix.point_to_ray( point )
 
         # convert our quaternion to a matrix
         matrix = pygly.maths.matrix44.from_inertial_to_object_quaternion(
@@ -116,3 +115,4 @@ class CameraNode( SceneNode ):
         pygly.maths.matrix44.inertial_to_object( local_ray[ 1 ], matrix )
         return local_ray
     
+

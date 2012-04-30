@@ -95,42 +95,35 @@ class OrthogonalViewMatrix( ViewMatrix ):
         width = self.scale[ 0 ] * self.aspect_ratio
         return numpy.array( [width, height], dtype = numpy.float )
 
-    def point_to_ray( self, window, viewport, point ):
+    def point_to_ray( self, point ):
         """
         Returns a local ray cast from the camera co-ordinates
         at 'point'.
 
+        The ray will begin at the near clip plane.
+        The ray is relative to the origin.
+        The ray will project from the near clip plane
+        down the -Z plane toward the far clip plane.
+
         The ray is in intertial space and must be transformed
         to the objects intended translation and orientation.
 
-        @param window: The window the viewport resides on. This is ignored.
-        @param viewport: The viewport used for picking.
         @param point: The 2D point, relative to this view matrix,
         to project a ray from. A list of 2 float values.
         [0.0, 0.0] is the Bottom Left.
         [viewport.width, viewport.height] is the Top Right.
         @returns A ray consisting of 2 vectors (shape = 2,3).
-        The ray will begin at the near clip plane.
         """
         # convert the point from a viewport point
         # to a point in the ortho projection plane
-        viewport_size = viewport.pixel_rect( window )
-        size = self.size( viewport )
-        width = size[ 0 ]
-        height = size[ 1 ]
-        scale = numpy.array(
-            [
-                width,
-                height
-                ],
-            dtype = numpy.float
-            )
+        size = self.size()
+
         plane_point = numpy.array( point, dtype = numpy.float )
-        plane_point *= scale
+        plane_point *= size
 
         # 0,0 is bottom left, we need to make this the centre
-        plane_point[ 0 ] -= width / 2.0
-        plane_point[ 1 ] -= height / 2.0
+        half_size = size / 2.0
+        plane_point -= half_size
 
         return ray.line_to_ray(
             [

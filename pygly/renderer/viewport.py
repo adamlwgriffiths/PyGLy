@@ -9,6 +9,7 @@ import weakref
 import numpy
 from pyglet.gl import *
 
+import pygly.renderer.window
 import pygly.maths.rectangle
 
 
@@ -56,15 +57,17 @@ class Viewport( object ):
         """
         Calls glViewport which sets up the viewport
         for rendering.
+
+        To reset this call
+        pygly.renderer.window.set_viewport_to_window.
+
+        This is essentially a wrapper around calling
+        pygly.renderer.window.set_viewport_to_rect with the
+        viewport.pixel_rect as the parameter.
         """
         # update our viewport size
-        pixel_rect = self.pixel_rect( window )
-        glViewport(
-            int(pixel_rect[ (0,0) ]),
-            int(pixel_rect[ (0,1) ]),
-            int(pixel_rect[ (1,0) ]),
-            int(pixel_rect[ (1,1) ])
-            )
+        pixels = self.pixel_rect( window )
+        pygly.renderer.window.set_viewport_to_rect( pixels )
 
     def aspect_ratio( self, window ):
         """
@@ -73,24 +76,25 @@ class Viewport( object ):
         Aspect ratio is the ratio of width to height
         a value of 2.0 means width is 2*height
         """
-        pixel_rect = self.pixel_rect( window )
-        aspect_ratio = float(pixel_rect[ (1,0) ]) / float(pixel_rect[ (1,1) ])
+        pixels = self.pixel_rect( window )
+        aspect_ratio = float(pixels[ (1,0) ]) / float(pixels[ (1,1) ])
         return aspect_ratio
 
     def scissor_to_viewport( self, window ):
         """
         Calls glScissor with the size of the viewport.
+
         It is up to the user to call
         glEnable(GL_SCISSOR_TEST).
+
         To undo this, use renderer.window.scissor_to_window
+
+        This is essentially a wrapper around calling
+        pygly.renderer.window.scissor_to_rect with the
+        viewport.pixel_rect as the parameter.
         """
-        pixel_rect = self.pixel_rect( window )
-        glScissor( 
-            int(pixel_rect[ (0,0) ]),
-            int(pixel_rect[ (0,1) ]),
-            int(pixel_rect[ (1,0) ]),
-            int(pixel_rect[ (1,1) ])
-            )
+        rect = self.pixel_rect( window )
+        pygly.renderer.window.scissor_to_rect( rect )
 
     def clear(
         self,
@@ -219,39 +223,35 @@ class Viewport( object ):
         # clear areas of the window
         glEnable( GL_SCISSOR_TEST )
 
-    def relative_point_to_ray( self, window, point ):
+    def viewport_point_to_ray( self, point ):
         """
-        Returns a ray cast from 2d window co-ordinates
+        Returns a ray cast from viewport space
         into the world.
 
         @param viewport: The viewport being used to cast the ray.
-        @param point: The 2D point, relative to this camera,
-        to project a ray from. A list of 2 float values.
-        @returns A ray consisting of 2 vectors (shape = 2,3).
+        @param point: The 2D point, relative to this viewport
+        to project a ray from. The valid range for the point
+        values is from 0.0 <= x <= 1.0.
+        @return A ray consisting of 2 vectors (shape = 2,3).
         The ray will begin at the near clip plane.
+        If the viewport has no camera, None will be returned.
         """
         # check that the point resides within the viewport
-        pixel_rect = self.pixel_rect( window )
-        if pygly.maths.rectangle.is_relative_point_within_rect( point, pixel_rect ):
-            # tell our camera to cast the ray
-            if self.camera != None:
-                return self.camera().point_to_ray( window, self, point )
-        else:
-            raise ValueError( "Point does not lie within viewport" )
+        if \
+            point[ 0 ] < 0.0 or \
+            point[ 0 ] > 1.0 or \
+            point[ 1 ] < 0.0 or \
+            point[ 1 ] > 1.0:
+            raise ValueError( "Point is not within viewport" )
 
-    def point_relative_to_viewport( self, window, point ):
-        """
-        Converts a point relative to the window, to a point
-        relative to the viewport.
-        """
-        # convert to viewport co-ordinates
-        pixel_rect = self.pixel_rect( window )
-        return pygly.maths.rectangle.make_point_relative(
-            point,
-            pixel_rect
-            )
+        # tell our camera to cast the ray
+        if self.camera == None:
+            # no camera
+            return None
 
-    def is_point_within_viewport( self, window, point ):
+        return self.camera().viewport_point_to_ray( point )
+
+    def is_window_point_within_viewport( self, window, point ):
         """
         Checks if a point relative to the window is
         within the viewport.
