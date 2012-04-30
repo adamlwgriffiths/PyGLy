@@ -24,11 +24,13 @@ class RenderCallbackNode( SceneNode ):
         self.render_callback = render_callback
         
         # initialise the mesh now
-        self.initialise_callback()
+        if self.initialise_callback != None:
+            self.initialise_callback()
     
     def on_context_lost( self ):
         # re-create any data for the mesh
-        self.initialise_callback()
+        if self.initialise_callback != None:
+            self.initialise_callback()
         
         # let our children know
         for child in self.children:
