@@ -9,7 +9,8 @@ import weakref
 import numpy
 from pyglet.gl import *
 
-import pygly.renderer.window
+# We cannot import renderer.window or we
+# will get ciruclar imports
 import pygly.maths.rectangle
 
 
@@ -21,24 +22,44 @@ class Viewport( object ):
         Creates a viewport with the size of rect.
 
         @param rect: An array with the shape (2,2).
-        Values are from 0.0 -> 1.0.
-        Values may exceed this but will be off the screen.
-        A rect of [ [0.0,0.0],[1.0,1.0] ] is the equivalent
-        of a whole window.
+        Values are in pixels
+        Values may exceed the window size but will be off the screen.
+        OpenGL may place limits on how far off screen a viewport
+        may go.
         """
         super( Viewport, self ).__init__()
 
         self.camera = None
         self.scene_node = None
-        self.viewport_ratio = numpy.array(
+        self._rect = numpy.array(
             rect,
-            dtype = numpy.float
+            dtype = numpy.int
             )
 
-        if self.viewport_ratio.shape != (2,2):
+        if self.rect.shape != (2,2):
             raise ValueError(
                 "Viewport rect must be an array with shape (2,2)"
                 )
+
+    def _get_rect( self ):
+        return self._rect
+
+    def _set_rect( self, rect ):
+        if \
+            self._rect[ (0, 0) ] == rect[ (0, 0) ] and \
+            self._rect[ (0, 1) ] == rect[ (0, 1) ] and \
+            self._rect[ (1, 0) ] == rect[ (1, 0) ] and \
+            self._rect[ (1, 1) ] == rect[ (1, 1) ]:
+            # no change
+            return
+
+        self._rect[:] = rect
+
+        # update our camera
+        if self.camera != None:
+            self.camera().view_matrix.aspect_ratio = self.aspect_ratio()
+
+    rect = property( _get_rect, _set_rect )
 
     def set_camera( self, scene_node, camera ):
         """
@@ -53,21 +74,21 @@ class Viewport( object ):
         self.scene_node = scene_node
         self.camera = weakref.ref( camera )
     
-    def switch_to( self, window ):
+    def switch_to( self ):
         """
         Calls glViewport which sets up the viewport
         for rendering.
 
         To reset this call
         pygly.renderer.window.set_viewport_to_window.
-
-        This is essentially a wrapper around calling
-        pygly.renderer.window.set_viewport_to_rect with the
-        viewport.pixel_rect as the parameter.
         """
         # update our viewport size
-        pixels = self.pixel_rect( window )
-        pygly.renderer.window.set_viewport_to_rect( pixels )
+        glViewport(
+            int(self._rect[ (0,0) ]),
+            int(self._rect[ (0,1) ]),
+            int(self._rect[ (1,0) ]),
+            int(self._rect[ (1,1) ])
+            )
 
     def aspect_ratio( self, window ):
         """
@@ -76,11 +97,10 @@ class Viewport( object ):
         Aspect ratio is the ratio of width to height
         a value of 2.0 means width is 2*height
         """
-        pixels = self.pixel_rect( window )
-        aspect_ratio = float(pixels[ (1,0) ]) / float(pixels[ (1,1) ])
+        aspect_ratio = float(self._rect[ (1,0) ]) / float(self._rect[ (1,1) ])
         return aspect_ratio
 
-    def scissor_to_viewport( self, window ):
+    def scissor_to_viewport( self ):
         """
         Calls glScissor with the size of the viewport.
 
@@ -88,17 +108,16 @@ class Viewport( object ):
         glEnable(GL_SCISSOR_TEST).
 
         To undo this, use renderer.window.scissor_to_window
-
-        This is essentially a wrapper around calling
-        pygly.renderer.window.scissor_to_rect with the
-        viewport.pixel_rect as the parameter.
         """
-        rect = self.pixel_rect( window )
-        pygly.renderer.window.scissor_to_rect( rect )
+        glViewport(
+            int(self._rect[ (0,0) ]),
+            int(self._rect[ (0,1) ]),
+            int(self._rect[ (1,0) ]),
+            int(self._rect[ (1,1) ])
+            )
 
     def clear(
         self,
-        window,
         values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
         ):
         """
@@ -110,7 +129,7 @@ class Viewport( object ):
         # clear the region
         # we use glScissor to set the pixels
         # we want to affect
-        self.scissor_to_viewport( window )
+        self.scissor_to_viewport()
 
         # clear the background or we will just draw
         # ontop of other viewports
@@ -229,19 +248,20 @@ class Viewport( object ):
         into the world.
 
         @param viewport: The viewport being used to cast the ray.
-        @param point: The 2D point, relative to this viewport
-        to project a ray from. The valid range for the point
-        values is from 0.0 <= x <= 1.0.
+        @param point: The 2D point in pixels, relative to this
+        viewport, to project a ray from.
         @return A ray consisting of 2 vectors (shape = 2,3).
         The ray will begin at the near clip plane.
         If the viewport has no camera, None will be returned.
+        @raise ValueError: Raised if the point is < 0,0 or
+        > width,height of the viewport.
         """
         # check that the point resides within the viewport
         if \
-            point[ 0 ] < 0.0 or \
-            point[ 0 ] > 1.0 or \
-            point[ 1 ] < 0.0 or \
-            point[ 1 ] > 1.0:
+            point[ 0 ] < 0 or \
+            point[ 0 ] > self.width or \
+            point[ 1 ] < 0 or \
+            point[ 1 ] > self.height:
             raise ValueError( "Point is not within viewport" )
 
         # tell our camera to cast the ray
@@ -249,43 +269,61 @@ class Viewport( object ):
             # no camera
             return None
 
-        return self.camera().viewport_point_to_ray( point )
+        # convert from pixel position to relative position
+        # ie, 0.0 -> 1.0
+        relative_point = numpy.array(
+            point,
+            dtype = numpy.float
+            )
+        size = numpy.array(
+            self._rect[ 1 ],
+            dtype = numpy.float
+            )
+        relative_point /= size
 
-    def is_window_point_within_viewport( self, window, point ):
+        return self.camera().viewport_point_to_ray( relative_point )
+
+    def is_window_point_within_viewport( self, point ):
         """
         Checks if a point relative to the window is
         within the viewport.
         """
-        pixel_rect = self.pixel_rect( window )
         return pygly.maths.rectangle.is_point_within_rect(
             point,
-            pixel_rect
-            )
-
-    def pixel_rect( self, window ):
-        """
-        Returns the size in pixels of the viewport.
-        """
-        return pygly.maths.rectangle.scale_by_vector(
-            self.viewport_ratio,
-            [ window.width, window.height ]
+            self._rect
             )
 
     @property
-    def ratio_x( self ):
-        return self.viewport_ratio[ (0,0) ]
+    def x( self ):
+        return self._rect[ (0,0) ]
 
     @property
-    def ratio_y( self ):
-        return self.viewport_ratio[ (0,1) ]
+    def y( self ):
+        return self._rect[ (0,1) ]
     
     @property
-    def ratio_width( self ):
-        return self.viewport_ratio[ (1,0) ]
+    def width( self ):
+        return self._rect[ (1,0) ]
     
     @property
-    def ratio_height( self ):
-        return self.viewport_ratio[ (1,1) ]
+    def height( self ):
+        return self._rect[ (1,1) ]
+
+    @property
+    def left( self ):
+        return self._rect[ (0,0) ]
+
+    @property
+    def bottom( self ):
+        return self._rect[ (0,1) ]
+
+    @property
+    def right( self ):
+        return self._rect[ (0,0) ] + self._rect[ (1,0) ]
+
+    @property
+    def top( self ):
+        return self._rect[ (0,1) ] + self._rect[ (1,1) ]
 
 
 if __name__ == '__main__':
@@ -294,17 +332,16 @@ if __name__ == '__main__':
         width = 1024,
         height = 512
         )
-    viewport = Viewport( [[0.0, 0.0], [1.0, 1.0]] )
-    assert viewport.ratio_x == 0.0
-    assert viewport.ratio_y == 0.0
-    assert viewport.ratio_width == 1.0
-    assert viewport.ratio_height == 1.0
+    viewport = Viewport(
+        [
+            [0, 0],
+            [1024, 512]
+            ]
+        )
+    assert viewport.x == 0
+    assert viewport.y == 0
+    assert viewport.width == 1024
+    assert viewport.height == 512
 
     assert viewport.aspect_ratio( window ) == 2.0
-
-    pixel_rect = viewport.pixel_rect( window )
-    assert pixel_rect[ (0,0) ] == 0
-    assert pixel_rect[ (0,1) ] == 0
-    assert pixel_rect[ (1,0) ] == 1024
-    assert pixel_rect[ (1,1) ] == 512
 

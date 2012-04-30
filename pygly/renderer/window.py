@@ -4,10 +4,21 @@ Created on 02/03/2012
 @author: adam
 '''
 
+import numpy
 from pyglet.gl import *
 
-from viewport import Viewport
+from pygly.renderer.viewport import Viewport
 import pygly.maths.rectangle
+
+
+def window_size_as_rect( window ):
+    return pygly.maths.rectangle.create_from_bounds(
+        left = 0,
+        right = window.width,
+        bottom = 0,
+        top = window.height,
+        data_type = numpy.int
+        )
 
 def find_viewport_for_point( window, viewports, point ):
     """
@@ -19,10 +30,7 @@ def find_viewport_for_point( window, viewports, point ):
     if the point is not within a viewport.
     """
     for viewport in viewports:
-        if viewport.is_window_point_within_viewport(
-            window,
-            point
-            ):
+        if viewport.is_window_point_within_viewport( point ):
             # the point is within this viewport
             return viewport
 
@@ -38,28 +46,13 @@ def window_point_to_viewport_point( window, viewport, point ):
     and point.
     @param viewport: The viewport the point is within.
     @param point: The point on the window. This is in pixels.
-    @return: The point within the viewport. The values of which
-    are in the range of 0.0 -> 1.0.
-    @raise ValueError: Raised if the point is not within
-    the viewport.
+    @return: The point within the viewport.
     """
     # convert to viewport co-ordinates
-    pixel_rect = viewport.pixel_rect( window )
     relative_point = pygly.maths.rectangle.make_point_relative(
         point,
-        pixel_rect
+        viewport.rect
         )
-
-    # scale the value from 0. -> 1.0
-    relative_point /= pixel_rect[ 1 ]
-
-    # check that the point resides within the viewport
-    if \
-        relative_point[ 0 ] < 0.0 or \
-        relative_point[ 0 ] > 1.0 or \
-        relative_point[ 1 ] < 0.0 or \
-        relative_point[ 1 ] > 1.0:
-        raise ValueError( "Point is not within viewport" )
 
     return relative_point
 
@@ -69,28 +62,9 @@ def set_viewport_to_window( window ):
     the window.
 
     This can be used to undo the call
-    set_viewport_to_rect.
+    viewport.switch_to or glViewport.
     """
-    glViewport(
-        0,
-        0,
-        window.width,
-        window.height
-        )
-
-def set_viewport_to_rect( rect ):
-    """
-    Calls glViewport with the dimensions of the
-    pass rectangle.
-
-    To undo this, use set_viewport_to_window.
-    """
-    glViewport(
-        int(rect[ (0,0) ]),
-        int(rect[ (0,1) ]),
-        int(rect[ (1,0) ]),
-        int(rect[ (1,1) ])
-        )
+    glViewport( 0, 0, window.width, window.height )
 
 def scissor_to_rect( rect ):
     """
@@ -109,12 +83,7 @@ def scissor_to_rect( rect ):
         )
 
 def scissor_to_window( window ):
-    glScissor(
-        0,
-        0,
-        window.width,
-        window.height
-        )
+    glScissor( 0, 0, window.width, window.height )
 
 def render( window, viewports ):
     # set ourself as the active window
@@ -126,7 +95,7 @@ def render( window, viewports ):
     # iterate through all of our viewports
     for viewport in viewports:
         # activate the viewport
-        viewport.switch_to( window )
+        viewport.switch_to()
 
         # setup our open gl state for the viewport
         # also calls glScissor to the viewports dimensions
@@ -136,7 +105,6 @@ def render( window, viewports ):
         # we need to do this incase the viewports
         # overlap
         viewport.clear(
-            window,
             values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
             )
 

@@ -9,11 +9,21 @@ import math
 import numpy
 
 
-def zero( out = None ):
+def zero( out = None, data_type = numpy.float ):
     if out == None:
-        out = numpy.empty( (2,2), dtype = float )
+        out = numpy.empty( (2,2), dtype = data_type )
     
     out[:] = [ [0.0, 0.0], [0.0, 0.0] ]
+    return out
+
+def create_from_bounds( left, right, bottom, top, out = None, data_type = numpy.float ):
+    if out == None:
+        out = numpy.empty( (2,2), dtype = data_type )
+
+    out[:] = [
+        [ left, bottom ],
+        [ right - left, top - bottom ]
+        ]
     return out
 
 def extract_extents( rect ):
