@@ -55,9 +55,10 @@ class Viewport( object ):
 
         self._rect[:] = rect
 
-        # update our camera
+        # notify our camera's view matrix that our
+        # viewport geometry has changed
         if self.camera != None:
-            self.camera().view_matrix.aspect_ratio = self.aspect_ratio()
+            self.camera().view_matrix.aspect_ratio = self.aspect_ratio
 
     rect = property( _get_rect, _set_rect )
 
@@ -90,6 +91,7 @@ class Viewport( object ):
             int(self._rect[ (1,1) ])
             )
 
+    @property
     def aspect_ratio( self ):
         """
         Returns the aspect ratio of the viewport.
@@ -109,7 +111,7 @@ class Viewport( object ):
 
         To undo this, use renderer.window.scissor_to_window
         """
-        glViewport(
+        glScissor(
             int(self._rect[ (0,0) ]),
             int(self._rect[ (0,1) ]),
             int(self._rect[ (1,0) ]),
@@ -343,5 +345,5 @@ if __name__ == '__main__':
     assert viewport.width == 1024
     assert viewport.height == 512
 
-    assert viewport.aspect_ratio() == 2.0
+    assert viewport.aspect_ratio == 2.0
 

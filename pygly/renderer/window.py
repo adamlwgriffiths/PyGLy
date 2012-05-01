@@ -123,7 +123,7 @@ def render( window, viewports ):
         viewport.pop_viewport_attributes()
 
     # reset the viewport to the full window
-    glViewport( 0, 0, window.width, window.height )
+    set_viewport_to_window( window )
 
     # undo any viewport scissor calls
     scissor_to_window( window )
