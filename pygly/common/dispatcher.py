@@ -4,8 +4,6 @@ Created on 01/03/2012
 @author: adam
 '''
 
-from pyglet.gl import *
-
 
 class Dispatcher( object ):
     """
