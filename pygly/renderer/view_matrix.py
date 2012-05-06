@@ -94,3 +94,4 @@ class ViewMatrix( object ):
         self.dirty = True
 
     far_clip = property( _get_far_clip, _set_far_clip )
+
