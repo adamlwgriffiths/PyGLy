@@ -7,7 +7,7 @@ Created on Tue Sep 13 21:20:52 2011
 
 import math
 
-from pygly.maths import quaternion
+from pyrr import quaternion
 
 
 class SixDOF_Controller( object ):
@@ -24,7 +24,7 @@ class SixDOF_Controller( object ):
         """
         if yaw != None:
             quat = quaternion.set_to_rotation_about_y( yaw )
-            quaternion.cross_product(
+            quaternion.cross(
                 quat,
                 self.scene_node.object_orientation,
                 out = self.scene_node.object_orientation
@@ -37,7 +37,7 @@ class SixDOF_Controller( object ):
             self.scene_node._set_dirty()
         if pitch != None:
             quat = quaternion.set_to_rotation_about_x( pitch )
-            quaternion.cross_product(
+            quaternion.cross(
                 quat,
                 self.scene_node.object_orientation,
                 out = self.scene_node.object_orientation
@@ -50,7 +50,7 @@ class SixDOF_Controller( object ):
             self.scene_node._set_dirty()
         if roll != None:
             quat = quaternion.set_to_rotation_about_z( roll )
-            quaternion.cross_product(
+            quaternion.cross(
                 quat,
                 self.scene_node.object_orientation,
                 out = self.scene_node.object_orientation

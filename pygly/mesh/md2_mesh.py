@@ -13,7 +13,7 @@ from collections import namedtuple
 import numpy
 from pyglet.gl import *
 
-from pygly.maths import vector
+from pyrr import vector
 
 
 class MD2_Mesh( object ):

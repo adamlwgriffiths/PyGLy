@@ -6,7 +6,7 @@ Created on 31/05/2011
 
 import numpy
 
-from pygly.maths import vector
+from pyrr import vector
 from uv_generator import UV_Generator
 
 

@@ -16,9 +16,9 @@ import weakref
 import numpy
 from pyglet.gl import *
 
-from pygly.maths import quaternion
-from pygly.maths import matrix33
-from pygly.maths import matrix44
+from pyrr import quaternion
+from pyrr import matrix33
+from pyrr import matrix44
 import debug_cube
 import debug_axis
 
@@ -50,7 +50,7 @@ class SceneNode( object ):
         self._translation = numpy.zeros( 3, dtype = float )
         self._world_translation = numpy.zeros( 3, dtype = float )
         
-        self.scale = numpy.ones( (3), dtype = float )
+        self.scale = numpy.ones( 3, dtype = float )
         self.dirty = True
 
     def _set_dirty( self ):
@@ -87,12 +87,17 @@ class SceneNode( object ):
             parent_world_orientation = parent._get_world_orientation()
             
             # rotate our translation by our parent's world orientation
-            parent_world_matrix = matrix33.from_inertial_to_object_quaternion( parent_world_orientation )
-            world_translation = matrix33.inertial_to_object( self._translation, parent_world_matrix )
+            parent_world_matrix = matrix33.create_from_quaternion(
+                parent_world_orientation
+                )
+            world_translation = matrix33.apply_to_vector(
+                self._translation,
+                parent_world_matrix
+                )
             self._world_translation[:] = parent_world_translation + world_translation
             
             # multiply our rotation by our parents
-            self._world_orientation = quaternion.cross_product(
+            self._world_orientation = quaternion.cross(
                 self._orientation,
                 parent_world_orientation
                 )
@@ -231,7 +236,7 @@ class SceneNode( object ):
         
         # order of operations matters here
         # our orientation must be the second parameter
-        quaternion.cross_product(
+        quaternion.cross(
             orientation,
             self._orientation,
             out = self._orientation
@@ -269,8 +274,8 @@ class SceneNode( object ):
         self.rotate_object_quaternion( quat )
 
     def _rotate_vector_by_quaternion( self, quat, vec ):
-        matrix = matrix33.from_inertial_to_object_quaternion( quat )
-        result_vec = matrix33.inertial_to_object( vec, matrix )
+        matrix = matrix33.create_from_quaternion( quat )
+        result_vec = matrix33.apply_to_vector( vec, matrix )
         return result_vec
 
     def object_x_axis( self ):
@@ -514,7 +519,7 @@ class SceneNode( object ):
         # finally translation
 
         # convert our quaternion to a matrix
-        matrix = matrix44.from_inertial_to_object_quaternion(
+        matrix = matrix44.create_from_quaternion(
             self._orientation
             )
 

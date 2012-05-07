@@ -7,12 +7,12 @@ Created on 02/03/2012
 import numpy
 from pyglet.gl import *
 
+from pyrr import rectangle
 from pygly.renderer.viewport import Viewport
-import pygly.maths.rectangle
 
 
 def window_size_as_rect( window ):
-    return pygly.maths.rectangle.create_from_bounds(
+    return rectangle.create_from_bounds(
         left = 0,
         right = window.width,
         bottom = 0,
@@ -49,7 +49,7 @@ def window_point_to_viewport_point( window, viewport, point ):
     @return: The point within the viewport.
     """
     # convert to viewport co-ordinates
-    relative_point = pygly.maths.rectangle.make_point_relative(
+    relative_point = rectangle.make_point_relative(
         point,
         viewport.rect
         )

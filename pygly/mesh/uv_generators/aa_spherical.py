@@ -52,7 +52,7 @@ class Spherical( UV_Generator ):
     
 
 if __name__ == "__main__":
-    import maths.vector as vector
+    import pyrr.vector as vector
     # ignored anyway
     vertices = []
     

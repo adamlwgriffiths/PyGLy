@@ -8,8 +8,8 @@ import math
 
 from pyglet.gl import *
 
-import pygly.maths.quaternion
-import pygly.maths.matrix44
+from pyrr import quaternion
+from pyrr import matrix44
 
 from pygly.renderer.view_matrix import ViewMatrix
 from scene_node import SceneNode
@@ -32,10 +32,11 @@ class CameraNode( SceneNode ):
         glLoadIdentity()
 
         # convert our quaternion to a matrix
-        matrix = pygly.maths.matrix44.from_inertial_to_object_quaternion( self.world_orientation )
+        matrix = matrix44.create_from_quaternion(
+            self.world_orientation
+            )
 
-        # we need to apply the inverse of the matrix
-        # we do this by simply transposing the matrix
+        # we need to apply the transpose of the matrix
         matrix = matrix.T
 
         # convert to ctype for OpenGL
@@ -46,7 +47,8 @@ class CameraNode( SceneNode ):
         # add our translation to the matrix
         # translate the scene in the opposite direction
         # we have to do this after the orientation
-        # use the world translation incase we're attached to something
+        # use the world translation incase we're attached
+        # to something
         world_translation = self.world_translation
         glTranslatef(
             -world_translation[ 0 ],
@@ -103,16 +105,17 @@ class CameraNode( SceneNode ):
         local_ray = self.view_matrix.point_to_ray( point )
 
         # convert our quaternion to a matrix
-        matrix = pygly.maths.matrix44.from_inertial_to_object_quaternion(
+        matrix = matrix44.create_from_quaternion(
             self.world_orientation
             )
-        pygly.maths.matrix44.scale( matrix, self.scale, matrix )
-        pygly.maths.matrix44.set_translation( matrix,
+        matrix44.scale( matrix, self.scale, matrix )
+        matrix44.set_translation(
+            matrix,
             self.world_translation,
             out = matrix
             )
-        pygly.maths.matrix44.inertial_to_object( local_ray[ 0 ], matrix )
-        pygly.maths.matrix44.inertial_to_object( local_ray[ 1 ], matrix )
+        matrix44.apply_to_vector( local_ray[ 0 ], matrix )
+        matrix44.apply_to_vector( local_ray[ 1 ], matrix )
         return local_ray
     
 

@@ -10,9 +10,9 @@ import numpy
 from pyglet.gl import *
 
 from view_matrix import ViewMatrix
-from pygly.maths import ray
-from pygly.maths import matrix44
-from pygly.maths import trig
+from pyrr import ray
+from pyrr import matrix44
+from pyrr import trig
 
 
 class ProjectionViewMatrix( ViewMatrix ):
@@ -151,7 +151,7 @@ class ProjectionViewMatrix( ViewMatrix ):
 
         # convert the 2 vectors into a ray from
         # near_vec to far_vec
-        return ray.line_to_ray(
+        return ray.create_from_line(
             [
                 near_vec,
                 far_vec

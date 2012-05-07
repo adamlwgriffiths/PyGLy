@@ -10,9 +10,9 @@ from pyglet.gl import *
 import numpy
 
 from view_matrix import ViewMatrix
-from pygly.maths import matrix44
-from pygly.maths import rectangle
-from pygly.maths import ray
+from pyrr import matrix44
+from pyrr import rectangle
+from pyrr import ray
 import pygly.common.list
 
 
@@ -63,7 +63,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
     def _update( self ):
         assert self.dirty == True
 
-        left, right, top, bottom = self.bounds()
+        left, right, bottom, top = self.bounds()
         self._matrix = matrix44.create_orthogonal_view_matrix(
             left,
             right,
@@ -80,12 +80,12 @@ class OrthogonalViewMatrix( ViewMatrix ):
         Returns the maximum extents of the orthographic view
         based on the current viewport and the set scale.
 
-        @return: Returns the bounds as a tuple (left, right, top, bottom)
+        @return: Returns the bounds as a tuple (left, right, bottom, top)
         """
         size = self.size()
         half_width = size[ 0 ] / 2.0
         half_height = size[ 1 ]/ 2.0
-        return -half_width, half_width, half_height, -half_height
+        return -half_width, half_width, -half_height, half_height
 
     def size( self ):
         """
@@ -125,7 +125,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
         half_size = size / 2.0
         plane_point -= half_size
 
-        return ray.line_to_ray(
+        return ray.create_from_line(
             [
                 [ plane_point[ 0 ], plane_point[ 1 ], self.near_clip ],
                 [ plane_point[ 0 ], plane_point[ 1 ],-self.far_clip ]

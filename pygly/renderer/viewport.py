@@ -11,7 +11,7 @@ from pyglet.gl import *
 
 # We cannot import renderer.window or we
 # will get ciruclar imports
-import pygly.maths.rectangle
+from pyrr import rectangle
 
 
 class Viewport( object ):
@@ -36,7 +36,7 @@ class Viewport( object ):
             dtype = numpy.int
             )
 
-        if self.rect.shape != (2,2):
+        if self._rect.shape != (2,2):
             raise ValueError(
                 "Viewport rect must be an array with shape (2,2)"
                 )
@@ -290,7 +290,7 @@ class Viewport( object ):
         Checks if a point relative to the window is
         within the viewport.
         """
-        return pygly.maths.rectangle.is_point_within_rect(
+        return rectangle.is_point_within_rect(
             point,
             self._rect
             )

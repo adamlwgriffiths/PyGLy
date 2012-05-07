@@ -7,8 +7,8 @@ Created on Tue Sep 13 20:20:11 2011
 
 import math
 
-from pygly.maths import quaternion
-from pygly.maths import matrix33
+from pyrr import quaternion
+from pyrr import matrix33
 
 
 class FPS_Controller( object ):
@@ -62,7 +62,7 @@ class FPS_Controller( object ):
         pitchQuat = quaternion.set_to_rotation_about_x( self.pitch )
         yawQuat = quaternion.set_to_rotation_about_y( self.yaw )
         
-        quat = quaternion.cross_product( pitchQuat, yawQuat )
+        quat = quaternion.cross( pitchQuat, yawQuat )
         quaternion.normalise( quat )
         self.scene_node.object_orientation = quat
 
@@ -85,8 +85,8 @@ class FPS_Controller( object ):
         """
         quat = quaternion.set_to_rotation_about_y( self.yaw )
 
-        matrix = matrix33.from_inertial_to_object_quaternion( quat )
-        vec = matrix33.inertial_to_object(
+        matrix = matrix33.create_from_quaternion( quat )
+        vec = matrix33.apply_to_vector(
             [0.0, 0.0,-1.0],
             matrix
             )
@@ -100,8 +100,8 @@ class FPS_Controller( object ):
         """
         quat = quaternion.set_to_rotation_about_y( self.yaw )
 
-        matrix = matrix33.from_inertial_to_object_quaternion( quat )
-        vec = matrix33.inertial_to_object(
+        matrix = matrix33.create_from_quaternion( quat )
+        vec = matrix33.apply_to_vector(
             [0.0, 0.0, 1.0],
             matrix
             )
@@ -122,3 +122,4 @@ class FPS_Controller( object ):
         """
         self.scene_node.translate_object_x( amount )
     
+
