@@ -49,27 +49,4 @@ class Spherical( UV_Generator ):
         tv += 0.5 + self.offset[ 1 ]
         
         return texture_coords
-    
-
-if __name__ == "__main__":
-    import pyrr.vector as vector
-    # ignored anyway
-    vertices = []
-    
-    angle_vector = numpy.array([ 1.0, 0.0, 1.0 ])
-    angle_vector = vector.normalise( angle_vector )
-    
-    normals = numpy.array([
-        [ 1.0, 0.0, 0.0 ],
-        [ 0.0, 0.0, 1.0 ],
-        [ angle_vector[ 0 ], angle_vector[ 1 ], angle_vector[ 2 ] ]
-        ])
-    
-    texture_gen = Spherical( scale = (2.0, 1.0), offset = (0.0, 0.0) )
-    
-    texture_coords = texture_gen.generate_coordinates( vertices, normals )
-    print "normals %s" % str(normals)
-    print "textureCoords %s" % str(texture_coords)
-    
-    assert texture_coords[ 0 ][ 1 ] == 0.5
 
