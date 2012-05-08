@@ -6,7 +6,7 @@ Created on 29/05/2011
 
 import numpy
 
-from pyrr.plane import Plane
+from pyrr import plane
 from pyrr import matrix
 from uv_generator import UV_Generator
 
@@ -20,7 +20,11 @@ class Planar( UV_Generator ):
     def __init__( self, position, normal, up, size = (1.0, 1.0) ):
         super( Planar, self ).__init__()
         
-        self.plane = Plane( position, normal, up )
+        self.plane = plane.create_from_position(
+            position,
+            normal,
+            up
+            )
         self.size = size
     
     def generate_coordinates( self, vertices, normals ):
@@ -39,15 +43,26 @@ class Planar( UV_Generator ):
         # take our vertices and flatten them against the plane
         plane_vertices = matrix.apply_direction_scale(
             vertices,
-            self.plane.normal,
+            self.plane[ plane.normal ],
             0.0
             )
         
-        right = numpy.cross( self.plane.normal, self.plane.up )
+        right = vector.cross(
+            self.plane[ plane.normal ],
+            self.plane[ plane.up ]
+            )
         
         # get the tu / tv values from our up and right vectors
-        numpy.dot( plane_vertices, right, out = tu )
-        numpy.dot( plane_vertices, self.plane.up, out = tv )
+        numpy.dot(
+            plane_vertices,
+            right,
+            out = tu
+            )
+        numpy.dot(
+            plane_vertices,
+            self.plane[ plane.up ],
+            out = tv
+            )
         
         # apply our scaling
         tu /= self.size[ 0 ]
