@@ -64,19 +64,4 @@ class Analog( Dispatcher ):
         """
         for handler in self.handlers:
             handler( self.device, self.axis, value )
-    
-
-if __name__ == "__main__":
-    device = Analog( 'mouse', 'x' )
-
-    def handle_event( device, event, value ):
-        print '[%s] %s: %s' % (device, event, value)
-
-    assert handle_event not in device.handlers
-    device.register_handler( handle_event )
-    device.dispatch_event( (100, 5)  )
-    assert handle_event in device.handlers
-    device.unregister_handler( handle_event )
-    assert handle_event not in device.handlers
-
 
