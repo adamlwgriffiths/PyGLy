@@ -41,18 +41,3 @@ class Dispatcher( object ):
         """
         self.handlers.remove( handler )
 
-
-if __name__ == "__main__":
-    obj = Dispatcher()
-
-    def handler():
-        pass
-
-    assert handler not in obj.handlers
-    obj.register_handler( handler )
-
-    assert handler in obj.handlers
-
-    obj.unregister_handler( handler )
-    assert handler not in obj.handlers
-
