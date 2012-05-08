@@ -35,19 +35,3 @@ class Digital( Dispatcher ):
         for handler in self.handlers:
             handler( self.device, event, value )
 
-
-if __name__ == "__main__":
-    device = Digital( 'keyboard' )
-
-    def handle_event( device, event, value ):
-        print '[%s] %s: %s' % (device, event, value)
-        pass
-
-    assert handle_event not in device.handlers
-    device.register_handler( handle_event )
-    assert handle_event in device.handlers
-    device.dispatch_event( 'down', ('d',None) )
-    device.unregister_handler( handle_event )
-    assert handle_event not in device.handlers
-
-
