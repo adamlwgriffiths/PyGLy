@@ -60,7 +60,7 @@ class test_obj_mesh( unittest.TestCase ):
         mesh = OBJ_Mesh( '' )
         mesh.load_data( data )
 
-    def test_interleaved_mesh( self )
+    def test_interleaved_mesh( self ):
         objfile = """
         v 0.000000 2.000000 2.000000
         v 0.000000 0.000000 2.000000
