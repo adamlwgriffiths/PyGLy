@@ -8,6 +8,7 @@ import numpy
 
 from pyrr import plane
 from pyrr import matrix
+from pyrr import vector
 from uv_generator import UV_Generator
 
 
@@ -72,41 +73,4 @@ class Planar( UV_Generator ):
         texture_coords = numpy.transpose( texture_coords )
         
         return texture_coords
-    
-
-if __name__ == "__main__":
-    # ignored anyway
-    normals = []
-    
-    vertices = numpy.array([
-        [ -1.0, 1.0, 0.0 ],
-        [ 0.0, 0.0, 1.0 ],
-        [ 0.5, 0.0, 0.5 ],
-        [ 1.0, 0.0, 1.0 ]
-        ])
-    
-    # planer from x = 0.0 - +1.0
-    # and from z = 0.0 to 1.0 
-    position = numpy.array([ 0.0, 0.0, 0.0 ])
-    normal = numpy.array([ 0.0, 1.0, 0.0 ])
-    up = numpy.array([ 0.0, 0.0, 1.0 ])
-    
-    texture_gen = Planar(
-        position = position,
-        normal = normal,
-        up = up,
-        size = (1.0, 1.0)
-        )
-    
-    
-    #print vertices
-    texture_coords = texture_gen.generate_coordinates( vertices, normals )
-    print "texture_coords %s" % str(texture_coords)
-    
-    assert texture_coords[ 0 ][ 0 ] == -1.0
-    assert texture_coords[ 0 ][ 1 ] == 0.0
-    assert texture_coords[ 1 ][ 0 ] == 0.0
-    assert texture_coords[ 1 ][ 1 ] == 1.0
-    assert texture_coords[ 2 ][ 0 ] == 0.5
-    assert texture_coords[ 2 ][ 1 ] == 0.5
 
