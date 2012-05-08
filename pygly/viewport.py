@@ -327,23 +327,3 @@ class Viewport( object ):
     def top( self ):
         return self._rect[ (0,1) ] + self._rect[ (1,1) ]
 
-
-if __name__ == '__main__':
-    window = pyglet.window.Window(
-        fullscreen = False,
-        width = 1024,
-        height = 512
-        )
-    viewport = Viewport(
-        [
-            [0, 0],
-            [1024, 512]
-            ]
-        )
-    assert viewport.x == 0
-    assert viewport.y == 0
-    assert viewport.width == 1024
-    assert viewport.height == 512
-
-    assert viewport.aspect_ratio == 2.0
-
