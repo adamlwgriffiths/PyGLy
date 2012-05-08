@@ -16,8 +16,8 @@ from cocos.layer.base_layers import Layer as CocosLayer
 from cocos.director import director
 from pyglet.gl import *
 
-from pygly.renderer.viewport import Viewport
-import pygly.renderer.window
+from pygly.viewport import Viewport
+import pygly.window
 
 
 class Layer( CocosLayer ):
@@ -35,7 +35,7 @@ class Layer( CocosLayer ):
         # create a default viewport that
         # stretches the entire screen
         self.pygly_viewport = Viewport(
-            pygly.renderer.window.window_size_as_rect(
+            pygly.window.window_size_as_rect(
                 director.window
                 )
             )
@@ -57,7 +57,7 @@ class Layer( CocosLayer ):
         # enable depth testing
         director.set_depth_test( True )
 
-        pygly.renderer.window.render(
+        pygly.window.render(
             director.window,
             [ self.pygly_viewport ]
             )

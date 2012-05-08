@@ -11,7 +11,7 @@ from pyglet.gl import *
 from pyrr import quaternion
 from pyrr import matrix44
 
-from pygly.renderer.view_matrix import ViewMatrix
+from view_matrix import ViewMatrix
 from scene_node import SceneNode
 import debug_axis
 

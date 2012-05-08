@@ -6,7 +6,7 @@ Created on 29/02/2012
 
 from pyglet.gl import *
 
-from pygly.common.dispatcher import Dispatcher
+from pygly.dispatcher import Dispatcher
 
 
 class Analog( Dispatcher ):

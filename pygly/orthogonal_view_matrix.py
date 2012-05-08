@@ -13,7 +13,7 @@ from view_matrix import ViewMatrix
 from pyrr import matrix44
 from pyrr import rectangle
 from pyrr import ray
-import pygly.common.list
+import pygly.list
 
 
 class OrthogonalViewMatrix( ViewMatrix ):
@@ -49,7 +49,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
     def _set_scale( self, scale ):
         # check if the arrays are the same
-        if pygly.common.list.are_equivalent(
+        if pygly.list.are_equivalent(
             self._scale,
             scale
             ):

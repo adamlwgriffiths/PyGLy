@@ -8,7 +8,7 @@ import numpy
 from pyglet.gl import *
 
 from pyrr import rectangle
-from pygly.renderer.viewport import Viewport
+from viewport import Viewport
 
 
 def window_size_as_rect( window ):
