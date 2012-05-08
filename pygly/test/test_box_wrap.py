@@ -6,7 +6,7 @@ import numpy
 from pygly.uv_generators.box_wrap import BoxWrap
 
 
-class test_aa_spherical( unittest.TestCase ):
+class test_box_wrap( unittest.TestCase ):
 
     def setUp( self ):
         pass
