@@ -7,7 +7,7 @@ import pyglet
 from pygly.input.digital import Digital
 
 
-class test_viewport( unittest.TestCase ):
+class test_digital( unittest.TestCase ):
 
     def setUp( self ):
         pass

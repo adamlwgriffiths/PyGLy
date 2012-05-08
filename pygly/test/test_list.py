@@ -7,7 +7,7 @@ import pyglet
 import pygly.list
 
 
-class test_viewport( unittest.TestCase ):
+class test_list( unittest.TestCase ):
 
     def setUp( self ):
         pass

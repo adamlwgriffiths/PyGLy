@@ -7,7 +7,7 @@ import pyglet
 from pygly.input.analog import Analog
 
 
-class test_viewport( unittest.TestCase ):
+class test_analog( unittest.TestCase ):
 
     def setUp( self ):
         pass

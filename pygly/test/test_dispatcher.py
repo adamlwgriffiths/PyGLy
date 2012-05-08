@@ -7,7 +7,7 @@ import pyglet
 from pygly.dispatcher import Dispatcher
 
 
-class test_viewport( unittest.TestCase ):
+class test_dispatcher( unittest.TestCase ):
 
     def setUp( self ):
         pass
