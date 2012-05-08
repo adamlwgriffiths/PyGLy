@@ -85,7 +85,7 @@ class CameraNode( SceneNode ):
         """
         debug_axis.render()
 
-    def viewport_point_to_ray( self, point ):
+    def create_ray_from_viewport_point( self, point ):
         """
         Returns a ray cast from 2d camera co-ordinates
         into the world.
@@ -102,7 +102,7 @@ class CameraNode( SceneNode ):
         # convert the point to a ray
         # the ray is in the format
         # [ [near.x,near.y,near.z], [far.x,far.y,far.z] ]
-        local_ray = self.view_matrix.point_to_ray( point )
+        local_ray = self.view_matrix.create_ray_from_viewport_point( point )
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(

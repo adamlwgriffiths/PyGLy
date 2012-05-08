@@ -12,6 +12,7 @@ from pyglet.gl import *
 # We cannot import renderer.window or we
 # will get ciruclar imports
 from pyrr import rectangle
+from pyrr import geometric_tests
 
 
 class Viewport( object ):
@@ -244,7 +245,7 @@ class Viewport( object ):
         # clear areas of the window
         glEnable( GL_SCISSOR_TEST )
 
-    def viewport_point_to_ray( self, point ):
+    def create_ray_from_viewport_point( self, point ):
         """
         Returns a ray cast from viewport space
         into the world.
@@ -283,14 +284,16 @@ class Viewport( object ):
             )
         relative_point /= size
 
-        return self.camera().viewport_point_to_ray( relative_point )
+        return self.camera().create_ray_from_viewport_point(
+            relative_point
+            )
 
-    def is_window_point_within_viewport( self, point ):
+    def does_window_point_intersect_viewport( self, point ):
         """
         Checks if a point relative to the window is
         within the viewport.
         """
-        return rectangle.is_point_within_rect(
+        return geometric_tests.does_point_intersect_rectangle(
             point,
             self._rect
             )

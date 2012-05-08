@@ -100,7 +100,7 @@ class ProjectionViewMatrix( ViewMatrix ):
 
         return plane_point
 
-    def point_to_ray( self, point ):
+    def create_ray_from_viewport_point( self, point ):
         """
         Returns a local ray cast from the camera co-ordinates
         at 'point'.

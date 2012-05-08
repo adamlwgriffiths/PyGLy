@@ -96,3 +96,6 @@ class ViewMatrix( object ):
 
     far_clip = property( _get_far_clip, _set_far_clip )
 
+    def create_ray_from_viewport_point( self, point ):
+        raise NotImplementedError()
+

@@ -30,14 +30,14 @@ def find_viewport_for_point( window, viewports, point ):
     if the point is not within a viewport.
     """
     for viewport in viewports:
-        if viewport.is_window_point_within_viewport( point ):
+        if viewport.does_window_point_intersect_viewport( point ):
             # the point is within this viewport
             return viewport
 
     # the point matches no viewports
     return None
 
-def window_point_to_viewport_point( window, viewport, point ):
+def create_viewport_point_from_window_point( window, viewport, point ):
     """
     Converts a point relative to the window, to a point
     relative to the viewport.
@@ -49,7 +49,7 @@ def window_point_to_viewport_point( window, viewport, point ):
     @return: The point within the viewport.
     """
     # convert to viewport co-ordinates
-    relative_point = rectangle.make_point_relative(
+    relative_point = rectangle.create_relative_point(
         point,
         viewport.rect
         )
