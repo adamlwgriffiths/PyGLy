@@ -8,16 +8,15 @@ import numpy
 from pyglet.gl import *
 
 from pyrr import rectangle
-from viewport import Viewport
 
 
-def window_size_as_rect( window ):
-    return rectangle.create_from_bounds(
-        left = 0,
-        right = window.width,
-        bottom = 0,
-        top = window.height,
-        data_type = numpy.int
+def create_rectangle( window ):
+    return numpy.array(
+        [
+            [ 0, 0 ],
+            [ window.width, window.height ]
+            ],
+        dtype = numpy.int
         )
 
 def find_viewport_for_point( window, viewports, point ):
@@ -37,26 +36,7 @@ def find_viewport_for_point( window, viewports, point ):
     # the point matches no viewports
     return None
 
-def create_viewport_point_from_window_point( window, viewport, point ):
-    """
-    Converts a point relative to the window, to a point
-    relative to the viewport.
-
-    @param window: The window that contains the viewport
-    and point.
-    @param viewport: The viewport the point is within.
-    @param point: The point on the window. This is in pixels.
-    @return: The point within the viewport.
-    """
-    # convert to viewport co-ordinates
-    relative_point = rectangle.create_relative_point(
-        point,
-        viewport.rect
-        )
-
-    return relative_point
-
-def set_viewport_to_window( window ):
+def set_viewport_to_rectangle( rect ):
     """
     Calls glViewport with the dimensions of
     the window.
@@ -64,9 +44,14 @@ def set_viewport_to_window( window ):
     This can be used to undo the call
     viewport.switch_to or glViewport.
     """
-    glViewport( 0, 0, window.width, window.height )
+    glViewport(
+        int(rect[ 0 ][ 0 ]),
+        int(rect[ 0 ][ 1 ]),
+        int(rect[ 1 ][ 0 ]),
+        int(rect[ 1 ][ 1 ])
+        )
 
-def scissor_to_rect( rect ):
+def set_scissor_to_rectangle( rect ):
     """
     Calls glScissor with the size of the rectangle.
 
@@ -75,15 +60,12 @@ def scissor_to_rect( rect ):
 
     To undo this, use scissor_to_window.
     """
-    glViewport(
+    glScissor(
         int(rect[ (0,0) ]),
         int(rect[ (0,1) ]),
         int(rect[ (1,0) ]),
         int(rect[ (1,1) ])
         )
-
-def scissor_to_window( window ):
-    glScissor( 0, 0, window.width, window.height )
 
 def render( window, viewports ):
     # set ourself as the active window
@@ -123,10 +105,11 @@ def render( window, viewports ):
         viewport.pop_viewport_attributes()
 
     # reset the viewport to the full window
-    set_viewport_to_window( window )
+    rect = create_rectangle( window )
+    set_viewport_to_rectangle( rect )
 
     # undo any viewport scissor calls
-    scissor_to_window( window )
+    set_scissor_to_rectangle( rect )
 
     # set matrix back to model view just incase
     # the last call was to pop_view_matrix which

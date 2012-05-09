@@ -35,7 +35,7 @@ class Layer( CocosLayer ):
         # create a default viewport that
         # stretches the entire screen
         self.pygly_viewport = Viewport(
-            pygly.window.window_size_as_rect(
+            pygly.window.create_rectangle(
                 director.window
                 )
             )

@@ -9,10 +9,9 @@ import weakref
 import numpy
 from pyglet.gl import *
 
-# We cannot import renderer.window or we
-# will get ciruclar imports
 from pyrr import rectangle
 from pyrr import geometric_tests
+import window
 
 
 class Viewport( object ):
@@ -85,12 +84,7 @@ class Viewport( object ):
         pygly.renderer.window.set_viewport_to_window.
         """
         # update our viewport size
-        glViewport(
-            int(self._rect[ (0,0) ]),
-            int(self._rect[ (0,1) ]),
-            int(self._rect[ (1,0) ]),
-            int(self._rect[ (1,1) ])
-            )
+        window.set_viewport_to_rectangle( self._rect )
 
     @property
     def aspect_ratio( self ):
@@ -112,12 +106,7 @@ class Viewport( object ):
 
         To undo this, use renderer.window.scissor_to_window
         """
-        glScissor(
-            int(self._rect[ (0,0) ]),
-            int(self._rect[ (0,1) ]),
-            int(self._rect[ (1,0) ]),
-            int(self._rect[ (1,1) ])
-            )
+        window.set_scissor_to_rectangle( self._rect )
 
     def clear(
         self,
@@ -297,6 +286,37 @@ class Viewport( object ):
             point,
             self._rect
             )
+
+    def create_viewport_point_from_window_point( self, point ):
+        """
+        Converts a point relative to the window, to a point
+        relative to the viewport.
+
+        @param window: The window that contains the viewport
+        and point.
+        @param viewport: The viewport the point is within.
+        @param point: The point on the window. This is in pixels.
+        @return: The point within the viewport.
+        """
+        # convert to viewport co-ordinates
+        return numpy.array(
+            [
+                point[ 0 ] - self._rect[ 0 ][ 0 ],
+                point[ 1 ] - self._rect[ 0 ][ 1 ]
+                ],
+            dtype = numpy.int
+            )
+
+
+    def create_window_point_from_viewport_point( self, point ):
+        return numpy.array(
+            [
+                point[ 0 ] + self._rect[ 0 ][ 0 ],
+                point[ 1 ] + self._rect[ 0 ][ 1 ]
+                ],
+            dtype = numpy.int
+            )
+        pass
 
     @property
     def x( self ):
