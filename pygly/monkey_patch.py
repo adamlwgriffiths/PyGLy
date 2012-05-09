@@ -20,8 +20,9 @@ def idle( self ):
     # don't call on_draw
     return pyglet.clock.get_sleep_time( sleep_idle = True )
 
-# check that the event loop has been over-ridden
-if pyglet.app.EventLoop.idle != idle:
-    # over-ride the default event loop
-    pyglet.app.EventLoop.idle = idle
+def patch_idle_loop():
+    # check that the event loop has been over-ridden
+    if pyglet.app.EventLoop.idle != idle:
+        # over-ride the default event loop
+        pyglet.app.EventLoop.idle = idle
 
