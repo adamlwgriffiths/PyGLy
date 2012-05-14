@@ -19,12 +19,13 @@ from pyglet.gl import *
 from pyrr import quaternion
 from pyrr import matrix33
 from pyrr import matrix44
+from tree_node import TreeNode
 import debug_cube
 import debug_axis
 
 
     
-class SceneNode( object ):
+class SceneNode( TreeNode ):
     """
     Base class for Scene Graph objects.
     """
@@ -38,11 +39,8 @@ class SceneNode( object ):
 
     def __init__( self, name ):
         super( SceneNode, self ).__init__()
-        
+
         self.name = name
-        
-        self._parent = None
-        self.children = set()
         
         self._orientation = quaternion.identity()        
         self._world_orientation = quaternion.identity()
@@ -63,7 +61,8 @@ class SceneNode( object ):
         
         # mark our children as dirty
         for child in self.children:
-            child._set_dirty()
+            if hasattr( child, '_set_dirty' ):
+                child._set_dirty()
     
     def _update_world_translations( self ):
         """
@@ -453,18 +452,11 @@ class SceneNode( object ):
         """
         Attaches a child to the node.
         """
-        previous_parent = node.parent
-        if previous_parent != None:
-            previous_parent.remove_child( node )
-        
-        # add the node
-        self.children.add( node )
-        
-        # set ourself as the parent
-        node._parent = weakref.ref( self )
+        super( SceneNode, self ).add_child( node )
         
         # mark the node as dirty
-        node._set_dirty()
+        if hasattr( node, '_set_dirty' ):
+            node._set_dirty()
     
     def remove_child( self, node ):
         """
@@ -473,40 +465,11 @@ class SceneNode( object ):
         @raise KeyError: Raised if the node
         is not a child of the node.
         """
-        # remove from our list of children
-        self.children.remove( node )
-        # unset the node's parent
-        node._parent = None
-        # mark the node as dirty
-        node._set_dirty()
-    
-    @property
-    def parent( self ):
-        """
-        A property accessable as a member.
-        Returns the parent of the node or None
-        if there isn't one.
-        """
-        if self._parent != None:
-            return self._parent()
-        return None
-    
-    def on_context_lost( self ):
-        """
-        Called when the window loses it's graphical
-        context.
-        TODO: This needs to be replaced with a per-window
-        call, not per tree. As there can be multiple
-        windows. Moving windows across desktops can
-        trigger this.
-        """
-        # TODO: replace this with a mesh pool or event callback
-        # that does this for only objects that need it
+        super( SceneNode, self ).remove_child( node )
 
-        # we don't need to do anything
-        # but our children might
-        for child in self.children:
-            child.on_context_lost()
+        # mark the node as dirty
+        if hasattr( node, '_set_dirty' ):
+            node._set_dirty()
     
     def apply_translations( self ):
         """
