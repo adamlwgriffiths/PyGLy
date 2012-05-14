@@ -5,22 +5,18 @@ Created on Mon Aug 22 19:01:19 2011
 @author: adam
 """
 
-from pyglet.gl import *
-
-from tree_leaf import TreeLeaf
-import debug_cube
+from render_node import RenderNode
 
 
-class RenderCallbackNode( TreeLeaf ):
+class RenderCallbackNode( RenderNode ):
     
     
     def __init__( self, name, initialise_callback, render_callback ):
-        super( RenderCallbackNode, self ).__init__()
+        super( RenderCallbackNode, self ).__init__( name )
 
         if render_callback == None:
             raise ValueError( "RenderNode render_callback cannot be None" )
         
-        self.name = name
         self.initialise_callback = initialise_callback
         self.render_callback = render_callback
         
