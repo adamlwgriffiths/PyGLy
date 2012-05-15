@@ -292,10 +292,22 @@ class MD2_Mesh( object ):
         self.frames = []
 
     def load( self ):
+        """
+        Reads the MD2 data from the existing
+        specified filename.
+        """
         with open( self.filename, 'rb' ) as f:
             self.load_from_buffer( f )
     
     def load_from_buffer( self, f ):
+        """
+        Reads the MD2 data from a stream object.
+
+        Can be called instead of load() if data
+        is not present in a file.
+
+        @param f: the stream object, usually a file.
+        """
         # read all the data from the file
         self.header = self.read_header( f )
         self.skins = self.read_skins( f, self.header )
@@ -317,7 +329,17 @@ class MD2_Mesh( object ):
     @staticmethod
     def _load_block( stream, format, count ):
         """
-        Loads 'count' structs of 'format' from the steam.
+        Convenience method used to load blocks of
+        data using the python 'struct' object format.
+
+        Loads 'count' blocks from the file, each block
+        will have the python struct format defined by 'format'.
+        This is handy for loading large blocks without having
+        to manually iterate over it.
+
+        @param stream: the file object.
+        @param format: the python 'struct' format of the block.
+        @param count: the number of blocks to load.
         """
         def chunks( data, size ):
             """
@@ -339,6 +361,12 @@ class MD2_Mesh( object ):
 
     @staticmethod
     def read_header( f ):
+        """
+        Reads the MD2 header information from the MD2 file.
+
+        @param f: the file object.
+        @return Returns an header_layout named tuple.
+        """
         # read the header
         # header is made up of 17 signed longs
         # this first is the ID which is also a 4 byte string
@@ -365,6 +393,14 @@ class MD2_Mesh( object ):
 
     @staticmethod
     def read_skins( f, header ):
+        """
+        Reads the skin filenames out of the MD2 header.
+
+        @param f: the file object.
+        @param header: the loaded MD2 header.
+        @return: Returns a python list of skin filenames.
+        The list is a 1D list of size header.num_skins.
+        """
         # seek to the skins offset
         f.seek( header.offset_skins, os.SEEK_SET )
 
@@ -379,6 +415,18 @@ class MD2_Mesh( object ):
 
     @staticmethod
     def read_texture_coordinates( f, header ):
+        """
+        Reads the texture coordinates from the MD2 file.
+
+        @param f: the file object.
+        @param header: the loaded MD2 header.
+        @return: Returns a numpy array containing the texture
+        coordinates. Values are converted from original
+        absolute texels (0->width,0->height) to openGL
+        coordinates (0.0->1.0).
+        The array is an Nx2 dimension array where N
+        is header.num_st.
+        """
         # seek to the skins offset
         f.seek( header.offset_st, os.SEEK_SET )
 
@@ -398,6 +446,18 @@ class MD2_Mesh( object ):
 
     @staticmethod
     def read_triangles( f, header ):
+        """
+        Reads the triangle information from the MD2 file.
+
+        Triangle information includes the vertex and
+        texture coordinate indices.
+
+        @param f: the file object.
+        @param header: the loaded MD2 header.
+        @return: Returns an MD2_Mesh named tuple.
+        The vertex and texture coordinate indices are
+        arrays of Nx3 dimensions where N is header.num_tris.
+        """
         # seek to the triangles offset
         f.seek( header.offset_tris, os.SEEK_SET )
 
@@ -424,12 +484,40 @@ class MD2_Mesh( object ):
 
     @staticmethod
     def read_frames( f, header ):
+        """
+        Reads all frames from the MD2 file.
+
+        This function simply calls read_frame in a loop.
+
+        @param f: the file object.
+        @param header: the loaded MD2 header.
+        @return returns a python list of MD2_Mesh
+        named tuples. The list will be of length
+        header.num_frames.
+        """
         # seek to the frames offset
         f.seek( header.offset_frames, os.SEEK_SET )
         return [ MD2_Mesh.read_frame( f, header ) for x in xrange( header.num_frames ) ]
 
     @staticmethod
     def read_frame( f, header ):
+        """
+        Reads a frame from the MD2 file.
+
+        The stream must already be at the start of the
+        frame.
+
+        @param f: the file object.
+        @param header: the loaded MD2 header.
+        @return: Returns an frame_layout named tuple.
+        Returned vertices and normals are as read from
+        the file and are not ready to render.
+        To render these must be ordered according to
+        the indices specified in the triangle information.
+
+        @see convert_indices_for_all_frames
+        @see convert_indices_for_frame
+        """
         # frame scale and translation are 2x3 32 bit floats
         frame_translations = numpy.array(
             MD2_Mesh._load_block( f, '< 3f', 2 ),
@@ -474,10 +562,36 @@ class MD2_Mesh( object ):
 
     @staticmethod
     def convert_indicies_for_all_frames( frames, triangles ):
+        """
+        Creates vertex lists for all frames.
+
+        This function essentially calls
+        'convert_indices_for_frame' for all frames.
+
+        @param frames: the list of frames.
+        @param triangles: the list of triangles.
+        @return: returns a python list containing
+        frame_layout named tuples.
+        The list will be header.num_frames in length.
+        """
         return [ MD2_Mesh.convert_indices_for_frame( frame, triangles ) for frame in frames ]
 
     @staticmethod
     def convert_indices_for_frame( frame, triangles ):
+        """
+        Creates a vertex list ready for rendering from
+        the loaded data.
+
+        Takes the frame's vertices and normals and
+        converts them to a vertex list using the
+        extracted triangle indices.
+
+        @param frame: the frame to convert.
+        @param triangles: the triangle data containing the
+        indices.
+        @return: returns a frame_layout named tuple with
+        the converted data.
+        """
         return MD2_Mesh.frame_layout._make(
             [
                 frame.name,
@@ -487,6 +601,15 @@ class MD2_Mesh( object ):
             )
 
     def render_frame( self, frame ):
+        """
+        Renders the specified frame using pyglet.graphics.draw.
+
+        @param frame: the frame to draw. This can be an integer
+        or a float.
+        If a float is passed, the fractional value will be
+        used for interpolation of the frames.
+        Interpolation is done on the fly and can be slow.
+        """
         # split the frame time into whole and fractional parts
         # the whole part is the current frame
         # the fractional part is the % through the frame
@@ -523,9 +646,19 @@ class MD2_Mesh( object ):
             )
 
     def render( self ):
+        """
+        Renders the currently set frame.
+        """
         self.render_frame( self.frame )
 
     def render_tcs( self, origin, size ):
+        """
+        Renders the texture coordinates.
+
+        If rendered over a blit of the texture used and
+        scaled to the same size, this can be used to
+        display the texture coordinates used visually.
+        """
         x = origin[ 0 ]
         y = origin[ 1 ]
         width = size[ 0 ]
