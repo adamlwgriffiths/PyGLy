@@ -93,6 +93,7 @@ class test_list( unittest.TestCase ):
             "Child not in parents child list"
             )
 
+        child1_2.remove_child( child2_2 )
         child1_1.add_child( child2_2 )
 
         self.assertTrue(
