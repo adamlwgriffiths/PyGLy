@@ -18,13 +18,31 @@ from pyrr import vector
 
 
 class MD2_Mesh( object ):
+    """
+    Provides the ability to load and render an MD2
+    mesh.
+
+    Uses MD2 to load MD2 mesh data.
+    Loads mesh data onto the graphics card to speed
+    up rendering. Allows for pre-baking the interpolation
+    of frames.
+    """
     
-    def __init__( self, filename ):
+    def __init__( self, filename, interpolate = 0 ):
+        """
+        Loads an MD2 from the specified file.
+
+        @param filename: the filename to load the mesh from.
+        @param interpolation: the number of frames to generate
+        between each loaded frame.
+        """
         super( MD2_Mesh, self ).__init__()
         
         self.filename = filename
+        self.interpolate = interpolate
         self.frame = 0.0
         self.md2 = MD2()
+        self.vertex_lists = []
 
     def load( self ):
         """
@@ -33,7 +51,18 @@ class MD2_Mesh( object ):
         """
         self.md2.load( self.filename )
 
-    def render_frame( self, frame ):
+        # generate the frame numbers
+        num_frames = len(self.md2.frames)
+        frame_numbers = numpy.linspace(
+            0.0,
+            float(num_frames) - 1.0,
+            num = num_frames * (self.interpolate + 1),
+            endpoint = True
+            )
+        # convert the frames to vertex lists
+        self.vertex_lists = [ self.generate_frame( frame ) for frame in frame_numbers ]
+
+    def generate_frame( self, frame ):
         """
         Renders the specified frame using pyglet.graphics.draw.
 
@@ -69,10 +98,9 @@ class MD2_Mesh( object ):
             # ensure our normals are vector length
             vector.normalise( normals )
 
-        # pass to opengl
-        pyglet.graphics.draw(
+        # generate a pyglet vertex list
+        return pyglet.graphics.vertex_list(
             vertices.size / 3,
-            GL_TRIANGLES,
             ('v3f/static', vertices.flatten()),
             ('n3f/static', normals.flatten()),
             ('t2f/static', self.md2.tcs.flatten())
@@ -82,7 +110,11 @@ class MD2_Mesh( object ):
         """
         Renders the currently set frame.
         """
-        self.render_frame( self.frame )
+        # convert from frame time to list index
+        frame = int(self.frame * (1.0 + float(self.interpolate)) )
+
+        # render the vertex list
+        self.vertex_lists[ frame ].draw( GL_TRIANGLES )
 
     def render_tcs( self, origin, size ):
         """
