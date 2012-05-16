@@ -15,6 +15,7 @@ def idle( self ):
     which without hooking into, causes ghosting
     and if we do hook into it, it means we render after every event
     which is REALLY REALLY BAD
+    http://www.pyglet.org/doc/programming_guide/the_application_event_loop.html
     """
     pyglet.clock.tick( poll = True )
     # don't call on_draw
