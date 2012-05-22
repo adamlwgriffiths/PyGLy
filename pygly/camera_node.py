@@ -17,7 +17,6 @@ import debug_axis
 
 
 class CameraNode( SceneNode ):
-    render_debug_cube = False
     
     
     def __init__( self, name, view_matrix ):
@@ -65,9 +64,8 @@ class CameraNode( SceneNode ):
         glPushMatrix()
         self.apply_translations()
         
-        # check if we should render some debug info
-        if SceneNode.debug == True:
-            self.render_debug_info()
+        # render some debug info
+        self.render_debug_info()
         
         # continue on to our children
         for child in self.children:

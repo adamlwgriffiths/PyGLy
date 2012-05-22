@@ -30,13 +30,6 @@ class SceneNode( TreeNode ):
     Base class for Scene Graph objects.
     """
     
-    """
-    If set to true, each scene node will
-    render a debug cube to show its
-    position within the scene.
-    """
-    debug = False
-
     def __init__( self, name ):
         super( SceneNode, self ).__init__()
 
@@ -502,7 +495,7 @@ class SceneNode( TreeNode ):
         Does the following in order:
          Pushes the current gl matrix.
          Applies the node's translations.
-         Renders debug info if enabled.
+         Renders debug info.
          Calls 'render' on all children.
          Pops the gl matrix.
         """
@@ -510,9 +503,8 @@ class SceneNode( TreeNode ):
         glPushMatrix()
         self.apply_translations()
         
-        # check if we should render some debug info
-        if SceneNode.debug == True:
-            self.render_debug_info()
+        # render some debug info
+        self.render_debug_info()
         
         # continue on to our children
         for child in self.children:
