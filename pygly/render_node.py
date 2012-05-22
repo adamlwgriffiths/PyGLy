@@ -17,6 +17,6 @@ class RenderNode( SceneNode ):
     def on_context_lost( self ):
         pass
     
-    def render( self ):
+    def render_mesh( self ):
         pass
         

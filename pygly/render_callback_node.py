@@ -29,6 +29,6 @@ class RenderCallbackNode( RenderNode ):
         if self.initialise_callback != None:
             self.initialise_callback()
     
-    def render( self ):
+    def render_mesh( self ):
         self.render_callback()
         
