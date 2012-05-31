@@ -16,7 +16,9 @@ class ViewMatrix( object ):
         super( ViewMatrix, self ).__init__()
 
         if far_clip <= near_clip:
-            raise ValueError( "Far clip cannot be less than near clip" )
+            raise ValueError(
+                "Far clip cannot be less than near clip"
+                )
 
         self._near_clip = near_clip
         self._far_clip = far_clip
@@ -24,6 +26,13 @@ class ViewMatrix( object ):
 
         self._matrix = None
         self.dirty = True
+
+    @property
+    def matrix( self ):
+        if self.dirty == True:
+            self._update()
+
+        return self._matrix
 
     def push_view_matrix( self ):
         """
@@ -38,13 +47,9 @@ class ViewMatrix( object ):
         # setup our projection matrix
         glMatrixMode( GL_PROJECTION )
         glPushMatrix()
-        glLoadIdentity()
 
-        if self.dirty == True:
-            self._update()
-
-        glMatrix = (GLfloat *
-        self._matrix.size)(*self._matrix.flat)
+        matrix = self.matrix
+        glMatrix = (GLfloat * matrix.size)(*matrix.flat)
         glLoadMatrixf( glMatrix )
 
     def pop_view_matrix( self ):
@@ -61,40 +66,39 @@ class ViewMatrix( object ):
         # implement this
         raise NotImplementedError()
 
-    def _get_aspect_ratio( self ):
+    @property
+    def aspect_ratio( self ):
         return self._aspect_ratio
 
-    def _set_aspect_ratio( self, aspect_ratio ):
+    @aspect_ratio.setter
+    def aspect_ratio( self, aspect_ratio ):
         # don't continue if the value hasn't changed
         if self._aspect_ratio == aspect_ratio:
             return
         self._aspect_ratio = aspect_ratio
         self.dirty = True
 
-    aspect_ratio = property( _get_aspect_ratio, _set_aspect_ratio )
-
-    def _get_near_clip( self ):
+    @property
+    def near_clip( self ):
         return self._near_clip
 
-    def _set_near_clip( self, near_clip ):
+    @near_clip.setter
+    def near_clip( self, near_clip ):
         if self._near_clip == near_clip:
             return
         self._near_clip = near_clip
         self.dirty = True
 
-    near_clip = property( _get_near_clip, _set_near_clip )
-
-
-    def _get_far_clip( self ):
+    @property
+    def far_clip( self ):
         return self._far_clip
 
-    def _set_far_clip( self, far_clip ):
+    @far_clip.setter
+    def far_clip( self, far_clip ):
         if self._far_clip == far_clip:
             return
         self._far_clip = far_clip
         self.dirty = True
-
-    far_clip = property( _get_far_clip, _set_far_clip )
 
     def create_ray_from_viewport_point( self, point ):
         raise NotImplementedError()

@@ -43,10 +43,12 @@ class OrthogonalViewMatrix( ViewMatrix ):
 
         self._scale = numpy.array( scale, dtype = numpy.float )
 
-    def _get_scale( self ):
+    @property
+    def scale( self ):
         return self._scale
 
-    def _set_scale( self, scale ):
+    @scale.setter
+    def scale( self, scale ):
         # check if the arrays are the same
         if numpy.array_equal(
             self._scale,
@@ -56,8 +58,6 @@ class OrthogonalViewMatrix( ViewMatrix ):
         # update the scale and mark as dirty
         self._scale[:] = scale
         self.dirty = True
-
-    scale = property( _get_scale, _set_scale )
 
     def _update( self ):
         assert self.dirty == True

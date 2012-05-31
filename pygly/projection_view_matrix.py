@@ -33,16 +33,16 @@ class ProjectionViewMatrix( ViewMatrix ):
 
         self._fov = fov
 
-    def _get_fov( self ):
+    @property
+    def fov( self ):
         return self._fov
 
-    def _set_fov( self, fov ):
+    @fov.setter
+    def fov( self, fov ):
         if self._fov == fov:
             return
         self._fov = fov
         self.dirty = True
-
-    fov = property( _get_fov, _set_fov )
 
     def _update( self ):
         assert self.dirty == True
