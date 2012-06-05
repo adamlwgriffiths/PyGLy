@@ -4,12 +4,13 @@ Created on 29/02/2012
 @author: adam
 '''
 
+import sys
+
 from pyglet.gl import *
+from pyglet.event import EventDispatcher
 
-from pygly.dispatcher import Dispatcher
 
-
-class Digital( Dispatcher ):
+class Digital( EventDispatcher ):
     """
     This class provides access to a single digital
     device.
@@ -25,13 +26,15 @@ class Digital( Dispatcher ):
         super( Digital, self ).__init__()
         
         self.device = device
-        self.handlers = set()
 
-    def dispatch_event( self, event, value ):
-        """
-        Sends an event to all registered handler
-        functions.
-        """
-        for handler in self.handlers:
-            handler( self.device, event, value )
+    # document our events
+    if hasattr( sys, 'is_epydoc' ):
+        def on_digital_input( digital, event, value ):
+            '''A digital input has been triggered.
+
+            :event:
+            '''
+
+# register our custom events
+Digital.register_event_type( 'on_digital_input' )
 

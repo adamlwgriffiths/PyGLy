@@ -4,12 +4,13 @@ Created on 29/02/2012
 @author: adam
 '''
 
+import sys
+
 from pyglet.gl import *
+from pyglet.event import EventDispatcher
 
-from pygly.dispatcher import Dispatcher
 
-
-class Analog( Dispatcher ):
+class Analog( EventDispatcher ):
     """
     This class provides access to a single analog
     input.
@@ -28,7 +29,6 @@ class Analog( Dispatcher ):
         
         self.device = device
         self.axis = axis
-        self.handlers = set()
         self.value = 0
         self.delta = 0
 
@@ -46,6 +46,8 @@ class Analog( Dispatcher ):
         self.delta += relative
 
         self.dispatch_event(
+            'on_analog_input',
+            self,
             (absolute, relative)
             )
     
@@ -57,11 +59,14 @@ class Analog( Dispatcher ):
         """
         self.delta = 0
 
-    def dispatch_event( self, value ):
-        """
-        Sends an event to all registered handler
-        functions.
-        """
-        for handler in self.handlers:
-            handler( self.device, self.axis, value )
+    # document our events
+    if hasattr( sys, 'is_epydoc' ):
+        def on_analog_input( analog, value ):
+            '''An analog input has been triggered.
+
+            :event:
+            '''
+
+# register our custom events
+Analog.register_event_type( 'on_analog_input' )
 

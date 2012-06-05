@@ -57,6 +57,8 @@ class Keyboard( object ):
         Do NOT rename this function.
         """
         self.digital.dispatch_event(
+            'on_digital_input',
+            self.digital,
             Keyboard.down,
             (symbol, modifiers)
             )
@@ -70,6 +72,8 @@ class Keyboard( object ):
         Do NOT rename this function.
         """
         self.digital.dispatch_event(
+            'on_digital_input',
+            self.digital,
             Keyboard.up,
             (symbol, modifiers)
             )
@@ -82,22 +86,13 @@ if __name__ == "__main__":
     
     keyboard = Keyboard( window )
     
-    """
-    def update( dt ):
-        global keyboard
-        if keyboard[ keyboard.keys.SPACE ]:
-            print "SPACE is down"
-        else:
-            print "SPACE is up"
-
-        global window
-        window.close()
-    
-    pyglet.clock.schedule_interval( update, (1.0 / 60.0) )
-    """
-
-    def handler( name, event, value ):
-        print '[%s] %s: (%s, %s)' % (name, event, value[ 0 ], value[ 1 ])
+    def handler( digital, event, value ):
+        print '[%s] %s: (%s, %s)' % (
+            digital.device,
+            event,
+            value[ 0 ],
+            value[ 1 ]
+            )
 
         #global window
         #window.close()
@@ -109,7 +104,9 @@ if __name__ == "__main__":
             global window
             window.close()
 
-    keyboard.digital.register_handler( handler )
+    keyboard.digital.push_handlers(
+        on_digital_input = handler
+        )
     pyglet.clock.schedule_interval( watcher, (1.0 / 60.0) )
 
     pyglet.app.run()

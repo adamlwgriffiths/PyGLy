@@ -81,14 +81,17 @@ if __name__ == '__main__':
 
     pyglet.clock.schedule_interval( update, (1.0 / 60.0) )
     """
-    def update( name, event, value ):
+    def update( analog, value ):
         global mouse
-        print mouse.absolute_position
-        print "[%s] %s: (%f, %f)" % (name, event, value[ 0 ], value[ 1 ])
+        print "[%s] %s: absolute: %f relative: %f" % (
+            analog.device,
+            analog.axis,
+            value[ 0 ],
+            value[ 1 ]
+            )
 
-        global window
         window.close()
 
-    mouse.axis_x().register_handler( update )
+    mouse.axis_x().push_handlers( on_analog_input = update )
     pyglet.app.run()
 
