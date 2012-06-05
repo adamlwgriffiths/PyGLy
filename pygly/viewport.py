@@ -1,23 +1,29 @@
 '''
-Created on 20/06/2011
+Created on 22/06/2012
 
 @author: adam
 '''
 
+import sys
 import weakref
 
 import numpy
+from pyglet.event import EventDispatcher
 from pyglet.gl import *
 
 from pyrr import rectangle
 from pyrr import geometric_tests
+import gl
 import window
 
 
-class Viewport( object ):
+class Viewport( EventDispatcher ):
+    """
+    A wrapper around the viewport functionality.
+    """
     
     
-    def __init__( self, rect ):
+    def __init__( self, window, rect ):
         """
         Creates a viewport with the size of rect.
 
@@ -29,8 +35,7 @@ class Viewport( object ):
         """
         super( Viewport, self ).__init__()
 
-        self.camera = None
-        self.scene_node = None
+        self.window = window
         self._rect = numpy.array(
             rect,
             dtype = numpy.int
@@ -41,50 +46,48 @@ class Viewport( object ):
                 "Viewport rect must be an array with shape (2,2)"
                 )
 
-    def _get_rect( self ):
+        # listen for resize events
+        window.push_handlers(
+            on_resize = self.on_resize
+            )
+
+    @property
+    def rect( self ):
         return self._rect
 
-    def _set_rect( self, rect ):
-        if \
-            self._rect[ (0, 0) ] == rect[ (0, 0) ] and \
-            self._rect[ (0, 1) ] == rect[ (0, 1) ] and \
-            self._rect[ (1, 0) ] == rect[ (1, 0) ] and \
-            self._rect[ (1, 1) ] == rect[ (1, 1) ]:
-            # no change
+    @rect.setter
+    def rect( self, rect ):
+        if numpy.array_equal( self._rect, rect ):
             return
 
         self._rect[:] = rect
 
-        # notify our camera's view matrix that our
-        # viewport geometry has changed
-        if self.camera != None:
-            self.camera().view_matrix.aspect_ratio = self.aspect_ratio
+        # dispatch our events
+        self.dispatch_event(
+            'on_resize',
+            self.rect
+            )
+        self.dispatch_event(
+            'on_change_aspect_ratio',
+            self.aspect_ratio
+            )
 
-    rect = property( _get_rect, _set_rect )
-
-    def set_camera( self, scene_node, camera ):
+    def on_resize( self, width, height ):
         """
-        Set's the camera of the viewport and the
-        viewport's root scene node.
-
-        @param scene_node: The root scene_node used
-        to render the viewport.
-        @param camera: The camera to render the scene_node
-        from.
+        Called when the window is resized.
         """
-        self.scene_node = scene_node
-        self.camera = weakref.ref( camera )
+        # we don't do anything by default
+        pass
     
     def switch_to( self ):
         """
         Calls glViewport which sets up the viewport
         for rendering.
 
-        To reset this call
-        pygly.renderer.window.set_viewport_to_window.
+        @see pygly.gl.set_viewport.
         """
         # update our viewport size
-        window.set_viewport_to_rectangle( self._rect )
+        gl.set_viewport( self.rect )
 
     @property
     def aspect_ratio( self ):
@@ -94,8 +97,7 @@ class Viewport( object ):
         Aspect ratio is the ratio of width to height
         a value of 2.0 means width is 2*height
         """
-        aspect_ratio = float(self._rect[ (1,0) ]) / float(self._rect[ (1,1) ])
-        return aspect_ratio
+        return window.aspect_ratio( self.rect )
 
     def scissor_to_viewport( self ):
         """
@@ -104,89 +106,10 @@ class Viewport( object ):
         It is up to the user to call
         glEnable(GL_SCISSOR_TEST).
 
-        To undo this, use renderer.window.scissor_to_window
+        @see pygly.gl.set_scissor.
         """
-        window.set_scissor_to_rectangle( self._rect )
-
-    def clear(
-        self,
-        values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-        ):
-        """
-        Uses glScissor to perform glClear on the viewport
-        only.
-        """
-        assert True == glIsEnabled( GL_SCISSOR_TEST )
-
-        # clear the region
-        # we use glScissor to set the pixels
-        # we want to affect
-        self.scissor_to_viewport()
-
-        # clear the background or we will just draw
-        # ontop of other viewports
-        glClear( values )
+        gl.set_scissor( self.rect )
     
-    def push_view_matrix( self ):
-        """
-        Pushes the viewport's active camera's
-        view matrix onto the stack.
-        If there is no camera, no matrix is pushed.
-        """
-        # the camera is a weak pointer
-        # so we need to get a reference to it
-        if self.camera != None:
-            # apply our projection matrix
-            self.camera().view_matrix.push_view_matrix()
-
-    def pop_view_matrix( self ):
-        """
-        Pops the viewport's active camera's
-        view matrix from the stack.
-        If there is no camera, no matrix is poped.
-        """
-        # the camera is a weak pointer
-        # so we need to get a reference to it
-        if self.camera != None:
-            # unapply our projection matrix
-            self.camera().view_matrix.pop_view_matrix()
-        
-    def push_model_view( self ):
-        """
-        Pushes the viewport's active camera's
-        model matrix from the stack.
-        If there is no camera, no matrix is pushed.
-        """
-        # the camera is a weak pointer
-        # so we need to get a reference to it
-        if self.camera != None:
-            # apply the camera's model view
-            self.camera().push_model_view()
-
-    def pop_model_view( self ):
-        """
-        Pops the viewport's active camera's
-        model matrix from the stack.
-        If there is no camera, no matrix is poped.
-        """
-        # the camera is a weak pointer
-        # so we need to get a reference to it
-        if self.camera != None:
-            # unapply the camera's model view
-            self.camera().pop_model_view()
-
-    def render( self, window ):
-        """
-        Triggers a render on the viewport's
-        current scene node.
-        It is up to the caller to ensure the
-        correct window is currently active and
-        the viewport has been setup.
-        """
-        # render the current scene
-        if self.scene_node != None:
-            self.scene_node.render()
-
     def push_viewport_attributes( self ):
         """
         Pushes the current OGL attributes
@@ -234,59 +157,6 @@ class Viewport( object ):
         # clear areas of the window
         glEnable( GL_SCISSOR_TEST )
 
-    def create_ray_from_viewport_point( self, point ):
-        """
-        Returns a ray cast from viewport space
-        into the world.
-
-        @param viewport: The viewport being used to cast the ray.
-        @param point: The 2D point in pixels, relative to this
-        viewport, to project a ray from.
-        @return A ray consisting of 2 vectors (shape = 2,3).
-        The ray will begin at the near clip plane.
-        If the viewport has no camera, None will be returned.
-        @raise ValueError: Raised if the point is < 0,0 or
-        > width,height of the viewport.
-        """
-        # check that the point resides within the viewport
-        if \
-            point[ 0 ] < 0 or \
-            point[ 0 ] > self.width or \
-            point[ 1 ] < 0 or \
-            point[ 1 ] > self.height:
-            raise ValueError( "Point is not within viewport" )
-
-        # tell our camera to cast the ray
-        if self.camera == None:
-            # no camera
-            return None
-
-        # convert from pixel position to relative position
-        # ie, 0.0 -> 1.0
-        relative_point = numpy.array(
-            point,
-            dtype = numpy.float
-            )
-        size = numpy.array(
-            self._rect[ 1 ],
-            dtype = numpy.float
-            )
-        relative_point /= size
-
-        return self.camera().create_ray_from_viewport_point(
-            relative_point
-            )
-
-    def does_window_point_intersect_viewport( self, point ):
-        """
-        Checks if a point relative to the window is
-        within the viewport.
-        """
-        return geometric_tests.does_point_intersect_rectangle(
-            point,
-            self._rect
-            )
-
     def create_viewport_point_from_window_point( self, point ):
         """
         Converts a point relative to the window, to a point
@@ -301,18 +171,17 @@ class Viewport( object ):
         # convert to viewport co-ordinates
         return numpy.array(
             [
-                point[ 0 ] - self._rect[ 0 ][ 0 ],
-                point[ 1 ] - self._rect[ 0 ][ 1 ]
+                point[ 0 ] - self.rect[ 0 ][ 0 ],
+                point[ 1 ] - self.rect[ 0 ][ 1 ]
                 ],
             dtype = numpy.int
             )
 
-
     def create_window_point_from_viewport_point( self, point ):
         return numpy.array(
             [
-                point[ 0 ] + self._rect[ 0 ][ 0 ],
-                point[ 1 ] + self._rect[ 0 ][ 1 ]
+                point[ 0 ] + self.rect[ 0 ][ 0 ],
+                point[ 1 ] + self.rect[ 0 ][ 1 ]
                 ],
             dtype = numpy.int
             )
@@ -320,33 +189,50 @@ class Viewport( object ):
 
     @property
     def x( self ):
-        return self._rect[ (0,0) ]
+        return self.left
 
     @property
     def y( self ):
-        return self._rect[ (0,1) ]
+        return self.bottom
     
     @property
     def width( self ):
-        return self._rect[ (1,0) ]
+        return rectangle.width( self.rect )
     
     @property
     def height( self ):
-        return self._rect[ (1,1) ]
+        return rectangle.height( self.rect )
 
     @property
     def left( self ):
-        return self._rect[ (0,0) ]
+        return rectangle.left( self.rect )
 
     @property
     def bottom( self ):
-        return self._rect[ (0,1) ]
+        return rectangle.bottom( self.rect )
 
     @property
     def right( self ):
-        return self._rect[ (0,0) ] + self._rect[ (1,0) ]
+        return rectangle.right( self.rect )
 
     @property
     def top( self ):
-        return self._rect[ (0,1) ] + self._rect[ (1,1) ]
+        return rectangle.top( self.rect )
+
+    # document our events
+    if hasattr( sys, 'is_epydoc' ):
+        def on_resize( rect ):
+            '''The viewport size was changed.
+
+            :event:
+            '''
+        def on_change_aspect_ratio( aspect_ratio ):
+            '''The viewport size was changed.
+
+            :event:
+            '''
+
+# register our custom events
+Viewport.register_event_type( 'on_resize' )
+Viewport.register_event_type( 'on_change_aspect_ratio' )
 
