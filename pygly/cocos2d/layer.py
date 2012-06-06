@@ -48,9 +48,6 @@ class Layer( CocosLayer ):
         """
         Apply the model view transform for the camera
         """
-        # do nothing
-        #return
-
         if self.pygly_camera:
             # TODO: convert this to a simple 'model_view'
             # call with no pushing
