@@ -10,6 +10,7 @@ from pyglet.gl import *
 
 from pyrr import quaternion
 from pyrr import matrix44
+from pyrr import ray
 
 from view_matrix import ViewMatrix
 from scene_node import SceneNode
@@ -28,7 +29,6 @@ class CameraNode( SceneNode ):
         # setup our model view matrix
         glMatrixMode( GL_MODELVIEW )
         glPushMatrix()
-        glLoadIdentity()
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
@@ -39,9 +39,9 @@ class CameraNode( SceneNode ):
         matrix = matrix.T
 
         # convert to ctype for OpenGL
-        # http://groups.google.com/group/pyglet-users/browse_thread/thread/a2374f3b51263bc0
-        glMatrix = (GLfloat * matrix.size)(*matrix.flat)
-        glMultMatrixf( glMatrix )
+        glLoadMatrixf(
+            (GLfloat * matrix.size)(*matrix.flat)
+            )
         
         # add our translation to the matrix
         # translate the scene in the opposite direction
@@ -58,21 +58,6 @@ class CameraNode( SceneNode ):
     def pop_model_view( self ):
         glMatrixMode( GL_MODELVIEW )
         glPopMatrix()
-    
-    def render( self ):
-        # apply our transforms
-        glPushMatrix()
-        self.apply_translations()
-        
-        # render some debug info
-        self.render_debug_info()
-        
-        # continue on to our children
-        for child in self.children:
-            child.render()
-        
-        # undo our transforms
-        glPopMatrix()
 
     def render_debug_info( self ):
         """
@@ -83,7 +68,7 @@ class CameraNode( SceneNode ):
         """
         debug_axis.render()
 
-    def create_ray_from_viewport_point( self, point ):
+    def create_ray_from_ratio_point( self, point ):
         """
         Returns a ray cast from 2d camera co-ordinates
         into the world.
@@ -96,24 +81,41 @@ class CameraNode( SceneNode ):
         [viewport.width, viewport.height] is the Top Right of
         the viewport.
         @returns A ray consisting of 2 vectors (shape = 2,3).
+        The first vector (result[0]) is the origin of the ray.
+        The second vector (result[1]) is the direction of the ray.
+        The direction is a vector of unit length.
         """
         # convert the point to a ray
-        # the ray is in the format
-        # [ [near.x,near.y,near.z], [far.x,far.y,far.z] ]
-        local_ray = self.view_matrix.create_ray_from_viewport_point( point )
+        local_ray = self.view_matrix.create_ray_from_ratio_point(
+            point
+            )
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
             self.world_orientation
             )
-        matrix44.scale( matrix, self.scale, matrix )
-        matrix44.set_translation(
-            matrix,
-            self.world_translation,
-            out = matrix
-            )
-        matrix44.apply_to_vector( local_ray[ 0 ], matrix )
+
+        # apply our rotation to the ray direction
         matrix44.apply_to_vector( local_ray[ 1 ], matrix )
+
+        # apply our scale
+        scale_matrix = matrix44.create_from_scale( self.scale )
+        matrix44.multiply( matrix, scale_matrix )
+
+        translate_matrix = matrix44.create_from_translation(
+            self.world_translation,
+            )
+        matrix44.multiply( matrix, translate_matrix )
+
+        # apply the full matrix to the ray origin
+        matrix44.apply_to_vector( local_ray[ 0 ], matrix )
+
+        # make sure the ray is unit length
+        ray.create_ray(
+            local_ray[ 0 ],
+            local_ray[ 1 ],
+            out = local_ray
+            )
+
         return local_ray
-    
 

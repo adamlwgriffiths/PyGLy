@@ -25,7 +25,7 @@ class TreeNode( object ):
         """
         Attaches a child to the node.
 
-        @raise KeyError: Raised if the node
+        @raise ValueError: Raised if the child
         already has a parent.
         """
         if node.parent != None:

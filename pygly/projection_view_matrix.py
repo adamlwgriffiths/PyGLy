@@ -66,14 +66,14 @@ class ProjectionViewMatrix( ViewMatrix ):
 
     def calculate_near_clip_plane_size( self ):
         return trig.calculate_plane_size(
-            self._aspect_ratio,
+            self.aspect_ratio,
             self.fov,
             self.near_clip
             )
 
     def calculate_far_clip_plane_size( self ):
         return trig.calculate_plane_size(
-            self._aspect_ratio,
+            self.aspect_ratio,
             self.fov,
             self.far_clip
             )
@@ -86,7 +86,7 @@ class ProjectionViewMatrix( ViewMatrix ):
         # it shouldn't be necessary
         # calculate the near plane's size
         width, height = trig.calculate_plane_size(
-            self._aspect_ratio,
+            self.aspect_ratio,
             self.fov,
             distance
             )
@@ -100,7 +100,7 @@ class ProjectionViewMatrix( ViewMatrix ):
 
         return plane_point
 
-    def create_ray_from_viewport_point( self, point ):
+    def create_ray_from_ratio_point( self, point ):
         """
         Returns a local ray cast from the camera co-ordinates
         at 'point'.

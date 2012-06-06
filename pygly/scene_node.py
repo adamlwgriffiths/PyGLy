@@ -38,10 +38,14 @@ class SceneNode( TreeNode ):
         self._orientation = quaternion.identity()        
         self._world_orientation = quaternion.identity()
         
-        self._translation = numpy.zeros( 3, dtype = float )
-        self._world_translation = numpy.zeros( 3, dtype = float )
+        self._translation = numpy.zeros( 3, dtype = numpy.float )
+        self._world_translation = numpy.zeros( 3, dtype = numpy.float )
         
-        self.scale = numpy.ones( 3, dtype = float )
+        self._scale = numpy.ones( 3, dtype = numpy.float )
+        self._world_scale = numpy.ones( 3, dtype = numpy.float )
+
+        self._world_matrix = matrix44.identity()
+
         self.dirty = True
 
     def _set_dirty( self ):
@@ -67,41 +71,54 @@ class SceneNode( TreeNode ):
         if self.dirty == False:
             return
         
-        parent = self.parent
-        if parent == None:
+        if self.parent == None:
             # no parent
-            # just use our local translations
-            self._world_translation = self._translation
-            self._world_orientation = self._orientation
+            self._world_translation[:] = self.inertial_translation
+            self._world_orientation[:] = self.object_orientation
+            self._world_scale[:] = self.scale
+            self._world_matrix[:] = self.object_matrix
         else:
-            # get our parent's world translation
-            parent_world_translation = parent._get_world_translation()
-            parent_world_orientation = parent._get_world_orientation()
-            
-            # rotate our translation by our parent's world orientation
-            parent_world_matrix = matrix33.create_from_quaternion(
-                parent_world_orientation
+            # rotate our translation by our parent's
+            # world orientation
+            parent_world_matrix = self.parent.world_matrix
+
+            # calculate our world scale
+            self._world_scale = self.scale * self.parent.world_scale
+
+            # multiply our rotation by our parents
+            # order is important, our quaternion should
+            # be the second parameter
+            self._world_orientation = quaternion.cross(
+                self.parent.world_orientation,
+                self.object_orientation
                 )
+
+            # apply to our translation
             world_translation = matrix33.apply_to_vector(
-                self._translation,
+                self.inertial_translation,
                 parent_world_matrix
                 )
-            self._world_translation[:] = parent_world_translation + world_translation
-            
-            # multiply our rotation by our parents
-            self._world_orientation = quaternion.cross(
-                self._orientation,
-                parent_world_orientation
+
+            self._world_translation[:] = \
+                self.parent.world_translation + world_translation
+
+            matrix44.multiply(
+                self.object_matrix,
+                self.parent.world_matrix,
+                out = self._world_matrix
                 )
+            
         self.dirty = False
     
-    def _get_inertial_translation( self ):
+    @property
+    def inertial_translation( self ):
         """
         Returns the current inertial translation.
         """
         return self._translation
     
-    def _set_inertial_translation( self, translation ):
+    @inertial_translation.setter
+    def inertial_translation( self, translation ):
         """
         Sets the inertial translation of the node.
         """
@@ -113,18 +130,8 @@ class SceneNode( TreeNode ):
         self._translation[:] = translation
         self._set_dirty()
     
-    """
-    Property that enables access to the inertial translation
-    of the node directly.
-    Uses the _get_inertial_translation and
-    _set_inertial_translation methods.
-    """
-    inertial_translation = property(
-        _get_inertial_translation,
-        _set_inertial_translation
-        )
-    
-    def _get_world_translation( self ):
+    @property
+    def world_translation( self ):
         """
         Returns the node's world translation.
 
@@ -141,23 +148,15 @@ class SceneNode( TreeNode ):
             self._update_world_translations()
             return self._world_translation
     
-    def _set_world_translation( self, translation ):
-        raise NotImplementedError(
-            "SceneNode._set_world_translation not implemented for non local translations"
-            )
-    
-    world_translation = property(
-        _get_world_translation,
-        _set_world_translation
-        )
-    
-    def _get_object_orientation( self ):
+    @property
+    def object_orientation( self ):
         """
         Returns the node's object orientation
         """
         return self._orientation
     
-    def _set_object_orientation( self, orientation ):
+    @object_orientation.setter
+    def object_orientation( self, orientation ):
         """
         Stores the node's object orientation
         """
@@ -169,18 +168,8 @@ class SceneNode( TreeNode ):
         self._orientation[:] = orientation
         self._set_dirty()
     
-    """
-    Property that enables access to the node's
-    object rotation.
-    Uses the _get_object_orientation and
-    _set_object_orientation methods.
-    """
-    object_orientation = property(
-        _get_object_orientation,
-        _set_object_orientation
-        )
-    
-    def _get_world_orientation( self ):
+    @property
+    def world_orientation( self ):
         """
         Returns the node's world orientation.
 
@@ -195,27 +184,37 @@ class SceneNode( TreeNode ):
             # update them
             self._update_world_translations()
             return self._world_orientation
-    
-    def _set_world_orientation( self, orientation ):
-        """
-        Set's the node's world orientation.
-        """
+
+    @property
+    def scale( self ):
+        return self._scale
+
+    @scale.setter
+    def scale( self, scale ):
+        if numpy.array_equal( scale, [ 1.0, 1.0, 1.0 ] ):
+            # don't bother to update anything
+            return
+
+        self._scale[:] = scale
         self._set_dirty()
-        raise NotImplementedError(
-            "SceneNode._setWorldOrientation not implemented"
-            )
-    
-    """
-    Property that enables access to the node's
-    world orientation.
-    Uses the _get_world_orientation and
-    _set_world_orientation methods.
-    """
-    world_orientation = property(
-        _get_world_orientation,
-        _set_world_orientation
-        )
-    
+
+    @property
+    def world_scale( self ):
+        """
+        Returns the node's world orientation.
+
+        Automatically calls _update_world_translations
+        if the node is marked as 'dirty' and returns
+        the calculated result.
+        """
+        if self.dirty == False:
+            return self._world_scale
+        else:
+            # world translations are dirty
+            # update them
+            self._update_world_translations()
+            return self._world_scale
+
     def rotate_object_quaternion( self, orientation ):
         """
         Rotates the node by the specified orientation.
@@ -242,6 +241,9 @@ class SceneNode( TreeNode ):
         Amount > 0 == pitch down
         Amount < 0 == pitch up
         """
+        if radians == 0.0:
+            return
+
         quat = quaternion.set_to_rotation_about_x( radians )
         self.rotate_object_quaternion( quat )
 
@@ -252,6 +254,9 @@ class SceneNode( TreeNode ):
         Amount > 0 == yaw right.
         Amount < 0 == yaw left.
         """
+        if radians == 0.0:
+            return
+
         quat = quaternion.set_to_rotation_about_y( radians )
         self.rotate_object_quaternion( quat )
     
@@ -262,6 +267,9 @@ class SceneNode( TreeNode ):
         Amount > 0 == roll left.
         Amount < 0 == roll right.
         """
+        if radians == 0.0:
+            return
+
         quat = quaternion.set_to_rotation_about_z( radians )
         self.rotate_object_quaternion( quat )
 
@@ -339,36 +347,21 @@ class SceneNode( TreeNode ):
         The inertial axis of the object does not include
         it's local orientation.
         """
+        if numpy.array_equal( vec, [ 0.0, 0.0, 0.0 ] ):
+            # don't bother to update anything
+            return
+
         # apply the translation
         self._translation += vec
         self._set_dirty()
 
-    def translate_inertial_x( self, amount ):
+    def translate_inertial_axis( self, x = 0.0, y = 0.0, z = 0.0 ):
         """
-        Translates the node along it's inertial X axis.
+        Translates the node along it's inertial axis.
         The inertial axis of the object does not include
         it's local orientation.
         """
-        self._translation += [ float(amount), 0.0, 0.0 ]
-        self._set_dirty()
-
-    def translate_inertial_y( self, amount ):
-        """
-        Translates the node along it's inertial Y axis.
-        The inertial axis of the object does not include
-        it's local orientation.
-        """
-        self._translation += [ 0.0, float(amount), 0.0 ]
-        self._set_dirty()
-
-    def translate_inertial_z( self, amount ):
-        """
-        Translates the node along it's inertial Z axis.
-        The inertial axis of the object does not include
-        it's local orientation.
-        """
-        self._translation += [ 0.0, 0.0, float(amount) ]
-        self._set_dirty()
+        self.translate_inertial( [ float(x), float(y), float(z) ] )
     
     def translate_object( self, vec ):
         """
@@ -376,6 +369,10 @@ class SceneNode( TreeNode ):
         The vector will have the node's current orientation
         applied to it and then be added to the translation.
         """
+        if numpy.array_equal( vec, [ 0.0, 0.0, 0.0 ] ):
+            # don't bother to update anything
+            return
+
         # multiply the vector by our local orientation
         localVec = self._rotate_vector_by_quaternion(
             self.object_orientation,
@@ -386,60 +383,13 @@ class SceneNode( TreeNode ):
         self._translation += localVec
         self._set_dirty()
     
-    def translate_object_x( self, amount ):
+    def translate_object_axis( self, x = 0.0, y = 0.0, z = 0.0 ):
         """
-        Translates the node forward or backward along
-        it's local X axis.
-
-        +X is right.
-        -X is left.
+        Translates the node locally.
+        The vector will have the node's current orientation
+        applied to it and then be added to the translation.
         """
-        if amount == 0.0:
-            return
-        
-        vec = [float(amount), 0.0, 0.0]
-        self.translate_object( vec )
-    
-    def translate_object_y( self, amount ):
-        """
-        Translates the node upward or downward along
-        it's local Y axis.
-
-        +Y is upward.
-        -Y is downward
-        """
-        if amount == 0.0:
-            return
-        
-        vec = [0.0, float(amount), 0.0]
-        self.translate_object( vec )
-    
-    def translate_object_z( self, amount ):
-        """
-        Translates the node forward or backward along
-        it's local Z axis.
-
-        +Z is backward.
-        -Z is forward.
-        """
-        if amount == 0.0:
-            return
-        
-        vec = [0.0, 0.0, float(amount)]
-        self.translate_object( vec )
-    
-    def set_scale( self, scale ):
-        """
-        Sets the current scale.
-        """
-        self.scale[:] = scale
-
-    def apply_scale( self, scale ):
-        """
-        Multiplies the existing scale by the
-        specified value.
-        """
-        self.scale *= scale
+        self.translate_object( [float(x), float(y), float(z)] )
     
     def add_child( self, node ):
         """
@@ -464,55 +414,84 @@ class SceneNode( TreeNode ):
         if hasattr( node, '_set_dirty' ):
             node._set_dirty()
     
-    def apply_translations( self ):
+    @property
+    def object_matrix( self ):
         """
-        Applies the node's translation, orientation and
-        scale to the current opengl matrix.
-        Does NOT call glPushMatrix or glPopMatrix.
+        Returns a matrix representing the node's
+        object translation, orientation and
+        scale.
         """
         # matrix transformations must be done in order
-        # orientation and scaling
-        # finally translation
-
-        # convert our quaternion to a matrix
-        matrix = matrix44.create_from_quaternion(
-            self._orientation
-            )
+        # scaling
+        # rotation
+        # translation
 
         # apply our scale
-        matrix44.scale( matrix, self.scale, matrix )
+        matrix = matrix44.create_from_scale( self.scale )
+
+        # apply our quaternion
+        matrix44.multiply(
+            matrix,
+            matrix44.create_from_quaternion(
+                self.object_orientation
+                ),
+            out = matrix
+            )
 
         # apply our translation
         # we MUST do this after the orientation
-        matrix44.set_translation( matrix, self._translation, out = matrix )
-        
-        # convert to ctype for OpenGL
-        glMatrix = (GLfloat * matrix.size)(*matrix.flat) 
-        glMultMatrixf( glMatrix )
+        matrix44.multiply(
+            matrix,
+            matrix44.create_from_translation(
+                self.inertial_translation,
+                ),
+            out = matrix
+            )
+
+        return matrix
+
+    @property
+    def world_matrix( self ):
+        """
+        Returns a matrix representing the node's
+        world translation, orientation and
+        scale.
+        """
+        if self.parent == None:
+            return self.object_matrix
+        else:
+            if self.dirty == True:
+                self._update_world_translations()
+            return self._world_matrix
     
-    def render( self ):
+    def render_debug( self ):
         """
         Does the following in order:
          Pushes the current gl matrix.
          Applies the node's translations.
          Renders debug info.
-         Calls 'render' on all children.
+         Calls this method on all child nodes.
          Pops the gl matrix.
         """
-        # apply our transforms
+        # store the existing matrix state
         glPushMatrix()
-        self.apply_translations()
+
+        # apply our transforms
+        matrix = self.world_matrix
+        glMultMatrixf(
+            (GLfloat * matrix.size)(*matrix.flat)
+            )
         
         # render some debug info
         self.render_debug_info()
+
+        # undo our transforms
+        glPopMatrix()
         
         # continue on to our children
         for child in self.children:
-            child.render()
+            child.render_debug()
         
-        # undo our transforms
-        glPopMatrix()
-
     def render_debug_info( self ):
         """
         Renders debug information at the current

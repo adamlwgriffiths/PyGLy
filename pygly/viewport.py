@@ -64,7 +64,7 @@ class Viewport( EventDispatcher ):
 
         # dispatch our events
         self.dispatch_event(
-            'on_resize',
+            'on_viewport_resize',
             self.rect
             )
         self.dispatch_event(
@@ -157,36 +157,6 @@ class Viewport( EventDispatcher ):
         # clear areas of the window
         glEnable( GL_SCISSOR_TEST )
 
-    def create_viewport_point_from_window_point( self, point ):
-        """
-        Converts a point relative to the window, to a point
-        relative to the viewport.
-
-        @param window: The window that contains the viewport
-        and point.
-        @param viewport: The viewport the point is within.
-        @param point: The point on the window. This is in pixels.
-        @return: The point within the viewport.
-        """
-        # convert to viewport co-ordinates
-        return numpy.array(
-            [
-                point[ 0 ] - self.rect[ 0 ][ 0 ],
-                point[ 1 ] - self.rect[ 0 ][ 1 ]
-                ],
-            dtype = numpy.int
-            )
-
-    def create_window_point_from_viewport_point( self, point ):
-        return numpy.array(
-            [
-                point[ 0 ] + self.rect[ 0 ][ 0 ],
-                point[ 1 ] + self.rect[ 0 ][ 1 ]
-                ],
-            dtype = numpy.int
-            )
-        pass
-
     @property
     def x( self ):
         return self.left
@@ -194,6 +164,14 @@ class Viewport( EventDispatcher ):
     @property
     def y( self ):
         return self.bottom
+
+    @property
+    def size( self ):
+        return rectangle.size( self.rect )
+
+    @property
+    def position( self ):
+        return rectangle.position( self.rect )
     
     @property
     def width( self ):
@@ -221,7 +199,7 @@ class Viewport( EventDispatcher ):
 
     # document our events
     if hasattr( sys, 'is_epydoc' ):
-        def on_resize( rect ):
+        def on_viewport_resize( rect ):
             '''The viewport size was changed.
 
             :event:
@@ -233,6 +211,6 @@ class Viewport( EventDispatcher ):
             '''
 
 # register our custom events
-Viewport.register_event_type( 'on_resize' )
+Viewport.register_event_type( 'on_viewport_resize' )
 Viewport.register_event_type( 'on_change_aspect_ratio' )
 

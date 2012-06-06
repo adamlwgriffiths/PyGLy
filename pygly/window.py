@@ -5,7 +5,6 @@ Created on 02/03/2012
 '''
 
 import numpy
-from pyglet.gl import *
 
 from pyrr import rectangle
 
@@ -19,100 +18,14 @@ def create_rectangle( window ):
         dtype = numpy.int
         )
 
-def find_viewport_for_point( window, viewports, point ):
+def aspect_ratio( rect ):
     """
-    @param window: The window the point is from.
-    @param viewports: A sorted array of viewports. The first
-    viewport that the point is within will be used.
-    @param point: The point we are finding a viewport for.
-    @return The viewport the point is within. None is returned
-    if the point is not within a viewport.
+    Returns the aspect ratio of the viewport.
+
+    Aspect ratio is the ratio of width to height
+    a value of 2.0 means width is 2*height
     """
-    for viewport in viewports:
-        if viewport.does_window_point_intersect_viewport( point ):
-            # the point is within this viewport
-            return viewport
-
-    # the point matches no viewports
-    return None
-
-def set_viewport_to_rectangle( rect ):
-    """
-    Calls glViewport with the dimensions of
-    the window.
-
-    This can be used to undo the call
-    viewport.switch_to or glViewport.
-    """
-    glViewport(
-        int(rect[ 0 ][ 0 ]),
-        int(rect[ 0 ][ 1 ]),
-        int(rect[ 1 ][ 0 ]),
-        int(rect[ 1 ][ 1 ])
-        )
-
-def set_scissor_to_rectangle( rect ):
-    """
-    Calls glScissor with the size of the rectangle.
-
-    It is up to the user to call
-    glEnable(GL_SCISSOR_TEST).
-
-    To undo this, use scissor_to_window.
-    """
-    glScissor(
-        int(rect[ (0,0) ]),
-        int(rect[ (0,1) ]),
-        int(rect[ (1,0) ]),
-        int(rect[ (1,1) ])
-        )
-
-def render( window, viewports ):
-    # set ourself as the active window
-    window.switch_to()
-
-    # don't clear the screen incase there are
-    # more viewports than just these
-
-    # iterate through all of our viewports
-    for viewport in viewports:
-        # activate the viewport
-        viewport.switch_to()
-
-        # setup our open gl state for the viewport
-        # also calls glScissor to the viewports dimensions
-        viewport.push_viewport_attributes()
-
-        # clear the existing depth buffer
-        # we need to do this incase the viewports
-        # overlap
-        viewport.clear(
-            values = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
-            )
-
-        # apply the cameras projection matrix
-        viewport.push_view_matrix()
-        # apply the cameras model view
-        viewport.push_model_view()
-        # render the scene
-        viewport.render( window )
-        # undo our camera model view
-        viewport.pop_model_view()
-        # undo our camera projection matrix
-        viewport.pop_view_matrix()
-
-        # undo any opengl state we set for the viewport
-        viewport.pop_viewport_attributes()
-
-    # reset the viewport to the full window
-    rect = create_rectangle( window )
-    set_viewport_to_rectangle( rect )
-
-    # undo any viewport scissor calls
-    set_scissor_to_rectangle( rect )
-
-    # set matrix back to model view just incase
-    # the last call was to pop_view_matrix which
-    # sets it to GL_PROJECTION
-    glMatrixMode( GL_MODELVIEW )
+    width = float(rect[ 1,0 ])
+    height = float(rect[ 1,1 ])
+    return width / height
 

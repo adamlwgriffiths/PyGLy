@@ -16,7 +16,7 @@ from cocos.layer.base_layers import Layer as CocosLayer
 from cocos.director import director
 from pyglet.gl import *
 
-from pygly.viewport import Viewport
+import pygly.viewport
 import pygly.window
 
 
@@ -25,26 +25,36 @@ class Layer( CocosLayer ):
     Provides a Cocos2D layer which renders a PyGLy scene.
     """
 
-    def __init__( self ):
+    def __init__(
+        self,
+        camera = None,
+        render_callback = None,
+        viewport_rect = None
+        ):
         super( CocosLayer, self ).__init__()
 
-        # initialise our variables
-        self.pygly_scene_node = None
-        self.pygly_camera = None
+        self.pygly_camera = camera
+        self.render_callback = render_callback
+        self.pygly_viewport = viewport_rect
 
         # create a default viewport that
         # stretches the entire screen
-        self.pygly_viewport = Viewport(
-            pygly.window.create_rectangle(
+        if viewport_rect == None:
+            self.pygly_viewport = pygly.window.create_rectangle(
                 director.window
                 )
-            )
 
     def transform( self ):
         """
         Apply the model view transform for the camera
         """
-        self.pygly_viewport.push_model_view()
+        # do nothing
+        #return
+
+        if self.pygly_camera:
+            # TODO: convert this to a simple 'model_view'
+            # call with no pushing
+            self.pygly_camera.push_model_view()
 
     def draw(self, *args, **kwargs):
         """
@@ -54,11 +64,7 @@ class Layer( CocosLayer ):
         """
         super( CocosLayer, self ).draw( *args, **kwargs )
 
-        # enable depth testing
-        director.set_depth_test( True )
-
-        pygly.window.render(
-            director.window,
-            [ self.pygly_viewport ]
-            )
+        # render the scene
+        if self.render_callback:
+            self.render_callback( self )
 

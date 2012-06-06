@@ -34,6 +34,14 @@ class ViewMatrix( object ):
 
         return self._matrix
 
+    def on_change_aspect_ratio( self, aspect_ratio ):
+        """
+        Updates the aspect ratio.
+
+        Used to hook into Viewport events.
+        """
+        self.aspect_ratio = aspect_ratio
+
     def push_view_matrix( self ):
         """
         Pushes the frustrum matrix onto the projection
@@ -48,9 +56,9 @@ class ViewMatrix( object ):
         glMatrixMode( GL_PROJECTION )
         glPushMatrix()
 
-        matrix = self.matrix
-        glMatrix = (GLfloat * matrix.size)(*matrix.flat)
-        glLoadMatrixf( glMatrix )
+        glLoadMatrixf(
+            (GLfloat * self.matrix.size)(*self.matrix.flat)
+            )
 
     def pop_view_matrix( self ):
         """
@@ -100,6 +108,6 @@ class ViewMatrix( object ):
         self._far_clip = far_clip
         self.dirty = True
 
-    def create_ray_from_viewport_point( self, point ):
+    def create_ray_from_ratio_point( self, point ):
         raise NotImplementedError()
 

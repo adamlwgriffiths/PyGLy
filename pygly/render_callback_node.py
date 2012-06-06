@@ -15,7 +15,9 @@ class RenderCallbackNode( RenderNode ):
         super( RenderCallbackNode, self ).__init__( name )
 
         if render_callback == None:
-            raise ValueError( "RenderNode render_callback cannot be None" )
+            raise ValueError(
+                "RenderNode render_callback cannot be None"
+                )
         
         self.initialise_callback = initialise_callback
         self.render_callback = render_callback

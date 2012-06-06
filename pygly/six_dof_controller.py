@@ -66,35 +66,41 @@ class SixDOF_Controller( object ):
         """
         Translates the object along the -Z object axis.
         """
-        self.scene_node.translate_object_z( -amount )
+        self.translate_backward( -amount )
     
     def translate_backward( self, amount ):
         """
         Translates the object along the +Z object axis.
         """
-        self.scene_node.translate_object_z( amount )
+        self.scene_node.translate_object(
+            [ 0.0, 0.0, amount ]
+            )
     
     def translate_up( self, amount ):
         """
         Translates the object along the +Y object axis.
         """
-        self.scene_node.translate_object_y( amount )
+        self.scene_node.translate_object(
+            [ 0.0, amount, 0.0 ]
+            )
     
     def translate_down( self, amount ):
         """
         Translates the object along the -Y object axis.
         """
-        self.scene_node.translate_object_y( -amount )
+        self.translate_up( -amount )
     
     def translate_left( self, amount ):
         """
         Translates the object along the -X object axis.
         """
-        self.scene_node.translate_object_x( -amount )
+        self.translate_right( -amount )
     
     def translate_right( self, amount ):
         """
         Translates the object along the +X object axis.
         """
-        self.scene_node.translate_object_x( amount )
+        self.scene_node.translate_object(
+            [ amount, 0.0, 0.0 ]
+            )
     

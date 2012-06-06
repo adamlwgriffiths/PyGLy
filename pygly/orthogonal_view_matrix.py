@@ -92,9 +92,13 @@ class OrthogonalViewMatrix( ViewMatrix ):
         """
         height = self.scale[ 1 ]
         width = self.scale[ 0 ] * self.aspect_ratio
-        return numpy.array( [width, height], dtype = numpy.float )
 
-    def create_ray_from_viewport_point( self, point ):
+        return numpy.array(
+            [ width, height ],
+            dtype = numpy.float
+            )
+
+    def create_ray_from_ratio_point( self, point ):
         """
         Returns a local ray cast from the camera co-ordinates
         at 'point'.
@@ -124,12 +128,15 @@ class OrthogonalViewMatrix( ViewMatrix ):
         half_size = size / 2.0
         plane_point -= half_size
 
+        # convert these values to a line going from
+        # -near clip to -far clip
+        # this is due to the Z axis being -ve
         line = numpy.array(
             [
                 [
                     plane_point[ 0 ],
                     plane_point[ 1 ],
-                    self.near_clip
+                    -self.near_clip
                     ],
                 [
                     plane_point[ 0 ],

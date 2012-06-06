@@ -70,13 +70,15 @@ class FPS_Controller( object ):
         """
         Translates the object up the Y inertial axis.
         """
-        self.scene_node.translate_inertial_y( amount )
+        self.scene_node.translate_inertial(
+            [ 0.0, amount, 0.0 ]
+            )
 
     def translate_down( self, amount ):
         """
         Translates the object down the Y inertial axis.
         """
-        self.scene_node.translate_inertial_y( -amount )
+        self.translate_up( -amount )
 
     def translate_forward( self, amount ):
         """
@@ -113,13 +115,15 @@ class FPS_Controller( object ):
         Translates the object left along the inertial X,Z
         plane.
         """
-        self.scene_node.translate_object_x( -amount )
+        self.translate_right( -amount )
     
     def translate_right( self, amount ):
         """
         Translates the object right along the inertial X,Z
         plane.
         """
-        self.scene_node.translate_object_x( amount )
+        self.scene_node.translate_object(
+            [ amount, 0.0, 0.0 ]
+            )
     
 
