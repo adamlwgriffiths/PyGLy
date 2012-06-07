@@ -157,6 +157,10 @@ class Viewport( EventDispatcher ):
         # clear areas of the window
         glEnable( GL_SCISSOR_TEST )
 
+        # enable back face culling
+        glEnable( GL_CULL_FACE )
+        glCullFace( GL_BACK )
+
     @property
     def x( self ):
         return self.left
