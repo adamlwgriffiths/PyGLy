@@ -95,5 +95,12 @@ def render():
     if batch == None:
         initialise()
 
+    # enable back face culling
+    glPushAttrib( GL_ALL_ATTRIB_BITS )
+    glEnable( GL_CULL_FACE )
+    glCullFace( GL_BACK )
+
     batch.draw()
+
+    glPopAttrib()
 

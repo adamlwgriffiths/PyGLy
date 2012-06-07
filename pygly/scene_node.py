@@ -483,7 +483,8 @@ class SceneNode( TreeNode ):
             )
         
         # render some debug info
-        self.render_debug_info()
+        debug_cube.render()
+        debug_axis.render()
 
         # undo our transforms
         glPopMatrix()
@@ -491,13 +492,4 @@ class SceneNode( TreeNode ):
         # continue on to our children
         for child in self.children:
             child.render_debug()
-        
-    def render_debug_info( self ):
-        """
-        Renders debug information at the current
-        gl translation.
-        """
-        # render any debug info
-        debug_cube.render()
-        debug_axis.render()
 

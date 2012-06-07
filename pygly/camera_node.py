@@ -59,15 +59,6 @@ class CameraNode( SceneNode ):
         glMatrixMode( GL_MODELVIEW )
         glPopMatrix()
 
-    def render_debug_info( self ):
-        """
-        Renders debug information at the current
-        gl translation.
-        The camera doesn't want to blind itself
-        with a cube, so we don't render that.
-        """
-        debug_axis.render()
-
     def create_ray_from_ratio_point( self, point ):
         """
         Returns a ray cast from 2d camera co-ordinates
