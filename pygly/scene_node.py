@@ -278,6 +278,7 @@ class SceneNode( TreeNode ):
         result_vec = matrix33.apply_to_vector( vec, matrix )
         return result_vec
 
+    @property
     def object_x_axis( self ):
         """
         Returns the object's local X axis.
@@ -290,6 +291,7 @@ class SceneNode( TreeNode ):
             [1.0, 0.0, 0.0]
             )
 
+    @property
     def object_y_axis( self ):
         """
         Returns the object's local Y axis.
@@ -302,6 +304,7 @@ class SceneNode( TreeNode ):
             [0.0, 1.0, 0.0]
             )
 
+    @property
     def object_z_axis( self ):
         """
         Returns the object's local Z axis.
@@ -314,6 +317,7 @@ class SceneNode( TreeNode ):
             [0.0, 0.0, 1.0]
             )
 
+    @property
     def world_x_axis( self ):
         """
         Returns the object's world X axis.
@@ -323,6 +327,7 @@ class SceneNode( TreeNode ):
             [1.0, 0.0, 0.0]
             )
 
+    @property
     def world_y_axis( self ):
         """
         Returns the object's world Y axis.
@@ -332,6 +337,7 @@ class SceneNode( TreeNode ):
             [0.0, 1.0, 0.0]
             )
 
+    @property
     def world_z_axis( self ):
         """
         Returns the object's world Z axis.
