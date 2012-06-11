@@ -123,7 +123,7 @@ class SceneNode( TreeNode ):
         Sets the inertial translation of the node.
         """
         # check for the translation not changing
-        if numpy.array_equal( translation, [ 0.0, 0.0, 0.0 ] ):
+        if numpy.array_equal( translation, self._translation ):
             # don't bother to update anything
             return
         
@@ -191,7 +191,7 @@ class SceneNode( TreeNode ):
 
     @scale.setter
     def scale( self, scale ):
-        if numpy.array_equal( scale, [ 1.0, 1.0, 1.0 ] ):
+        if numpy.array_equal( scale, self._scale ):
             # don't bother to update anything
             return
 
