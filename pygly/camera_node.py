@@ -32,7 +32,7 @@ class CameraNode( SceneNode ):
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
-            self.world_orientation
+            self.world_transform.orientation
             )
 
         # we need to apply the transpose of the matrix
@@ -48,7 +48,7 @@ class CameraNode( SceneNode ):
         # we have to do this after the orientation
         # use the world translation incase we're attached
         # to something
-        world_translation = self.world_translation
+        world_translation = self.world_transform.translation
         glTranslatef(
             -world_translation[ 0 ],
             -world_translation[ 1 ],
@@ -83,18 +83,20 @@ class CameraNode( SceneNode ):
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
-            self.world_orientation
+            self.world_transform.orientation
             )
 
         # apply our rotation to the ray direction
         matrix44.apply_to_vector( local_ray[ 1 ], matrix )
 
         # apply our scale
-        scale_matrix = matrix44.create_from_scale( self.scale )
+        scale_matrix = matrix44.create_from_scale(
+            self.world_transform.scale
+            )
         matrix44.multiply( matrix, scale_matrix )
 
         translate_matrix = matrix44.create_from_translation(
-            self.world_translation,
+            self.world_transform.translation,
             )
         matrix44.multiply( matrix, translate_matrix )
 

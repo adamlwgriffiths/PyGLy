@@ -24,7 +24,7 @@ class RenderNode( SceneNode ):
         glPushMatrix()
 
         # apply our transforms
-        matrix = self.world_matrix
+        matrix = self.world_transform.matrix
         glMultMatrixf(
             (GLfloat * matrix.size)(*matrix.flat)
             )
