@@ -4,6 +4,7 @@ Created on 11/05/2012
 @author: adam
 '''
 
+import sys
 import weakref
 from collections import deque
 
