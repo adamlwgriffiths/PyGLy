@@ -101,6 +101,9 @@ def render():
     glBlendFunc( GL_SRC_ALPHA, GL_ONE )
     glBlendEquation( GL_FUNC_ADD )
 
+    # disable back face culling
+    glDisable( GL_CULL_FACE )
+
     # disable depth buffer
     # transparent objects still write to depth buffer
     # so normally you would render solid geometry
