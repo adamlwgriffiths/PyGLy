@@ -159,11 +159,8 @@ class ObjectSpace( object ):
             self.transform._orientation
             )
         # apply the matrix to an X vector
-        objectVector = matrix33.apply_to_vector(
+        self.transform.translation += matrix33.apply_to_vector(
             vector,
             matrix
             )
-
-        # apply the translation
-        self.transform.translation += objectVector
 

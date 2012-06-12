@@ -54,12 +54,7 @@ class InertialSpace( object ):
             # don't bother to update anything
             return
         
-        self.transform._translation[:] = translation
-
-        # notify others of our change
-        self.transform.dispatch_event(
-            'on_transform_changed'
-            )
+        self.transform.translation = translation
 
     @property
     def x( self ):
