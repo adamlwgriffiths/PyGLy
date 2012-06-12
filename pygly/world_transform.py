@@ -68,6 +68,11 @@ class WorldTransform( TreeNode ):
         # mark ourself as dirty
         self._dirty = True
 
+        # notify others of our change
+        self.dispatch_event(
+            'on_transform_changed'
+            )
+
     def _update_transforms( self ):
         if self._dirty == False:
             return
@@ -91,7 +96,7 @@ class WorldTransform( TreeNode ):
             # order is important, our quaternion should
             # be the second parameter
             self._orientation[:] = quaternion.cross(
-                self.parent._orientation,
+                self.parent.orientation,
                 self._transform.orientation
                 )
 
@@ -101,8 +106,7 @@ class WorldTransform( TreeNode ):
                 parent_world_matrix
                 )
 
-            self._translation[:] = \
-                self.parent._translation + object_translation
+            self._translation[:] = self.parent.translation + object_translation
 
     @property
     def object( self ):
@@ -121,20 +125,15 @@ class WorldTransform( TreeNode ):
 
     @scale.setter
     def scale( self, scale ):
-        if numpy.array_equal( scale, self._scale ):
-            # don't bother to update anything
-            return
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
 
         # determine the correct scale to
         # modify our parents to make our scale
         # == to the passed in value
         self._transform.scale = scale / self.parent.scale
-        self.scale[:] = scale
-
-        # notify others of our change
-        self.dispatch_event(
-            'on_transform_changed'
-            )
 
     @property
     def orientation( self ):
@@ -144,6 +143,10 @@ class WorldTransform( TreeNode ):
 
     @orientation.setter
     def orientation( self, quaternion ):
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
         raise NotImplementedError
 
     @property
@@ -154,6 +157,10 @@ class WorldTransform( TreeNode ):
 
     @translation.setter
     def translation( self, translation ):
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
         raise NotImplementedError
 
     @property
