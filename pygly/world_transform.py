@@ -139,6 +139,7 @@ class WorldTransform( TreeNode ):
     def orientation( self ):
         if self._dirty == True:
             self._update_transforms()
+
         return self._orientation
 
     @orientation.setter
@@ -153,6 +154,7 @@ class WorldTransform( TreeNode ):
     def translation( self ):
         if self._dirty == True:
             self._update_transforms()
+
         return self._translation
 
     @translation.setter
