@@ -42,9 +42,10 @@ class Transform( EventDispatcher ):
 
     @scale.setter
     def scale( self, scale ):
-        if numpy.array_equal( scale, self._scale ):
-            # don't bother to update anything
-            return
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
 
         self._scale[:] = scale
 
@@ -62,14 +63,11 @@ class Transform( EventDispatcher ):
         """
         Stores the node's object orientation
         """
-        # check for the orientation not changing
-        if numpy.array_equal(
-            orientation,
-            self._orientation
-            ):
-            # don't bother to update anything
-            return
-        
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
+
         self._orientation[:] = orientation
 
         # notify others of our change
@@ -89,14 +87,11 @@ class Transform( EventDispatcher ):
         """
         Sets the inertial translation of the node.
         """
-        # check for the translation not changing
-        if numpy.array_equal(
-            vector,
-            self._translation
-            ):
-            # don't bother to update anything
-            return
-        
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
+
         self._translation[:] = vector
 
         # notify others of our change
