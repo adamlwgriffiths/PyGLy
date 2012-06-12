@@ -24,43 +24,22 @@ class SixDOF_Controller( object ):
         """
         if yaw != None:
             quat = quaternion.set_to_rotation_about_y( yaw )
-            quaternion.cross(
+            self.scene_node.transform.orientation = quaternion.cross(
                 quat,
-                self.scene_node.object_orientation,
-                out = self.scene_node.object_orientation
+                self.scene_node.transform.orientation
                 )
-            # we MUST manually set the node as dirty
-            # when we update the quaternion in
-            # place, the 'setter' function is not
-            # called and the node's 'dirty' flag does
-            # not get set
-            self.scene_node._set_dirty()
         if pitch != None:
             quat = quaternion.set_to_rotation_about_x( pitch )
-            quaternion.cross(
+            self.scene_node.transform.orientation = quaternion.cross(
                 quat,
-                self.scene_node.object_orientation,
-                out = self.scene_node.object_orientation
+                self.scene_node.transform.orientation
                 )
-            # we MUST manually set the node as dirty
-            # when we update the quaternion in
-            # place, the 'setter' function is not
-            # called and the node's 'dirty' flag does
-            # not get set
-            self.scene_node._set_dirty()
         if roll != None:
             quat = quaternion.set_to_rotation_about_z( roll )
-            quaternion.cross(
+            self.scene_node.transform.orientation = quaternion.cross(
                 quat,
-                self.scene_node.object_orientation,
-                out = self.scene_node.object_orientation
+                self.scene_node.transform.orientation
                 )
-            # we MUST manually set the node as dirty
-            # when we update the quaternion in
-            # place, the 'setter' function is not
-            # called and the node's 'dirty' flag does
-            # not get set
-            self.scene_node._set_dirty()
     
     def translate_forward( self, amount ):
         """
@@ -72,7 +51,7 @@ class SixDOF_Controller( object ):
         """
         Translates the object along the +Z object axis.
         """
-        self.scene_node.translate_object(
+        self.scene_node.transform.object.translate(
             [ 0.0, 0.0, amount ]
             )
     
@@ -80,7 +59,7 @@ class SixDOF_Controller( object ):
         """
         Translates the object along the +Y object axis.
         """
-        self.scene_node.translate_object(
+        self.scene_node.transform.object.translate(
             [ 0.0, amount, 0.0 ]
             )
     
@@ -100,7 +79,7 @@ class SixDOF_Controller( object ):
         """
         Translates the object along the +X object axis.
         """
-        self.scene_node.translate_object(
+        self.scene_node.transform.object.translate(
             [ amount, 0.0, 0.0 ]
             )
     

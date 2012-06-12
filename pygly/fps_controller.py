@@ -64,13 +64,13 @@ class FPS_Controller( object ):
         
         quat = quaternion.cross( pitchQuat, yawQuat )
         quaternion.normalise( quat )
-        self.scene_node.object_orientation = quat
+        self.scene_node.transform.orientation = quat
 
     def translate_up( self, amount ):
         """
         Translates the object up the Y inertial axis.
         """
-        self.scene_node.translate_inertial(
+        self.scene_node.transform.inertial.translate(
             [ 0.0, amount, 0.0 ]
             )
 
@@ -93,7 +93,7 @@ class FPS_Controller( object ):
             matrix
             )
         vec *= amount
-        self.scene_node.translate_inertial( vec )
+        self.scene_node.transform.inertial.translate( vec )
 
     def translate_backward( self, amount ):
         """
@@ -108,7 +108,7 @@ class FPS_Controller( object ):
             matrix
             )
         vec *= amount
-        self.scene_node.translate_inertial( vec )
+        self.scene_node.transform.inertial.translate( vec )
     
     def translate_left( self, amount ):
         """
@@ -122,7 +122,7 @@ class FPS_Controller( object ):
         Translates the object right along the inertial X,Z
         plane.
         """
-        self.scene_node.translate_object(
+        self.scene_node.transform.object.translate(
             [ amount, 0.0, 0.0 ]
             )
     
