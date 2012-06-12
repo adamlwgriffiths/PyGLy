@@ -31,9 +31,9 @@ class RatioViewport( Viewport ):
             [ [0, 0], [1, 1] ]
             )
 
-        self.ratio = numpy.array(
+        self._ratio = numpy.array(
             ratio,
-            dtype = numpy.int
+            dtype = numpy.float
             )
         if self.ratio.shape != (2,2):
             raise ValueError(
@@ -41,11 +41,26 @@ class RatioViewport( Viewport ):
                 )
 
         # work out the actual rect size
-        self.window = window
         self.on_resize( window.width, window.height )
 
     def on_resize( self, width, height ):
         # update our pixel size
+        # find our window's dimensions
         window_rect = pygly.window.create_rectangle( self.window )
-        self.rect = window_rect * self.ratio
+
+        # calculate our viewport size
+        rect = window_rect.view( dtype = numpy.float ) * self.ratio
+        self.rect = rect.view( dtype = numpy.int )
+
+    @property
+    def ratio( self ):
+        return self._ratio
+
+    @ratio.setter
+    def ratio( setter, rect ):
+        # update our ratio
+        self._ratio[:] = rect
+
+        # update our rectangle
+        self.on_resize( self.window.width, self.window.height )
 
