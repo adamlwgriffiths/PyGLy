@@ -57,8 +57,10 @@ class Viewport( EventDispatcher ):
 
     @rect.setter
     def rect( self, rect ):
-        if numpy.array_equal( self._rect, rect ):
-            return
+        # don't check if the value hasn't changed
+        # using -= or += will cause this to fail
+        # due to python calling, getter, obj +, setter
+        # which would look as if the value hasn't changed
 
         self._rect[:] = rect
 
