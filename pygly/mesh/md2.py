@@ -473,6 +473,11 @@ class MD2( object ):
         vertex_indices = triangles[ : , :3 ]
         tc_indices = triangles[ : , 3: ]
 
+        # md2 triangles are clock-wise, we need to change
+        # them to counter-clock-wise
+        vertex_indices[ :,[1,2] ] = vertex_indices[ :,[2,1] ]
+        tc_indices[ :,[1,2] ] = tc_indices[ :,[2,1] ]
+
         vertex_indices = vertex_indices.flatten()
         tc_indices = tc_indices.flatten()
 
@@ -549,6 +554,14 @@ class MD2( object ):
         # apply the frame translation
         vertices *= scale
         vertices += translation
+
+        # re-orient the mesh
+        # md2's have +Z as up, +Y as left, +X as forward
+        # up: +Z, left: +Y, forward: +X
+        # we want
+        # up: +Y, left: -X, forward: -Z
+        vertices[:,0],vertices[:,1],vertices[:,2] = \
+            -vertices[:,1],vertices[:,2],-vertices[:,0]
 
         # extract the normal values
         normal_indices = frame_vertex_data[ :, 3 ]
