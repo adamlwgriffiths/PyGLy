@@ -36,15 +36,13 @@ class WorldTransform( TreeNode ):
 
         # register our event handlers
         # listen for transform changes from local transform
-        self._transform.set_handler(
-            'on_transform_changed',
-            self._on_transform_changed
+        self._transform.push_handlers(
+            on_transform_changed = self._on_transform_changed
             )
 
         # listen for new parents and children
-        self.set_handler(
-            'on_parent_changed',
-            self._on_parent_changed
+        self.push_handlers(
+            on_parent_changed = self._on_parent_changed
             )
 
     def _on_parent_changed( self, old_parent, new_parent ):
@@ -59,9 +57,8 @@ class WorldTransform( TreeNode ):
                 )
         # register to our new parent's events
         if new_parent != None:
-            new_parent.set_handler(
-                'on_transform_changed',
-                self._on_transform_changed
+            new_parent.push_handlers(
+                on_transform_changed = self._on_transform_changed
                 )
 
     def _on_transform_changed( self ):

@@ -41,9 +41,8 @@ class SceneNode( TreeNode ):
         self.world_transform = WorldTransform( self.transform )
 
         # listen for new parents and children
-        self.set_handler(
-            'on_parent_changed',
-            self._on_parent_changed
+        self.push_handlers(
+            on_parent_changed = self._on_parent_changed
             )
 
     def _on_parent_changed( self, old_parent, new_parent ):
