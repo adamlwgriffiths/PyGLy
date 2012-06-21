@@ -25,14 +25,10 @@ class WorldTransform( TreeNode ):
     def __init__( self, transform ):
         super( WorldTransform, self ).__init__()
 
-        self._orientation = quaternion.identity()
-        self._translation = numpy.zeros( 3, dtype = numpy.float )
-        self._scale = numpy.ones( 3, dtype = numpy.float )
+        self.set_dirty()
 
         # the local transform
         self._transform = transform
-
-        self._dirty = True
 
         # register our event handlers
         # listen for transform changes from local transform
@@ -45,9 +41,15 @@ class WorldTransform( TreeNode ):
             on_parent_changed = self._on_parent_changed
             )
 
+    def set_dirty( self ):
+        self._orientation = None
+        self._translation = None
+        self._scale = None
+        self._matrix = None
+
     def _on_parent_changed( self, old_parent, new_parent ):
         # mark ourself as dirty
-        self._dirty = True
+        self.set_dirty()
 
         # unregister from our old parent's events
         if old_parent != None:
@@ -63,47 +65,12 @@ class WorldTransform( TreeNode ):
 
     def _on_transform_changed( self ):
         # mark ourself as dirty
-        self._dirty = True
+        self.set_dirty()
 
         # notify others of our change
         self.dispatch_event(
             'on_transform_changed'
             )
-
-    def _update_transforms( self ):
-        if self._dirty == False:
-            return
-
-        self._dirty = False
-
-        if self.parent == None:
-            # no parent
-            self._translation[:] = self._transform.translation
-            self._orientation[:] = self._transform.orientation
-            self._scale[:] = self._transform.scale
-        else:
-            # rotate our translation by our parent's
-            # world orientation
-            parent_world_matrix = self.parent.matrix
-
-            # calculate our world scale
-            self._scale[:] = self._transform.scale * self.parent.scale
-
-            # multiply our rotation by our parents
-            # order is important, our quaternion should
-            # be the second parameter
-            self._orientation[:] = quaternion.cross(
-                self.parent.orientation,
-                self._transform.orientation
-                )
-
-            # apply to our translation
-            object_translation = matrix33.apply_to_vector(
-                self._transform.translation,
-                parent_world_matrix
-                )
-
-            self._translation[:] = self.parent.translation + object_translation
 
     @property
     def object( self ):
@@ -115,8 +82,11 @@ class WorldTransform( TreeNode ):
     
     @property
     def scale( self ):
-        if self._dirty == True:
-            self._update_transforms()
+        if self._scale == None:
+            if self.parent == None:
+                self._scale = self._transform.scale.copy()
+            else:
+                self._scale = self._transform.scale * self.parent.scale
 
         return self._scale
 
@@ -134,8 +104,17 @@ class WorldTransform( TreeNode ):
 
     @property
     def orientation( self ):
-        if self._dirty == True:
-            self._update_transforms()
+        if self._orientation == None:
+            if self.parent == None:
+                self._orientation = self._transform.orientation.copy()
+            else:
+                # multiply our rotation by our parents
+                # order is important, our quaternion should
+                # be the second parameter
+                self._orientation = quaternion.cross(
+                    self.parent.orientation,
+                    self._transform.orientation
+                    )
 
         return self._orientation
 
@@ -149,8 +128,23 @@ class WorldTransform( TreeNode ):
 
     @property
     def translation( self ):
-        if self._dirty == True:
-            self._update_transforms()
+        if self._translation == None:
+            if self.parent == None:
+                self._translation = self._transform.translation.copy()
+            else:
+                # rotate our translation by our parent's
+                # world orientation
+                parent_world_matrix = self.parent.matrix
+
+                # apply to our local translation
+                object_translation = matrix33.apply_to_vector(
+                    self._transform.translation,
+                    parent_world_matrix
+                    )
+
+                # add our local translation to our parents
+                # world translation
+                self._translation = self.parent.translation + object_translation
 
         return self._translation
 
@@ -169,13 +163,16 @@ class WorldTransform( TreeNode ):
         object translation, orientation and
         scale.
         """
-        if self.parent == None:
-            return self._transform.matrix
-        else:
-            return matrix44.multiply(
-                self._transform.matrix,
-                self.parent.matrix
-                )
+        if self._matrix == None:
+            if self.parent == None:
+                self._matrix = self._transform.matrix.copy()
+            else:
+                self._matrix = matrix44.multiply(
+                    self._transform.matrix,
+                    self.parent.matrix
+                    )
+
+        return self._matrix
 
     # document our events
     if hasattr( sys, 'is_epydoc' ):

@@ -27,6 +27,7 @@ class Transform( EventDispatcher ):
         self._orientation = quaternion.identity()        
         self._translation = numpy.zeros( 3, dtype = numpy.float )
         self._scale = numpy.ones( 3, dtype = numpy.float )
+        self._matrix = None
 
     @property
     def object( self ):
@@ -49,6 +50,9 @@ class Transform( EventDispatcher ):
 
         self._scale[:] = scale
 
+        # mark our matrix as dirty
+        self._matrix = None
+
         # notify others of our change
         self.dispatch_event(
             'on_transform_changed'
@@ -69,6 +73,9 @@ class Transform( EventDispatcher ):
         # which would look as if the value hasn't changed
 
         self._orientation[:] = orientation
+
+        # mark our matrix as dirty
+        self._matrix = None
 
         # notify others of our change
         self.dispatch_event(
@@ -94,6 +101,9 @@ class Transform( EventDispatcher ):
 
         self._translation[:] = vector
 
+        # mark our matrix as dirty
+        self._matrix = None
+
         # notify others of our change
         self.dispatch_event(
             'on_transform_changed'
@@ -106,34 +116,35 @@ class Transform( EventDispatcher ):
         object translation, orientation and
         scale.
         """
-        # matrix transformations must be done in order
-        # scaling
-        # rotation
-        # translation
+        if self._matrix == None:
+            # matrix transformations must be done in order
+            # scaling
+            # rotation
+            # translation
 
-        # apply our scale
-        matrix = matrix44.create_from_scale( self.scale )
+            # apply our scale
+            self._matrix = matrix44.create_from_scale( self.scale )
 
-        # apply our quaternion
-        matrix44.multiply(
-            matrix,
-            matrix44.create_from_quaternion(
-                self.orientation
-                ),
-            out = matrix
-            )
+            # apply our quaternion
+            matrix44.multiply(
+                self._matrix,
+                matrix44.create_from_quaternion(
+                    self.orientation
+                    ),
+                out = self._matrix
+                )
 
-        # apply our translation
-        # we MUST do this after the orientation
-        matrix44.multiply(
-            matrix,
-            matrix44.create_from_translation(
-                self.translation,
-                ),
-            out = matrix
-            )
+            # apply our translation
+            # we MUST do this after the orientation
+            matrix44.multiply(
+                self._matrix,
+                matrix44.create_from_translation(
+                    self.translation,
+                    ),
+                out = self._matrix
+                )
 
-        return matrix
+        return self._matrix
 
     # document our events
     if hasattr( sys, 'is_epydoc' ):
