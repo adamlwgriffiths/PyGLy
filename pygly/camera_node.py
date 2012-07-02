@@ -24,12 +24,9 @@ class CameraNode( SceneNode ):
         super( CameraNode, self ).__init__( name )
         
         self.view_matrix = view_matrix
-    
-    def push_model_view( self ):
-        # setup our model view matrix
-        glMatrixMode( GL_MODELVIEW )
-        glPushMatrix()
 
+    @property
+    def model_view( self ):
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
             self.world_transform.orientation
@@ -38,21 +35,25 @@ class CameraNode( SceneNode ):
         # we need to apply the transpose of the matrix
         matrix = matrix.T
 
+        # multiply by our inverse world transform
+        matrix44.multiply(
+            matrix44.create_from_translation(
+                -self.world_transform.translation
+                ),
+            matrix,
+            out = matrix
+            )
+
+        return matrix
+    
+    def push_model_view( self ):
+        # setup our model view matrix
+        glMatrixMode( GL_MODELVIEW )
+        glPushMatrix()
+
         # convert to ctype for OpenGL
         glLoadMatrixf(
-            (GLfloat * matrix.size)(*matrix.flat)
-            )
-        
-        # add our translation to the matrix
-        # translate the scene in the opposite direction
-        # we have to do this after the orientation
-        # use the world translation incase we're attached
-        # to something
-        world_translation = self.world_transform.translation
-        glTranslatef(
-            -world_translation[ 0 ],
-            -world_translation[ 1 ],
-            -world_translation[ 2 ]
+            (GLfloat * self.model_view.size)(*self.model_view.flat)
             )
 
     def pop_model_view( self ):
