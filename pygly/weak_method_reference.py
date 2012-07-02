@@ -10,9 +10,7 @@ Code borrowed from the following places:
 http://code.activestate.com/recipes/81253/
 http://stackoverflow.com/questions/3942303/how-does-a-python-set-check-if-two-objects-are-equal-what-methods-does-an-o
 
-Created on 29/02/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import weakref
@@ -20,9 +18,9 @@ import new
 
 
 class WeakMethodReference( object ):
-    """
-    Stores a reference to an object's method or a
-    function.
+    """Provides the ability to store a weak pointer to
+    class members on top of the existing weakref functionality
+    provided by python.
 
     This class also provides comparison operators to
     allow proper usage in containers such as set([]).
@@ -34,9 +32,12 @@ class WeakMethodReference( object ):
     """
 
     def __init__(self, function = None ):
-        """
-        Initialises the weak reference with
+        """Initialises the weak reference with
         a function or class method.
+
+        Args:
+            function: The object to store a weak reference to.
+            This can be a class, object, method or function.
         """
         super( WeakMethodReference, self ).__init__()
 
@@ -57,10 +58,11 @@ class WeakMethodReference( object ):
 
     def __call__( self ):
         """
-        @return Returns a new bound-method like the original, or
-        the original function if refers just to a function or
-        unbound method.
-        Returns None if the original object doesn't exist
+        Returns:
+            Returns a new bound-method like the original, or
+            the original function if refers just to a function or
+            unbound method.
+            Returns None if the original object doesn't exist
         """
         if self.is_dead():
             return None
@@ -77,9 +79,11 @@ class WeakMethodReference( object ):
             return self._func
 
     def is_dead( self ):
-        """
-        Returns True if the referenced callable was a bound method and
-        the instance no longer exists. Otherwise, return False.
+        """Check if the referenced object is invalid.
+
+        Returns:
+            True if the referenced callable was a bound method and
+            the instance no longer exists. Otherwise, return False.
         """
         if self._obj is None and self._func is not None:
             return False
@@ -88,19 +92,21 @@ class WeakMethodReference( object ):
         return False
 
     def is_alive( self ):
-        """
+        """Check if the referenced object is valid.
+
         The equivalent to 'not is_dead()'
-        Make a positive method call because
-        double negatives suck
+        Make a positive method call because double negatives suck
         """
         return not self.is_dead()
 
     def __eq__( self, other ):
-        """
-        Enables comparison between different weak
-        pointer objects that point to the same
-        object based on the contents instead of the
-        object pointer.
+        """Provides an 'equal' operator.
+
+        .. note::
+            Enables comparison between different weak
+            pointer objects that point to the same
+            object based on the contents instead of the
+            object pointer.
         """
         return (
             isinstance(other, self.__class__ ) \
@@ -108,19 +114,23 @@ class WeakMethodReference( object ):
             )
 
     def __ne__( self, other ):
-        """
-        Enables comparison between different weak
-        pointer objects that point to the same
-        object based on the contents instead of the
-        object pointer.
+        """Provides a 'not-equal' operator.
+
+        .. note::
+            Enables comparison between different weak
+            pointer objects that point to the same
+            object based on the contents instead of the
+            object pointer.
         """
         return not self.__eq__(other)
 
     def __hash__( self ):
-        """
-        this method is provided to allow comparison of
-        references inside of containers like set([])
-        http://stackoverflow.com/questions/3942303/how-does-a-python-set-check-if-two-objects-are-equal-what-methods-does-an-o
+        """Generates a hash value for the stored reference.
+
+        .. note::
+            This method is provided to allow comparison of
+            references inside of containers like set([])
+            http://stackoverflow.com/questions/3942303/how-does-a-python-set-check-if-two-objects-are-equal-what-methods-does-an-o
         """
         return hash( (self._obj, self._func, self._class) )
 

@@ -1,7 +1,7 @@
 '''
-Created on 29/06/2011
+Renders a debug cube for visualising 3D coodinates.
 
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 from pyglet.gl import *
@@ -11,6 +11,8 @@ from pyglet.graphics import Batch
 batch = None
 
 def initialise():
+    """Initialises the cube render objects.
+    """
     global batch
     batch = Batch()
 
@@ -90,6 +92,8 @@ def initialise():
         )
 
 def render():
+    """Renders the cube.
+    """
     global batch
 
     if batch == None:

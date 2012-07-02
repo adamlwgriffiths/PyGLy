@@ -64,6 +64,11 @@ class WorldTransform( TreeNode ):
                 )
 
     def _on_transform_changed( self ):
+        """
+        .. note::
+            Changing this value will dispatch an
+            'on_transform_changed' event.
+        """
         # mark ourself as dirty
         self.set_dirty()
 

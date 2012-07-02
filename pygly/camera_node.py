@@ -1,7 +1,5 @@
 '''
-Created on 20/06/2011
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import math
@@ -18,15 +16,32 @@ import debug_axis
 
 
 class CameraNode( SceneNode ):
+    """A Scene Graph based camera.
+    """
     
     
     def __init__( self, name, view_matrix ):
+        """Creates a CameraNode object.
+
+        Args:
+            name (str): The name to give to the node.
+            view_matrix: The camera's ViewMatrix.
+        """
         super( CameraNode, self ).__init__( name )
         
+        #: the camer's view matrix
         self.view_matrix = view_matrix
 
     @property
     def model_view( self ):
+        """Property for the camera's model view matrix.
+
+        This is an @property decorated method.
+
+        Returns:
+            A NumPy array set to the camera's model view
+            matrix.
+        """
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
             self.world_transform.orientation
@@ -47,6 +62,12 @@ class CameraNode( SceneNode ):
         return matrix
     
     def push_model_view( self ):
+        """Pushes the model view matrix onto the OGL stack.
+
+        Gets the current model view matrix and set's pushes
+        it onto the OpenGL GL_MODELVIEW matrix stack.
+
+        """
         # setup our model view matrix
         glMatrixMode( GL_MODELVIEW )
         glPushMatrix()
@@ -57,25 +78,28 @@ class CameraNode( SceneNode ):
             )
 
     def pop_model_view( self ):
+        """Pops the model view matrix from the OGL stack.
+        """
         glMatrixMode( GL_MODELVIEW )
         glPopMatrix()
 
     def create_ray_from_ratio_point( self, point ):
-        """
-        Returns a ray cast from 2d camera co-ordinates
+        """Returns a ray cast from 2d camera co-ordinates
         into the world.
 
-        @param window: The window the viewport resides on.
-        @param viewport: The viewport being used to cast the ray.
-        @param point: The 2D point, relative to this camera,
-        to project a ray from. A list of 2 float values.
-        [0, 0] is the Bottom Left of the viewport
-        [viewport.width, viewport.height] is the Top Right of
-        the viewport.
-        @returns A ray consisting of 2 vectors (shape = 2,3).
-        The first vector (result[0]) is the origin of the ray.
-        The second vector (result[1]) is the direction of the ray.
-        The direction is a vector of unit length.
+        Args:
+            window: The window the viewport resides on.
+            viewport: The viewport being used to cast the ray.
+            point: The 2D point, relative to this camera,
+            to project a ray from. A list of 2 float values.
+            [0, 0] is the Bottom Left of the viewport
+            [viewport.width, viewport.height] is the Top Right of
+            the viewport.
+        Returns:
+            A ray consisting of 2 vectors (shape = 2,3).
+            The first vector (result[0]) is the origin of the ray.
+            The second vector (result[1]) is the direction of the ray.
+            The direction is a vector of unit length.
         """
         # convert the point to a ray
         local_ray = self.view_matrix.create_ray_from_ratio_point(

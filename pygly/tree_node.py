@@ -1,7 +1,5 @@
 '''
-Created on 11/05/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import sys
@@ -12,24 +10,28 @@ from pyglet.event import EventDispatcher
 
     
 class TreeNode( EventDispatcher ):
-    """
-    Base class for Tree branch objects.
+    """Base class for Tree branch objects.
 
-    Supports a single parent and N children.
+    Supports a single parent.
+    Can have 0-N children.
     """
     
     def __init__( self ):
+        """Creates a tree node object.
+        """
         super( TreeNode, self ).__init__()
         
         self._parent = None
         self._children = set()
     
     def add_child( self, node ):
-        """
-        Attaches a child to the node.
+        """Attaches a child to the node.
 
-        @raise ValueError: Raised if the child
-        already has a parent.
+        .. note:: Dispatches an 'on_child_added' event.
+
+        Raises:
+            ValueError: Raised if the child
+            already has a parent.
         """
         if node.parent != None:
             raise ValueError( "Node has an existing parent" )
@@ -47,11 +49,13 @@ class TreeNode( EventDispatcher ):
             )
     
     def remove_child( self, node ):
-        """
-        Removes a child from the node.
+        """Removes a child from the node.
 
-        @raise KeyError: Raised if the node
-        is not a child of the node.
+        .. note:: Dispatches an 'on_child_removed' event.
+
+        Raises:
+            KeyError: Raised if the node
+            is not a child of the node.
         """
         # remove from our list of children
         self._children.remove( node )
@@ -71,10 +75,23 @@ class TreeNode( EventDispatcher ):
     
     @property
     def parent( self ):
-        """
-        A property accessable as a member.
-        Returns the parent of the node or None
-        if there isn't one.
+        """The parent of the node or None if there isn't one.
+
+        The parent value should **not** be changed manually.
+        Instead use the 'remove_child' method on the parent.
+
+        .. note::
+            When the parent value is changed, the 'on_parent_changed'
+            event will be dispatched.
+
+        .. note ::
+            This is an @property decorated method which allows
+            retrieval and assignment of the scale value.
+
+        Raises:
+            ValueError: Raised is the node already has a parent.
+            ValueError: Raised if the node is not a child of the
+            new parent. This is handled internally.
         """
         if self._parent != None:
             return self._parent()
@@ -82,13 +99,13 @@ class TreeNode( EventDispatcher ):
 
     @parent.setter
     def parent( self, parent ):
-        """
-        Sets the parent of the node.
+        """Sets the parent of the node.
         This should not be called manually.
 
-        @raise ValueError: Raised if the node
-        already has a parent or if the node is
-        not a child of the new parent.
+        Raises:
+            ValueError: Raised if the node already has a
+            parent or if the node is not a child of the
+            new parent.
         """
         if self.parent != None:
             raise ValueError( "Node has an existing parent" )

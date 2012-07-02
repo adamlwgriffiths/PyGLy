@@ -1,17 +1,28 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Aug 22 19:01:19 2011
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 """
 
 from render_node import RenderNode
 
 
 class RenderCallbackNode( RenderNode ):
+    """A RenderNode that takes an initialisation and a
+    render function as callbacks to perform rendering.
+    """
     
     
     def __init__( self, name, initialise_callback, render_callback ):
+        """Initialises the node with the specified callbacks.
+
+        Args:
+            name: The name to give the node.
+            initialise_callback: The function to call when the
+            node is to be initialised.
+            render_callback: The function to call when the
+            node is to be rendered.
+        Raises:
+            ValueError: Raised if the render callback == None.
+        """
         super( RenderCallbackNode, self ).__init__( name )
 
         if render_callback == None:

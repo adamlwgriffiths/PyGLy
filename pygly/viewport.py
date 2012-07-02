@@ -1,7 +1,5 @@
 '''
-Created on 22/06/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import sys
@@ -18,20 +16,26 @@ import window
 
 
 class Viewport( EventDispatcher ):
-    """
-    A wrapper around the viewport functionality.
+    """A wrapper around the basic viewport functionality.
     """
     
     
     def __init__( self, window, rect ):
-        """
-        Creates a viewport with the size of rect.
+        """Creates a viewport with the size of rect.
 
-        @param rect: An array with the shape (2,2).
-        Values are in pixels
-        Values may exceed the window size but will be off the screen.
-        OpenGL may place limits on how far off screen a viewport
-        may go.
+        Automatically hooks into the window's 'on_resize'
+        event.
+
+        Args:
+            window: The window the viewport belongs to.
+            rect: An array with the shape (2,2).
+            Values are in pixels
+            Values may exceed the window size but will be
+            off the screen.
+
+        .. note::
+            OpenGL places platform-dependent limits on how far
+            off screen a viewport may go.
         """
         super( Viewport, self ).__init__()
 
@@ -53,6 +57,16 @@ class Viewport( EventDispatcher ):
 
     @property
     def rect( self ):
+        """The viewports 2D rectangle in pixels.
+
+        .. note:: Changing this value will dispatch an
+        'on_viewport_resize' and 'on_change_aspect_ratio'
+        events.
+
+        Returns:
+            The viewport size in pixels in the form of a
+            NumPy with shape (2,2).
+        """
         return self._rect
 
     @rect.setter
@@ -75,15 +89,19 @@ class Viewport( EventDispatcher ):
             )
 
     def on_resize( self, width, height ):
-        """
+        """Event handler for pyglet window's on_resize
+        event.
+        
         Called when the window is resized.
+
+        This is a stub function and is intended to be
+        over-ridden.
         """
         # we don't do anything by default
         pass
     
     def switch_to( self ):
-        """
-        Calls glViewport which sets up the viewport
+        """Calls glViewport which sets up the viewport
         for rendering.
 
         @see pygly.gl.set_viewport.
@@ -93,51 +111,58 @@ class Viewport( EventDispatcher ):
 
     @property
     def aspect_ratio( self ):
-        """
-        Returns the aspect ratio of the viewport.
+        """Returns the aspect ratio of the viewport.
 
         Aspect ratio is the ratio of width to height
         a value of 2.0 means width is 2*height
+
+        .. note::
+            This is an @property decorated method which allows
+            retrieval and assignment of the scale value.
         """
         return window.aspect_ratio( self.rect )
 
     def scissor_to_viewport( self ):
-        """
-        Calls glScissor with the size of the viewport.
+        """Calls glScissor with the size of the viewport.
 
-        It is up to the user to call
-        glEnable(GL_SCISSOR_TEST).
+        .. note::
+            It is up to the user to call glEnable(GL_SCISSOR_TEST).
 
-        @see pygly.gl.set_scissor.
+        .. seealso::
+            Function :py:func:`pygly.gl.set_scissor`
+            Documentation of the
+            :py:func:`pygly.gl.set_scissor` function.
         """
         gl.set_scissor( self.rect )
-    
+
     def push_viewport_attributes( self ):
-        """
-        Pushes the current OGL attributes
+        """Pushes the current OGL attributes
         and then calls self.setup_viewport.
         """
         glPushAttrib( GL_ALL_ATTRIB_BITS )
         self.setup_viewport()
 
     def pop_viewport_attributes( self ):
-        """
-        Pops the OGL attributes.
+        """Pops the OGL attributes.
+
         Called when tearing down viewport.
-        This method mirrors 'push_viewport_attributes'
+
+        .. note::
+            This method mirrors 'push_viewport_attributes'
         """
         glPopAttrib()
 
     def setup_viewport( self ):
-        """
+        """Sets the viewport rendering attributes.
+        
         Over-ride this method to customise
         the opengl settings for this viewport.
 
         The default method sets the following:
-        -glEnable( GL_DEPTH_TEST )
-        -glShadeModel( GL_SMOOTH )
-        -glEnable( GL_RESCALE_NORMAL )
-        -glEnable( GL_SCISSOR_TEST )
+            #. glEnable( GL_DEPTH_TEST )
+            #. glShadeModel( GL_SMOOTH )
+            #. glEnable( GL_RESCALE_NORMAL )
+            #. glEnable( GL_SCISSOR_TEST )
         """
         # enable some default options
         # use the z-buffer when drawing
@@ -165,42 +190,68 @@ class Viewport( EventDispatcher ):
 
     @property
     def x( self ):
+        """The X value of the viewport in pixels.
+
+        This is the X value of the bottom left corner.
+        """
         return self.left
 
     @property
     def y( self ):
+        """The Y value of the viewport in pixels.
+
+        This is the Y value of the bottom left corner.
+        """
         return self.bottom
 
     @property
     def size( self ):
+        """The size of the viewport in pixels as a 2D vector.
+        """
         return rectangle.size( self.rect )
 
     @property
     def position( self ):
+        """The origin of the viewport in pixels as a 2D vector.
+
+        This is the bottom left corner.
+        """
         return rectangle.position( self.rect )
     
     @property
     def width( self ):
+        """The width of the viewport in pixels.
+        """
         return rectangle.width( self.rect )
     
     @property
     def height( self ):
+        """The height of the viewport in pixels.
+        """
         return rectangle.height( self.rect )
 
     @property
     def left( self ):
+        """The left most point of the viewport in pixels.
+        """
         return rectangle.left( self.rect )
 
     @property
     def bottom( self ):
+        """The bottom most point of the viewport in pixels.
+        """
         return rectangle.bottom( self.rect )
 
     @property
     def right( self ):
+        """The right most point of the viewport in pixels.
+        """
         return rectangle.right( self.rect )
 
     @property
     def top( self ):
+        """The top most point of the viewport in pixels.
+        """
         return rectangle.top( self.rect )
 
     # document our events

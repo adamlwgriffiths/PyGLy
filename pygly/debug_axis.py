@@ -1,7 +1,7 @@
 '''
-Created on 25/03/2012
+Renders axis information for visualising 3D coordinates.
 
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 from pyglet.gl import *
@@ -15,6 +15,8 @@ label_y = None
 label_z = None
 
 def initialise_axis():
+    """Initialises the axis render objects.
+    """
     global display_list
 
     display_list = glGenLists( 1 )
@@ -58,6 +60,8 @@ def initialise_axis():
     glEndList()
 
 def initialise_labels():
+    """Initialises the label render objects.
+    """
     # create some labels
     global label_x
     global label_y
@@ -93,10 +97,14 @@ def initialise_labels():
         )
 
 def initialise():
+    """Initialises the axis and label objects.
+    """
     initialise_axis()
     initialise_labels()
 
 def render_axis():
+    """Renders the axis arrows.
+    """
     global display_list
 
     if display_list == None:
@@ -123,6 +131,8 @@ def render_axis():
     glPopAttrib()
 
 def render_labels():
+    """Renders the axis labels.
+    """
     global label_x
     global label_y
     global label_z
@@ -183,6 +193,8 @@ def render_labels():
     glPopAttrib()
 
 def render():
+    """Renders the axis arrows and labels.
+    """
     render_axis()
     render_labels()
 

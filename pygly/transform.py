@@ -1,7 +1,5 @@
 '''
-Created on 11/06/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import sys
@@ -19,9 +17,25 @@ from inertial_space import InertialSpace
 
 
 class Transform( EventDispatcher ):
+    """Provides translation and orientation information and
+    methods for manipulating them.
+
+    .. seealso::
+        Class :py:class:`pygly.inertial_space.InertialSpace`
+        Documentation of the
+        :py:class:`pygly.inertial_space.InertialSpace`
+        class.
+
+        Class :py:class:`pygly.object_space.ObjectSpace`
+        Documentation of the
+        :py:class:`pygly.object_space.ObjectSpace`
+        class.
+    """
 
 
     def __init__( self ):
+        """Constructs a transform object.
+        """
         super( Transform, self ).__init__()
 
         self._orientation = quaternion.identity()        
@@ -31,14 +45,40 @@ class Transform( EventDispatcher ):
 
     @property
     def object( self ):
+        """Returns an ObjectSpace object for manipulating
+        the transform in object space co-ordinates.
+
+        .. seealso::
+            Class :py:class:`pygly.object_space.ObjectSpace`
+            Documentation of the
+            :py:class:`pygly.object_space.ObjectSpace`
+            class.
+        """
         return ObjectSpace( self )
 
     @property
     def inertial( self ):
+        """Returns an InertialSpace object for manipulating
+        the transform in inertial space co-ordinates.
+
+        .. seealso::
+            Class :py:class:`pygly.inertial_space.InertialSpace`
+            Documentation of the
+            :py:class:`pygly.inertial_space.InertialSpace`
+            class.
+        """
         return InertialSpace( self )
     
     @property
     def scale( self ):
+        """The scale of the transform.
+
+        .. note:: Changing this value will dispatch an
+        'on_transform_changed' event.
+
+        .. note:: The is an @property decorated method which allows
+        retrieval and assignment of the scale value.
+        """
         return self._scale
 
     @scale.setter
@@ -60,13 +100,18 @@ class Transform( EventDispatcher ):
 
     @property
     def orientation( self ):
+        """The orientation of the transform.
+
+        Changing this value will dispatch an
+        'on_transform_changed' event.
+
+        The is an @property decorated method which allows
+        retrieval and assignment of the scale value.
+        """
         return self._orientation
 
     @orientation.setter
     def orientation( self, orientation ):
-        """
-        Stores the node's object orientation
-        """
         # don't check if the value hasn't changed
         # using -= or += will cause this to fail
         # due to python calling, getter, obj +, setter
@@ -84,16 +129,20 @@ class Transform( EventDispatcher ):
 
     @property
     def translation( self ):
-        """
-        Returns the current inertial translation.
+        """The translation of the transform.
+
+        This is in inertial space.
+
+        Changing this value will dispatch an
+        'on_transform_changed' event.
+
+        The is an @property decorated method which allows
+        retrieval and assignment of the scale value.
         """
         return self._translation
     
     @translation.setter
     def translation( self, vector ):
-        """
-        Sets the inertial translation of the node.
-        """
         # don't check if the value hasn't changed
         # using -= or += will cause this to fail
         # due to python calling, getter, obj +, setter
@@ -111,10 +160,11 @@ class Transform( EventDispatcher ):
 
     @property
     def matrix( self ):
-        """
-        Returns a matrix representing the node's
-        object translation, orientation and
-        scale.
+        """A matrix representing the transform's translation,
+        orientation and scale.
+
+        The is an @property decorated method which allows
+        retrieval and assignment of the scale value.
         """
         if self._matrix == None:
             # matrix transformations must be done in order

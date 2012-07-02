@@ -1,7 +1,5 @@
 '''
-Created on 09/06/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import numpy
@@ -11,17 +9,32 @@ from viewport import Viewport
 
 
 class RatioViewport( Viewport ):
+    """Maintains a set size ratio within a window.
+
+    A RatioViewport will automatically resize itself when
+    the window is resized, to maintain a specific ratio of
+    the window size.
+    """
     
     
     def __init__( self, window, ratio ):
-        """
-        Creates a viewport with the size of rect.
+        """Creates a viewport with the specified ratio.
 
-        @param rect: An array with the shape (2,2).
-        Values are in percentages (0.0 -> 1.0).
-        Values may exceed the window size but will be off the screen.
-        OpenGL may place limits on how far off screen a viewport
-        may go.
+        Automatically hooks into the window's 'on_resize'
+        event.
+
+        Args:
+            window: The window the viewport belongs to.
+            rect: The viewport size as a ratio (percentage)
+            of the window in the form of a NumPy array
+            with the shape (2,2).
+            Values are in percentages (0.0 -> 1.0).
+            Values may exceed the window size but will be off
+            the screen.
+        
+        .. note::
+            OpenGL places platform-dependent limits on how far
+            off screen a viewport may go.
         """
 
         # we need self._rect to be valid
@@ -44,6 +57,15 @@ class RatioViewport( Viewport ):
         self.on_resize( window.width, window.height )
 
     def on_resize( self, width, height ):
+        """Event handler to be called when the window
+        is resized.
+
+        Args:
+            width (int): The width, in pixels, of the window's
+            renderable area.
+            height (int): The height, in pixels, of the window's
+            renderable area.
+        """
         # update our pixel size
         # find our window's dimensions
         window_rect = pygly.window.create_rectangle( self.window )
@@ -54,6 +76,12 @@ class RatioViewport( Viewport ):
 
     @property
     def ratio( self ):
+        """The viewport's ratio.
+
+        .. note::
+            This is an @property decorated method which allows
+            retrieval and assignment of the scale value.
+        """
         return self._ratio
 
     @ratio.setter

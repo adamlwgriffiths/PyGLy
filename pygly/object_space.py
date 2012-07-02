@@ -1,7 +1,5 @@
 '''
-Created on 11/06/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import sys
@@ -16,16 +14,29 @@ from pyrr import matrix44
 
 
 class ObjectSpace( object ):
+    """Provides transform methods for manipulating objects within
+    object space co-ordinates.
+
+    Object space is defined as being relative to the object itself.
+    The translation and orientation of the X,Y,Z axis remain fixed
+    to the object as it moves.
+
+    .. image:: _static/transform_object_space.png
+    """
 
     def __init__( self, transform ):
+        """Constructs an ObjectSpace object that interacts with
+        the specified transform object.
+
+        Args:
+            transform: The transform to control.
+        """
         super( ObjectSpace, self ).__init__()
 
         self.transform = transform
 
     def rotate_quaternion( self, quat ):
-        """
-        Rotates the node by the specified orientation.
-        The quaternion is in object space.
+        """Rotates the transform by the specified orientation.
         """
         # check for the orientation not changing
         if numpy.array_equal(
@@ -43,11 +54,11 @@ class ObjectSpace( object ):
             )
     
     def rotate_x( self, radians ):
-        """
-        Pitch the node about it's X axis.
+        """Pitch the transform about it's X axis.
 
-        Amount > 0 == pitch down
-        Amount < 0 == pitch up
+        .. note::
+            Amount > 0 == pitch down
+            Amount < 0 == pitch up
         """
         if radians == 0.0:
             return
@@ -56,11 +67,11 @@ class ObjectSpace( object ):
         self.rotate_quaternion( quat )
 
     def rotate_y( self, radians ):
-        """
-        Yaw the node about it's Y axis.
+        """Yaw the transform about it's Y axis.
 
-        Amount > 0 == yaw right.
-        Amount < 0 == yaw left.
+        .. note::
+            Amount > 0 == yaw right.
+            Amount < 0 == yaw left.
         """
         if radians == 0.0:
             return
@@ -69,11 +80,11 @@ class ObjectSpace( object ):
         self.rotate_quaternion( quat )
     
     def rotate_z( self, radians ):
-        """
-        Roll the node about it's Z axis.
+        """Roll the transform about it's Z axis.
 
-        Amount > 0 == roll left.
-        Amount < 0 == roll right.
+        .. note::
+            Amount > 0 == roll left.
+            Amount < 0 == roll right.
         """
         if radians == 0.0:
             return
@@ -91,11 +102,14 @@ class ObjectSpace( object ):
 
     @property
     def x( self ):
-        """
-        Returns the object's local X axis.
+        """Returns the object's local X axis.
+
         This is the X axis rotated by the objects
-        orientation. This is NOT the world orientation.
-        To get inertial X axis, simply use [1.0, 0.0, 0.0].
+        orientation.
+
+        .. note::
+            This is NOT the world orientation.
+            To get inertial X axis, simply use [1.0, 0.0, 0.0].
         """
         # convert our quaternion to a matrix
         matrix = matrix33.create_from_quaternion(
@@ -109,11 +123,13 @@ class ObjectSpace( object ):
 
     @property
     def y( self ):
-        """
-        Returns the object's local Y axis.
-        This is the Y axis rotated by the objects
-        orientation. This is NOT the world orientation.
-        To get inertial Y axis, simply use [0.0, 1.0, 0.0].
+        """Returns the object's local Y axis.
+
+        This is the Y axis rotated by the objects orientation.
+
+        .. note::
+            This is NOT the world orientation.
+            To get inertial Y axis, simply use [0.0, 1.0, 0.0].
         """
         # convert our quaternion to a matrix
         matrix = matrix33.create_from_quaternion(
@@ -127,11 +143,14 @@ class ObjectSpace( object ):
 
     @property
     def z( self ):
-        """
-        Returns the object's local Z axis.
+        """Returns the object's local Z axis.
+
         This is the Z axis rotated by the objects
-        orientation. This is NOT the world orientation.
-        To get inertial Z axis, simply use [0.0, 0.0, 1.0].
+        orientation.
+        
+        .. note::
+            This is NOT the world orientation.
+            To get inertial Z axis, simply use [0.0, 0.0, 1.0].
         """
         # convert our quaternion to a matrix
         matrix = matrix33.create_from_quaternion(
@@ -144,8 +163,8 @@ class ObjectSpace( object ):
             )
 
     def translate( self, vector ):
-        """
-        Translates the node locally.
+        """Translates the transform locally.
+
         The vector will have the node's current orientation
         applied to it and then be added to the translation.
         """
