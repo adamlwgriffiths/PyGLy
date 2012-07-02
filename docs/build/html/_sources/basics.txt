@@ -1,0 +1,79 @@
+.. _basics:
+
+Basics
+******
+
+.. _overview:
+
+Overview
+========
+
+PyGLy is designed to be a thin 3D layer on top of Pyglet. A major goal is to keep PyGLy as light-weight as possible.
+This has been achieved by keeping functions and parameters using primitive data types, such as arrays, where possible.
+
+The benefits of this are increased flexibility.
+    * You get to code how you want.
+    * You can wrap PyGLy in any architecture you want.
+    * Use only the methods you need.
+
+
+.. _windows:
+
+Windows
+=======
+
+All windowing logic is provided by Pyglet.
+It is up to the user to hook into Pyglet window events and provide this information to PyGLy classes, where relevant.
+
+Any PyGLy class that automatically hooks into Pyglet events will have this documented.
+
+To render multiple windows use the :meth:`~pyglet.window.Window.switch_to` method then render the viewports as normal.
+
+
+.. _viewports:
+
+Viewports
+=========
+
+Viewports provide a view into a 3D scene.
+
+A viewport is essentially a 2D rectangle that resides within the Window.
+2D rectangles are defined by a 2x2 list (or NumPy array) with the following format::
+
+    [
+        [ x, y ],
+        [ width, height ]
+    ]
+
+All viewport functionality can be controlled using 2D rectangles.
+
+Due to their basic nature, it is up to the user to manage the viewport.
+
+PyGLy features higher level Viewport objects to take care of the more trivial aspects of viewport management.
+
+The Viewport class provides
+See :class:`pygly.viewport.Viewport` and :class:`pygly.ratio_viewport.RatioViewport`.
+
+
+.. _view_matrix:
+
+View Matrix
+===========
+
+View matrices transform vertices from world-space to view-space.
+
+A view matrix is owned by a camera.
+
+View matrices must be given the aspect ratio of the viewport it is rendering into to ensure the perspective is correct.
+
+Because of this, it is recommended that view matrices are not shared between viewports to prevent excessive updates of the view matrix.
+
+
+.. _camera:
+
+Camera
+======
+
+Camera's are used to provide a view point within a 3D scene.
+
+

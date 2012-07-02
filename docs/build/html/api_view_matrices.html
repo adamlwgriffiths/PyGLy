@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>View Matrices &mdash; PyGLy 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyGLy 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Monkey Patch" href="api_monkey_patch.html" />
+    <link rel="prev" title="Viewport" href="api_viewports.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api_monkey_patch.html" title="Monkey Patch"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api_viewports.html" title="Viewport"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyGLy 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="view-matrices">
+<span id="id1"></span><h1>View Matrices<a class="headerlink" href="#view-matrices" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pygly.view_matrix"><span id="view-matrix"></span></span><dl class="class">
+<dt id="pygly.view_matrix.ViewMatrix">
+<em class="property">class </em><tt class="descclassname">pygly.view_matrix.</tt><tt class="descname">ViewMatrix</tt><big>(</big><em>aspect_ratio</em>, <em>near_clip</em>, <em>far_clip</em><big>)</big><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for View Matrix objects.</p>
+<p>Handles a number of common functions.</p>
+<dl class="method">
+<dt id="pygly.view_matrix.ViewMatrix.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>aspect_ratio</em>, <em>near_clip</em>, <em>far_clip</em><big>)</big><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a view matrix object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>aspect_ratio: The aspect ratio of the viewport.
+This can be updated at any time.
+near_clip: The nearest distance to render objects.
+far_clip: The furthest distance to render objects.</dd>
+<dt>Raises:</dt>
+<dd>ValueError: Raised if the far clip is &lt;= the near clip.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.view_matrix.ViewMatrix.aspect_ratio">
+<tt class="descname">aspect_ratio</tt><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.aspect_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.aspect_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>The aspect ratio.</p>
+<p>This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.view_matrix.ViewMatrix.create_ray_from_ratio_point">
+<tt class="descname">create_ray_from_ratio_point</tt><big>(</big><em>point</em><big>)</big><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.create_ray_from_ratio_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.create_ray_from_ratio_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a local ray cast from the camera co-ordinates
+at &#8216;point&#8217;.</p>
+<p>The ray will begin at the near clip plane.
+The ray is relative to the origin.
+The ray will project from the near clip plane
+down the -Z plane toward the far clip plane.</p>
+<p>The ray is in intertial space and must be transformed
+to the objects intended translation and orientation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>point: The 2D point, relative to this view matrix,
+to project a ray from. A list of 2 float values.
+[0.0, 0.0] is the Bottom Left.
+[viewport.width, viewport.height] is the Top Right.</dd>
+<dt>Returns:</dt>
+<dd>A ray consisting of 2 vectors (shape = 2,3).</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.view_matrix.ViewMatrix.far_clip">
+<tt class="descname">far_clip</tt><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.far_clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.far_clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>The far clip value.</p>
+<p>This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.view_matrix.ViewMatrix.matrix">
+<tt class="descname">matrix</tt><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current view matrix.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.view_matrix.ViewMatrix.near_clip">
+<tt class="descname">near_clip</tt><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.near_clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.near_clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>The near clip value.</p>
+<p>This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.view_matrix.ViewMatrix.on_change_aspect_ratio">
+<tt class="descname">on_change_aspect_ratio</tt><big>(</big><em>aspect_ratio</em><big>)</big><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.on_change_aspect_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.on_change_aspect_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the aspect ratio.</p>
+<p>Used to hook into Viewport events.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>aspect_ratio: The new aspect ratio to set.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.view_matrix.ViewMatrix.pop_view_matrix">
+<tt class="descname">pop_view_matrix</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.pop_view_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.pop_view_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pops the current viewport off the matrix stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.view_matrix.ViewMatrix.push_view_matrix">
+<tt class="descname">push_view_matrix</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/view_matrix.html#ViewMatrix.push_view_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.view_matrix.ViewMatrix.push_view_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes the frustrum matrix onto the projection
+viewport.</p>
+<p>Updates the matrix if self.dirty == True
+Sets the glMatrixMode to GL_PROJECTION.
+It is up to the caller to change this after calling
+this function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pygly.projection_view_matrix"><span id="perspective-view-matrix"></span></span><dl class="class">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix">
+<em class="property">class </em><tt class="descclassname">pygly.projection_view_matrix.</tt><tt class="descname">ProjectionViewMatrix</tt><big>(</big><em>aspect_ratio</em>, <em>fov=60.0</em>, <em>near_clip=1.0</em>, <em>far_clip=100.0</em><big>)</big><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages a standard projection view matrix.</p>
+<p>Used by viewports and camera&#8217;s to render a scene using
+a standard perspective view.</p>
+<dl class="method">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>aspect_ratio</em>, <em>fov=60.0</em>, <em>near_clip=1.0</em>, <em>far_clip=100.0</em><big>)</big><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises a perspective view matrix.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>aspect_ratio: The aspect ratio of the viewport.
+This can be updated at any time.
+fov: The field-of-view in degrees.
+near_clip: The nearest distance to render objects.
+far_clip: The furthest distance to render objects.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix.calculate_far_clip_plane_size">
+<tt class="descname">calculate_far_clip_plane_size</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix.calculate_far_clip_plane_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix.calculate_far_clip_plane_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a vector defining the size of the
+far clip plane.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A NumPy array containing the size of the
+far clip plane as a 2D vector.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix.calculate_near_clip_plane_size">
+<tt class="descname">calculate_near_clip_plane_size</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix.calculate_near_clip_plane_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix.calculate_near_clip_plane_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a vector defining the size of the
+near clip plane.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A NumPy array containing the size of the
+near clip plane as a 2D vector.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix.calculate_point_on_plane">
+<tt class="descname">calculate_point_on_plane</tt><big>(</big><em>point</em>, <em>distance</em><big>)</big><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix.calculate_point_on_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix.calculate_point_on_plane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the absolute X,Y co-ordinates on a plane
+&#8216;distance&#8217; away from the origin of the frustrum.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A NumPy array of the point as a 2D vector.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix.create_ray_from_ratio_point">
+<tt class="descname">create_ray_from_ratio_point</tt><big>(</big><em>point</em><big>)</big><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix.create_ray_from_ratio_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix.create_ray_from_ratio_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a local ray cast from the camera co-ordinates
+at &#8216;point&#8217;.</p>
+<p>The ray will begin at the near clip plane.
+The ray is relative to the origin.
+The ray will project from the near clip plane
+down the -Z plane toward the far clip plane.</p>
+<p>The ray is in intertial space and must be transformed
+to the objects intended translation and orientation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>point: The 2D point, relative to this view matrix,
+to project a ray from. A list of 2 float values.
+[0.0, 0.0] is the Bottom Left.
+[viewport.width, viewport.height] is the Top Right.</dd>
+<dt>Returns:</dt>
+<dd>A ray represented by a NumPy array of 2 x 3D vector.
+The first vector is the ray origin, the second is the
+ray direction.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.projection_view_matrix.ProjectionViewMatrix.fov">
+<tt class="descname">fov</tt><a class="reference internal" href="_modules/pygly/projection_view_matrix.html#ProjectionViewMatrix.fov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.projection_view_matrix.ProjectionViewMatrix.fov" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Field of View of the view matrix.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pygly.orthogonal_view_matrix"><span id="orthogonal-view-matrix"></span></span><dl class="class">
+<dt id="pygly.orthogonal_view_matrix.OrthogonalViewMatrix">
+<em class="property">class </em><tt class="descclassname">pygly.orthogonal_view_matrix.</tt><tt class="descname">OrthogonalViewMatrix</tt><big>(</big><em>aspect_ratio</em>, <em>scale</em>, <em>near_clip=1.0</em>, <em>far_clip=100.0</em><big>)</big><a class="reference internal" href="_modules/pygly/orthogonal_view_matrix.html#OrthogonalViewMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.orthogonal_view_matrix.OrthogonalViewMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages an orthogonal view matrix.</p>
+<p>Used by viewports and camera&#8217;s to render a scene using
+an orthogonal perspective.</p>
+<dl class="method">
+<dt id="pygly.orthogonal_view_matrix.OrthogonalViewMatrix.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>aspect_ratio</em>, <em>scale</em>, <em>near_clip=1.0</em>, <em>far_clip=100.0</em><big>)</big><a class="reference internal" href="_modules/pygly/orthogonal_view_matrix.html#OrthogonalViewMatrix.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises an orthographic (2D) view matrix.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>aspect_ratio: The aspect ratio of the viewport.
+This can be updated at any time.
+scale: The scale to apply to the width and
+height of the orthogonal view.
+The dimensions of the view matrix (left, right, bottom, top)
+are calculated as follows:
+height = 1.0 * scale.y
+width = 1.0 * scale.z * viewport aspect ratio 
+near_clip: The nearest distance to render objects.
+far_clip: The furthest distance to render objects.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.orthogonal_view_matrix.OrthogonalViewMatrix.bounds">
+<tt class="descname">bounds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/orthogonal_view_matrix.html#OrthogonalViewMatrix.bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum extents of the orthographic view
+based on the current viewport and the set scale.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The bounds as a tuple (left, right, bottom, top)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.orthogonal_view_matrix.OrthogonalViewMatrix.create_ray_from_ratio_point">
+<tt class="descname">create_ray_from_ratio_point</tt><big>(</big><em>point</em><big>)</big><a class="reference internal" href="_modules/pygly/orthogonal_view_matrix.html#OrthogonalViewMatrix.create_ray_from_ratio_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.create_ray_from_ratio_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a local ray cast from the camera co-ordinates
+at &#8216;point&#8217;.</p>
+<p>The ray will begin at the near clip plane.
+The ray is relative to the origin.
+The ray will project from the near clip plane
+down the -Z plane toward the far clip plane.</p>
+<p>The ray is in intertial space and must be transformed
+to the objects intended translation and orientation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>point: The 2D point, relative to this view matrix,
+to project a ray from. A list of 2 float values.
+[0.0, 0.0] is the Bottom Left.
+[viewport.width, viewport.height] is the Top Right.</dd>
+<dt>Returns:</dt>
+<dd>A ray consisting of 2 vectors (shape = 2,3).</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.orthogonal_view_matrix.OrthogonalViewMatrix.scale">
+<tt class="descname">scale</tt><a class="reference internal" href="_modules/pygly/orthogonal_view_matrix.html#OrthogonalViewMatrix.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scale.</p>
+<p>This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.orthogonal_view_matrix.OrthogonalViewMatrix.size">
+<tt class="descname">size</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/orthogonal_view_matrix.html#OrthogonalViewMatrix.size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+The size of the viewport as a vector</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api_viewports.html"
+                        title="previous chapter">Viewport</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api_monkey_patch.html"
+                        title="next chapter">Monkey Patch</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/api_view_matrices.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api_monkey_patch.html" title="Monkey Patch"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api_viewports.html" title="Viewport"
+             >previous</a> |</li>
+        <li><a href="index.html">PyGLy 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Griffiths.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

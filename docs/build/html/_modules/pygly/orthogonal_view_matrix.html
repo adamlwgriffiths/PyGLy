@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygly.orthogonal_view_matrix &mdash; PyGLy 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="PyGLy 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyGLy 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygly.orthogonal_view_matrix</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">.. moduleauthor:: Adam Griffiths &lt;adam.lw.griffiths@gmail.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">pyglet.gl</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">view_matrix</span> <span class="kn">import</span> <span class="n">ViewMatrix</span>
+<span class="kn">from</span> <span class="nn">pyrr</span> <span class="kn">import</span> <span class="n">matrix44</span>
+<span class="kn">from</span> <span class="nn">pyrr</span> <span class="kn">import</span> <span class="n">rectangle</span>
+<span class="kn">from</span> <span class="nn">pyrr</span> <span class="kn">import</span> <span class="n">ray</span>
+
+
+<div class="viewcode-block" id="OrthogonalViewMatrix"><a class="viewcode-back" href="../../api_view_matrices.html#pygly.orthogonal_view_matrix.OrthogonalViewMatrix">[docs]</a><span class="k">class</span> <span class="nc">OrthogonalViewMatrix</span><span class="p">(</span> <span class="n">ViewMatrix</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Manages an orthogonal view matrix.</span>
+
+<span class="sd">    Used by viewports and camera&#39;s to render a scene using</span>
+<span class="sd">    an orthogonal perspective.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="OrthogonalViewMatrix.__init__"><a class="viewcode-back" href="../../api_view_matrices.html#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">aspect_ratio</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">,</span>
+        <span class="n">near_clip</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">far_clip</span> <span class="o">=</span> <span class="mf">100.0</span>
+        <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialises an orthographic (2D) view matrix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            aspect_ratio: The aspect ratio of the viewport.</span>
+<span class="sd">            This can be updated at any time.</span>
+<span class="sd">            scale: The scale to apply to the width and</span>
+<span class="sd">            height of the orthogonal view.</span>
+<span class="sd">            The dimensions of the view matrix (left, right, bottom, top)</span>
+<span class="sd">            are calculated as follows:</span>
+<span class="sd">            height = 1.0 * scale.y</span>
+<span class="sd">            width = 1.0 * scale.z * viewport aspect ratio </span>
+<span class="sd">            near_clip: The nearest distance to render objects.</span>
+<span class="sd">            far_clip: The furthest distance to render objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span> <span class="n">OrthogonalViewMatrix</span><span class="p">,</span> <span class="bp">self</span> <span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">aspect_ratio</span><span class="p">,</span>
+            <span class="n">near_clip</span><span class="p">,</span>
+            <span class="n">far_clip</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="n">scale</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float</span> <span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The scale.</span>
+
+<span class="sd">        This is an @property decorated method which allows</span>
+<span class="sd">        retrieval and assignment of the scale value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
+
+    <span class="nd">@scale.setter</span>
+<div class="viewcode-block" id="OrthogonalViewMatrix.scale"><a class="viewcode-back" href="../../api_view_matrices.html#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">scale</span> <span class="p">):</span>
+        <span class="c"># check if the arrays are the same</span>
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span>
+            <span class="n">scale</span>
+            <span class="p">):</span>
+            <span class="k">return</span>
+        <span class="c"># update the scale and mark as dirty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates the view matrix when the aspect ratio</span>
+<span class="sd">        or scale have changed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span> <span class="o">==</span> <span class="bp">True</span>
+
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span> <span class="o">=</span> <span class="n">matrix44</span><span class="o">.</span><span class="n">create_orthogonal_view_matrix</span><span class="p">(</span>
+            <span class="n">left</span><span class="p">,</span>
+            <span class="n">right</span><span class="p">,</span>
+            <span class="n">top</span><span class="p">,</span>
+            <span class="n">bottom</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">near_clip</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">far_clip</span><span class="p">,</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="OrthogonalViewMatrix.bounds"><a class="viewcode-back" href="../../api_view_matrices.html#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.bounds">[docs]</a>    <span class="k">def</span> <span class="nf">bounds</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the maximum extents of the orthographic view</span>
+<span class="sd">        based on the current viewport and the set scale.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The bounds as a tuple (left, right, bottom, top)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">half_width</span> <span class="o">=</span> <span class="n">size</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">half_height</span> <span class="o">=</span> <span class="n">size</span><span class="p">[</span> <span class="mi">1</span> <span class="p">]</span><span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">half_width</span><span class="p">,</span> <span class="n">half_width</span><span class="p">,</span> <span class="o">-</span><span class="n">half_height</span><span class="p">,</span> <span class="n">half_height</span>
+</div>
+<div class="viewcode-block" id="OrthogonalViewMatrix.size"><a class="viewcode-back" href="../../api_view_matrices.html#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.size">[docs]</a>    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The size of the viewport as a vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span> <span class="mi">1</span> <span class="p">]</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect_ratio</span>
+
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="p">],</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float</span>
+            <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="OrthogonalViewMatrix.create_ray_from_ratio_point"><a class="viewcode-back" href="../../api_view_matrices.html#pygly.orthogonal_view_matrix.OrthogonalViewMatrix.create_ray_from_ratio_point">[docs]</a>    <span class="k">def</span> <span class="nf">create_ray_from_ratio_point</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">point</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a local ray cast from the camera co-ordinates</span>
+<span class="sd">        at &#39;point&#39;.</span>
+
+<span class="sd">        The ray will begin at the near clip plane.</span>
+<span class="sd">        The ray is relative to the origin.</span>
+<span class="sd">        The ray will project from the near clip plane</span>
+<span class="sd">        down the -Z plane toward the far clip plane.</span>
+
+<span class="sd">        The ray is in intertial space and must be transformed</span>
+<span class="sd">        to the objects intended translation and orientation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point: The 2D point, relative to this view matrix,</span>
+<span class="sd">            to project a ray from. A list of 2 float values.</span>
+<span class="sd">            [0.0, 0.0] is the Bottom Left.</span>
+<span class="sd">            [viewport.width, viewport.height] is the Top Right.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A ray consisting of 2 vectors (shape = 2,3).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># convert the point from a viewport point</span>
+        <span class="c"># to a point in the ortho projection plane</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+
+        <span class="n">plane_point</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="n">point</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float</span> <span class="p">)</span>
+        <span class="n">plane_point</span> <span class="o">*=</span> <span class="n">size</span>
+
+        <span class="c"># 0,0 is bottom left, we need to make this the centre</span>
+        <span class="n">half_size</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">plane_point</span> <span class="o">-=</span> <span class="n">half_size</span>
+
+        <span class="c"># convert these values to a line going from</span>
+        <span class="c"># -near clip to -far clip</span>
+        <span class="c"># this is due to the Z axis being -ve</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">[</span>
+                    <span class="n">plane_point</span><span class="p">[</span> <span class="mi">0</span> <span class="p">],</span>
+                    <span class="n">plane_point</span><span class="p">[</span> <span class="mi">1</span> <span class="p">],</span>
+                    <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">near_clip</span>
+                    <span class="p">],</span>
+                <span class="p">[</span>
+                    <span class="n">plane_point</span><span class="p">[</span> <span class="mi">0</span> <span class="p">],</span>
+                    <span class="n">plane_point</span><span class="p">[</span> <span class="mi">1</span> <span class="p">],</span>
+                    <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">far_clip</span>
+                    <span class="p">]</span>
+                <span class="p">],</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ray</span><span class="o">.</span><span class="n">create_from_line</span><span class="p">(</span> <span class="n">line</span> <span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyGLy 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Griffiths.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
