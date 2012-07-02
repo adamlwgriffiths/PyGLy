@@ -19,6 +19,7 @@ Contents:
     api_tree
     api_scene_graph
     api_debugging
+    api_rendering
     api_weak_method_references
 
 
