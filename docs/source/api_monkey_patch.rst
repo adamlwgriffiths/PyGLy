@@ -4,5 +4,5 @@ Monkey Patch
 ************
 
 .. automodule:: pygly.monkey_patch
-.. autofunction::
+    :members:
 
