@@ -104,7 +104,10 @@ class Viewport( EventDispatcher ):
         """Calls glViewport which sets up the viewport
         for rendering.
 
-        @see pygly.gl.set_viewport.
+        .. seealso::
+            Function :py:func:`pygly.gl.set_viewport`
+            Documentation of the
+            :py:func:`pygly.gl.set_viewport` function.
         """
         # update our viewport size
         gl.set_viewport( self.rect )
