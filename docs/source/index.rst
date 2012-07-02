@@ -11,6 +11,16 @@ Contents:
 .. toctree::
     :maxdepth: 2
 
+    api_common
+    api_viewports
+    api_view_matrices
+    api_monkey_patch
+    api_transform_spaces
+    api_tree
+    api_scene_graph
+    api_debugging
+    api_weak_method_references
+
 
 Indices and tables
 ==================
