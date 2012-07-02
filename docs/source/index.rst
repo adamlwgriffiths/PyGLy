@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PyGLy's documentation!
-=================================
+PyGLy index
+===========
 
-Contents:
+Functionality:
 
 .. toctree::
     :maxdepth: 2
