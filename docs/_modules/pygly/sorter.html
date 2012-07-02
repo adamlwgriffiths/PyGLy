@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygly.sorter &mdash; PyGLy 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="PyGLy 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyGLy 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygly.sorter</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">.. moduleauthor:: Adam Griffiths &lt;adam.lw.griffiths@gmail.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">pyrr</span>
+
+<div class="viewcode-block" id="sort_plane_front_to_back"><a class="viewcode-back" href="../../api_rendering.html#pygly.sorter.sort_plane_front_to_back">[docs]</a><span class="k">def</span> <span class="nf">sort_plane_front_to_back</span><span class="p">(</span>
+    <span class="n">render_position</span><span class="p">,</span>
+    <span class="n">render_direction</span><span class="p">,</span>
+    <span class="n">objects</span><span class="p">,</span>
+    <span class="n">object_positions</span>
+    <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sorts objects from front to back along a flat plane.</span>
+
+<span class="sd">    Sorts objects based upon their dot product value along</span>
+<span class="sd">    the camera direction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        render_position: The position of the camera the scene</span>
+<span class="sd">        is being rendered from.</span>
+<span class="sd">        render_direction: The direction the camera is facing.</span>
+<span class="sd">        objects: List of objects to be sorted.</span>
+<span class="sd">        object_positions: List of object positions. These values</span>
+<span class="sd">        map directly to the objects list.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Returns a sorted list containing the objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span> <span class="n">object_positions</span> <span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span> <span class="mi">0</span> <span class="p">)</span>
+
+    <span class="c"># make positions relative to render position</span>
+    <span class="n">relative_positions</span> <span class="o">=</span> <span class="n">object_positions</span> <span class="o">-</span> <span class="n">render_position</span>
+
+    <span class="c"># do a dot product against the render direction</span>
+    <span class="n">dot_values</span> <span class="o">=</span> <span class="n">pyrr</span><span class="o">.</span><span class="n">vector</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+        <span class="n">relative_positions</span><span class="p">,</span>
+        <span class="n">render_direction</span>
+        <span class="p">)</span>
+
+    <span class="c"># sort the object array by the</span>
+    <span class="c"># dot product of the object positions</span>
+    <span class="c"># sort in ascending order</span>
+
+    <span class="c"># this first call sorts and returns the indices</span>
+    <span class="n">inds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span> <span class="n">dot_values</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span>
+
+    <span class="c"># we then rebuilt the object array by the indices</span>
+    <span class="n">sorted_objects</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">take</span><span class="p">(</span> <span class="n">objects</span><span class="p">,</span> <span class="n">inds</span> <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sorted_objects</span>
+</div>
+<div class="viewcode-block" id="sort_plane_back_to_front"><a class="viewcode-back" href="../../api_rendering.html#pygly.sorter.sort_plane_back_to_front">[docs]</a><span class="k">def</span> <span class="nf">sort_plane_back_to_front</span><span class="p">(</span>
+    <span class="n">render_position</span><span class="p">,</span>
+    <span class="n">render_direction</span><span class="p">,</span>
+    <span class="n">objects</span><span class="p">,</span>
+    <span class="n">object_positions</span>
+    <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sorts objects from back to front along a flat plane.</span>
+
+<span class="sd">    Sorts objects based upon their dot product value along</span>
+<span class="sd">    the camera direction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        render_position: The position of the camera the scene</span>
+<span class="sd">        is being rendered from.</span>
+<span class="sd">        render_direction: The direction the camera is facing.</span>
+<span class="sd">        objects: List of objects to be sorted.</span>
+<span class="sd">        object_positions: List of object positions. These values</span>
+<span class="sd">        map directly to the objects list.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Returns a sorted list containing the objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># sort front to back</span>
+    <span class="n">sorted_objects</span> <span class="o">=</span> <span class="n">sort_plane_front_to_back</span><span class="p">(</span>
+        <span class="n">render_position</span><span class="p">,</span>
+        <span class="n">render_direction</span><span class="p">,</span>
+        <span class="n">objects</span><span class="p">,</span>
+        <span class="n">object_positions</span>
+        <span class="p">)</span>
+
+    <span class="c"># reverse the array</span>
+    <span class="k">return</span> <span class="n">sorted_objects</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="sort_radius_front_to_back"><a class="viewcode-back" href="../../api_rendering.html#pygly.sorter.sort_radius_front_to_back">[docs]</a><span class="k">def</span> <span class="nf">sort_radius_front_to_back</span><span class="p">(</span>
+    <span class="n">render_position</span><span class="p">,</span>
+    <span class="n">render_direction</span><span class="p">,</span>
+    <span class="n">objects</span><span class="p">,</span>
+    <span class="n">object_positions</span>
+    <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sorts objects from front to back based on their distance</span>
+<span class="sd">    from the camera.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        render_position: The position of the camera the scene</span>
+<span class="sd">        is being rendered from.</span>
+<span class="sd">        render_direction: The direction the camera is facing.</span>
+<span class="sd">        objects: List of objects to be sorted.</span>
+<span class="sd">        object_positions: List of object positions. These values</span>
+<span class="sd">        map directly to the objects list.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Returns a sorted list containing the objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span> <span class="n">object_positions</span> <span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span> <span class="mi">0</span> <span class="p">)</span>
+
+    <span class="c"># make positions relative to render position</span>
+    <span class="n">relative_positions</span> <span class="o">=</span> <span class="n">object_positions</span> <span class="o">-</span> <span class="n">render_position</span>
+
+    <span class="c"># do a dot product against the render direction</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">pyrr</span><span class="o">.</span><span class="n">vector</span><span class="o">.</span><span class="n">squared_length</span><span class="p">(</span>
+        <span class="n">relative_positions</span>
+        <span class="p">)</span>
+
+    <span class="c"># sort the object array by the</span>
+    <span class="c"># dot product of the object positions</span>
+    <span class="c"># sort in ascending order</span>
+
+    <span class="c"># this first call sorts and returns the indices</span>
+    <span class="n">inds</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span> <span class="n">lengths</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span>
+
+    <span class="c"># we then rebuilt the object array by the indices</span>
+    <span class="n">sorted_objects</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">take</span><span class="p">(</span> <span class="n">objects</span><span class="p">,</span> <span class="n">inds</span> <span class="p">)</span>
+
+    <span class="c"># return inverted</span>
+    <span class="k">return</span> <span class="n">sorted_objects</span>
+</div>
+<div class="viewcode-block" id="sort_radius_back_to_front"><a class="viewcode-back" href="../../api_rendering.html#pygly.sorter.sort_radius_back_to_front">[docs]</a><span class="k">def</span> <span class="nf">sort_radius_back_to_front</span><span class="p">(</span>
+    <span class="n">render_position</span><span class="p">,</span>
+    <span class="n">render_direction</span><span class="p">,</span>
+    <span class="n">objects</span><span class="p">,</span>
+    <span class="n">object_positions</span>
+    <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sorts objects from back to front based on their distance</span>
+<span class="sd">    from the camera.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        render_position: The position of the camera the scene</span>
+<span class="sd">        is being rendered from.</span>
+<span class="sd">        render_direction: The direction the camera is facing.</span>
+<span class="sd">        objects: List of objects to be sorted.</span>
+<span class="sd">        object_positions: List of object positions. These values</span>
+<span class="sd">        map directly to the objects list.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Returns a sorted list containing the objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># sort front to back</span>
+    <span class="n">sorted_objects</span> <span class="o">=</span> <span class="n">sort_radius_front_to_back</span><span class="p">(</span>
+        <span class="n">render_position</span><span class="p">,</span>
+        <span class="n">render_direction</span><span class="p">,</span>
+        <span class="n">objects</span><span class="p">,</span>
+        <span class="n">object_positions</span>
+        <span class="p">)</span>
+
+    <span class="c"># reverse the array</span>
+    <span class="k">return</span> <span class="n">sorted_objects</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyGLy 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Griffiths.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Scene Graph &mdash; PyGLy 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyGLy 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Debugging" href="api_debugging.html" />
+    <link rel="prev" title="Tree" href="api_tree.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api_debugging.html" title="Debugging"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api_tree.html" title="Tree"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyGLy 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="scene-graph">
+<span id="id1"></span><h1>Scene Graph<a class="headerlink" href="#scene-graph" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pygly.scene_node"><span id="scene-node"></span></span><dl class="class">
+<dt id="pygly.scene_node.SceneNode">
+<em class="property">class </em><tt class="descclassname">pygly.scene_node.</tt><tt class="descname">SceneNode</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pygly/scene_node.html#SceneNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.scene_node.SceneNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for Scene Graph objects.</p>
+<dl class="method">
+<dt id="pygly.scene_node.SceneNode.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pygly/scene_node.html#SceneNode.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.scene_node.SceneNode.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a SceneNode object with the specified name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.scene_node.SceneNode.name">
+<tt class="descname">name</tt><em class="property"> = None</em><a class="headerlink" href="#pygly.scene_node.SceneNode.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.scene_node.SceneNode.render_debug">
+<tt class="descname">render_debug</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/scene_node.html#SceneNode.render_debug"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.scene_node.SceneNode.render_debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders debug information to aid in visualising
+scene graphs.</p>
+<dl class="docutils">
+<dt>Does the following in order:</dt>
+<dd><ol class="first last arabic simple">
+<li>Pushes the current gl matrix.</li>
+<li>Applies the node&#8217;s translations.</li>
+<li>Renders debug info.</li>
+<li>Calls this method on all child nodes.</li>
+<li>Pops the gl matrix.</li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.scene_node.SceneNode.transform">
+<tt class="descname">transform</tt><em class="property"> = None</em><a class="headerlink" href="#pygly.scene_node.SceneNode.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>The local transform of the node.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.scene_node.SceneNode.world_transform">
+<tt class="descname">world_transform</tt><em class="property"> = None</em><a class="headerlink" href="#pygly.scene_node.SceneNode.world_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>The world transform of the node.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pygly.camera_node"><span id="camera-node"></span></span><dl class="class">
+<dt id="pygly.camera_node.CameraNode">
+<em class="property">class </em><tt class="descclassname">pygly.camera_node.</tt><tt class="descname">CameraNode</tt><big>(</big><em>name</em>, <em>view_matrix</em><big>)</big><a class="reference internal" href="_modules/pygly/camera_node.html#CameraNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.camera_node.CameraNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Scene Graph based camera.</p>
+<dl class="method">
+<dt id="pygly.camera_node.CameraNode.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>name</em>, <em>view_matrix</em><big>)</big><a class="reference internal" href="_modules/pygly/camera_node.html#CameraNode.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.camera_node.CameraNode.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a CameraNode object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>name (str): The name to give to the node.
+view_matrix: The camera&#8217;s ViewMatrix.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.camera_node.CameraNode.create_ray_from_ratio_point">
+<tt class="descname">create_ray_from_ratio_point</tt><big>(</big><em>point</em><big>)</big><a class="reference internal" href="_modules/pygly/camera_node.html#CameraNode.create_ray_from_ratio_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.camera_node.CameraNode.create_ray_from_ratio_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a ray cast from 2d camera co-ordinates
+into the world.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>window: The window the viewport resides on.
+viewport: The viewport being used to cast the ray.
+point: The 2D point, relative to this camera,
+to project a ray from. A list of 2 float values.
+[0, 0] is the Bottom Left of the viewport
+[viewport.width, viewport.height] is the Top Right of
+the viewport.</dd>
+<dt>Returns:</dt>
+<dd>A ray consisting of 2 vectors (shape = 2,3).
+The first vector (result[0]) is the origin of the ray.
+The second vector (result[1]) is the direction of the ray.
+The direction is a vector of unit length.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.camera_node.CameraNode.model_view">
+<tt class="descname">model_view</tt><a class="reference internal" href="_modules/pygly/camera_node.html#CameraNode.model_view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.camera_node.CameraNode.model_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property for the camera&#8217;s model view matrix.</p>
+<p>This is an &#64;property decorated method.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A NumPy array set to the camera&#8217;s model view
+matrix.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.camera_node.CameraNode.pop_model_view">
+<tt class="descname">pop_model_view</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/camera_node.html#CameraNode.pop_model_view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.camera_node.CameraNode.pop_model_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pops the model view matrix from the OGL stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.camera_node.CameraNode.push_model_view">
+<tt class="descname">push_model_view</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/camera_node.html#CameraNode.push_model_view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.camera_node.CameraNode.push_model_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes the model view matrix onto the OGL stack.</p>
+<p>Gets the current model view matrix and set&#8217;s pushes
+it onto the OpenGL GL_MODELVIEW matrix stack.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.camera_node.CameraNode.view_matrix">
+<tt class="descname">view_matrix</tt><em class="property"> = None</em><a class="headerlink" href="#pygly.camera_node.CameraNode.view_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>the camer&#8217;s view matrix</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pygly.render_node"><span id="render-node"></span></span><dl class="class">
+<dt id="pygly.render_node.RenderNode">
+<em class="property">class </em><tt class="descclassname">pygly.render_node.</tt><tt class="descname">RenderNode</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pygly/render_node.html#RenderNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_node.RenderNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for render functionality in a Scene Graph.</p>
+<p>Over-ride the <a class="reference internal" href="#pygly.render_node.RenderNode.render_mesh" title="pygly.render_node.RenderNode.render_mesh"><tt class="xref py py-meth docutils literal"><span class="pre">render_mesh()</span></tt></a>
+method to implement render functionality.</p>
+<dl class="method">
+<dt id="pygly.render_node.RenderNode.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pygly/render_node.html#RenderNode.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_node.RenderNode.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygly.render_node.RenderNode.on_context_lost">
+<tt class="descname">on_context_lost</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/render_node.html#RenderNode.on_context_lost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_node.RenderNode.on_context_lost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the graphic device context is lost.</p>
+<p>This method is a stub and is intended to be over-ridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.render_node.RenderNode.render">
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/render_node.html#RenderNode.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_node.RenderNode.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the scene node at it&#8217;s world transform.</p>
+<dl class="docutils">
+<dt>Does the following:</dt>
+<dd><ol class="first last arabic simple">
+<li>Pushes the SceneNode&#8217;s world transform onto the GL stack.</li>
+<li>Calls render_mesh.</li>
+<li>Pops the matrix off the GL stack.</li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.render_node.RenderNode.render_mesh">
+<tt class="descname">render_mesh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/render_node.html#RenderNode.render_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_node.RenderNode.render_mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to render the mesh.</p>
+<p>This method is a stub and is intended to be over-ridden.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pygly.render_callback_node"><span id="render-callback-node"></span></span><dl class="class">
+<dt id="pygly.render_callback_node.RenderCallbackNode">
+<em class="property">class </em><tt class="descclassname">pygly.render_callback_node.</tt><tt class="descname">RenderCallbackNode</tt><big>(</big><em>name</em>, <em>initialise_callback</em>, <em>render_callback</em><big>)</big><a class="reference internal" href="_modules/pygly/render_callback_node.html#RenderCallbackNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_callback_node.RenderCallbackNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A RenderNode that takes an initialisation and a
+render function as callbacks to perform rendering.</p>
+<dl class="method">
+<dt id="pygly.render_callback_node.RenderCallbackNode.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>name</em>, <em>initialise_callback</em>, <em>render_callback</em><big>)</big><a class="reference internal" href="_modules/pygly/render_callback_node.html#RenderCallbackNode.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_callback_node.RenderCallbackNode.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises the node with the specified callbacks.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>name: The name to give the node.
+initialise_callback: The function to call when the
+node is to be initialised.
+render_callback: The function to call when the
+node is to be rendered.</dd>
+<dt>Raises:</dt>
+<dd>ValueError: Raised if the render callback == None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.render_callback_node.RenderCallbackNode.on_context_lost">
+<tt class="descname">on_context_lost</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/render_callback_node.html#RenderCallbackNode.on_context_lost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_callback_node.RenderCallbackNode.on_context_lost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygly.render_callback_node.RenderCallbackNode.render_mesh">
+<tt class="descname">render_mesh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/render_callback_node.html#RenderCallbackNode.render_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.render_callback_node.RenderCallbackNode.render_mesh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">Class <a class="reference internal" href="#pygly.render_node.RenderNode" title="pygly.render_node.RenderNode"><tt class="xref py py-class docutils literal"><span class="pre">pygly.render_node.RenderNode</span></tt></a>
+    Documentation of the <a class="reference internal" href="#pygly.render_node.RenderNode" title="pygly.render_node.RenderNode"><tt class="xref py py-class docutils literal"><span class="pre">pygly.render_node.RenderNode</span></tt></a> class, the parent of this class.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api_tree.html"
+                        title="previous chapter">Tree</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api_debugging.html"
+                        title="next chapter">Debugging</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/api_scene_graph.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api_debugging.html" title="Debugging"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api_tree.html" title="Tree"
+             >previous</a> |</li>
+        <li><a href="index.html">PyGLy 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Griffiths.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

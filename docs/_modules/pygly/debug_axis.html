@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygly.debug_axis &mdash; PyGLy 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="PyGLy 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyGLy 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygly.debug_axis</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Renders axis information for visualising 3D coordinates.</span>
+
+<span class="sd">.. moduleauthor:: Adam Griffiths &lt;adam.lw.griffiths@gmail.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">pyglet.gl</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pyglet.graphics</span> <span class="kn">import</span> <span class="n">Batch</span>
+<span class="kn">from</span> <span class="nn">pyglet.text</span> <span class="kn">import</span> <span class="n">Label</span>
+
+
+<span class="n">display_list</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">label_x</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">label_y</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">label_z</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="initialise_axis"><a class="viewcode-back" href="../../api_debugging.html#pygly.debug_axis.initialise_axis">[docs]</a><span class="k">def</span> <span class="nf">initialise_axis</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Initialises the axis render objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">display_list</span>
+
+    <span class="n">display_list</span> <span class="o">=</span> <span class="n">glGenLists</span><span class="p">(</span> <span class="mi">1</span> <span class="p">)</span>
+    <span class="n">glNewList</span><span class="p">(</span> <span class="n">display_list</span><span class="p">,</span> <span class="n">GL_COMPILE</span> <span class="p">)</span>
+
+    <span class="c"># draw the axis</span>
+    <span class="n">glBegin</span><span class="p">(</span> <span class="n">GL_LINES</span> <span class="p">)</span>
+
+    <span class="c"># X axis</span>
+    <span class="n">glColor3f</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="c"># arrow</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.7</span><span class="p">,</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+
+    <span class="c"># Y axis</span>
+    <span class="n">glColor3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="c"># arrow</span>
+    <span class="n">glVertex3f</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+
+    <span class="c"># Z axis</span>
+    <span class="n">glColor3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">)</span>
+    <span class="c"># arrow</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span> <span class="p">)</span>
+    <span class="n">glVertex3f</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">)</span>
+
+    <span class="n">glEnd</span><span class="p">()</span>
+
+    <span class="n">glEndList</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="initialise_labels"><a class="viewcode-back" href="../../api_debugging.html#pygly.debug_axis.initialise_labels">[docs]</a><span class="k">def</span> <span class="nf">initialise_labels</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Initialises the label render objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># create some labels</span>
+    <span class="k">global</span> <span class="n">label_x</span>
+    <span class="k">global</span> <span class="n">label_y</span>
+    <span class="k">global</span> <span class="n">label_z</span>
+
+    <span class="n">font</span> <span class="o">=</span> <span class="s">&#39;Times New Roman&#39;</span>
+    <span class="n">font_size</span> <span class="o">=</span> <span class="mi">18</span>
+    <span class="n">dpi</span> <span class="o">=</span> <span class="mf">200.0</span>
+
+    <span class="n">label_x</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span>
+        <span class="s">&#39;X&#39;</span><span class="p">,</span>
+        <span class="n">font_name</span> <span class="o">=</span> <span class="n">font</span><span class="p">,</span>
+        <span class="n">font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">,</span>
+        <span class="n">dpi</span> <span class="o">=</span> <span class="n">dpi</span><span class="p">,</span>
+        <span class="n">anchor_x</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">,</span>
+        <span class="n">anchor_y</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
+        <span class="p">)</span>
+    <span class="n">label_y</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span>
+        <span class="s">&#39;Y&#39;</span><span class="p">,</span>
+        <span class="n">font_name</span> <span class="o">=</span> <span class="n">font</span><span class="p">,</span>
+        <span class="n">font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">,</span>
+        <span class="n">dpi</span> <span class="o">=</span> <span class="n">dpi</span><span class="p">,</span>
+        <span class="n">anchor_x</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">,</span>
+        <span class="n">anchor_y</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
+        <span class="p">)</span>
+    <span class="n">label_z</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span>
+        <span class="s">&#39;Z&#39;</span><span class="p">,</span>
+        <span class="n">font_name</span> <span class="o">=</span> <span class="n">font</span><span class="p">,</span>
+        <span class="n">font_size</span> <span class="o">=</span> <span class="n">font_size</span><span class="p">,</span>
+        <span class="n">dpi</span> <span class="o">=</span> <span class="n">dpi</span><span class="p">,</span>
+        <span class="n">anchor_x</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">,</span>
+        <span class="n">anchor_y</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="initialise"><a class="viewcode-back" href="../../api_debugging.html#pygly.debug_axis.initialise">[docs]</a><span class="k">def</span> <span class="nf">initialise</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Initialises the axis and label objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initialise_axis</span><span class="p">()</span>
+    <span class="n">initialise_labels</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="render_axis"><a class="viewcode-back" href="../../api_debugging.html#pygly.debug_axis.render_axis">[docs]</a><span class="k">def</span> <span class="nf">render_axis</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Renders the axis arrows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">display_list</span>
+
+    <span class="k">if</span> <span class="n">display_list</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">initialise_axis</span><span class="p">()</span>
+
+    <span class="c"># we&#39;re going to mess around with GL state</span>
+    <span class="c"># so push the existing values on the stack</span>
+    <span class="n">glPushAttrib</span><span class="p">(</span> <span class="n">GL_ALL_ATTRIB_BITS</span> <span class="p">)</span>
+    <span class="n">glPushMatrix</span><span class="p">()</span>
+
+    <span class="c"># change the line width</span>
+    <span class="n">glLineWidth</span><span class="p">(</span> <span class="mf">5.0</span> <span class="p">)</span>
+
+    <span class="c"># render the axis</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="mf">5.0</span>
+    <span class="n">inv_scale</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">scale</span>
+
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="p">)</span>
+    <span class="n">glCallList</span><span class="p">(</span> <span class="n">display_list</span> <span class="p">)</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span> <span class="p">)</span>
+
+    <span class="c"># reset our gl state</span>
+    <span class="n">glPopMatrix</span><span class="p">()</span>
+    <span class="n">glPopAttrib</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="render_labels"><a class="viewcode-back" href="../../api_debugging.html#pygly.debug_axis.render_labels">[docs]</a><span class="k">def</span> <span class="nf">render_labels</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Renders the axis labels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">label_x</span>
+    <span class="k">global</span> <span class="n">label_y</span>
+    <span class="k">global</span> <span class="n">label_z</span>
+
+    <span class="k">if</span> \
+        <span class="n">label_x</span> <span class="o">==</span> <span class="bp">None</span> <span class="ow">or</span> \
+        <span class="n">label_y</span> <span class="o">==</span> <span class="bp">None</span> <span class="ow">or</span> \
+        <span class="n">label_z</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">initialise_labels</span><span class="p">()</span>
+
+    <span class="c"># we&#39;re going to mess around with GL state</span>
+    <span class="c"># so push the existing values on the stack</span>
+    <span class="n">glPushAttrib</span><span class="p">(</span> <span class="n">GL_ALL_ATTRIB_BITS</span> <span class="p">)</span>
+    <span class="n">glPushMatrix</span><span class="p">()</span>
+
+    <span class="c"># enable alpha blending</span>
+    <span class="n">glEnable</span><span class="p">(</span> <span class="n">GL_BLEND</span> <span class="p">)</span>
+    <span class="n">glBlendFunc</span><span class="p">(</span> <span class="n">GL_SRC_ALPHA</span><span class="p">,</span> <span class="n">GL_ONE</span> <span class="p">)</span>
+    <span class="n">glBlendEquation</span><span class="p">(</span> <span class="n">GL_FUNC_ADD</span> <span class="p">)</span>
+
+    <span class="c"># disable back face culling</span>
+    <span class="n">glDisable</span><span class="p">(</span> <span class="n">GL_CULL_FACE</span> <span class="p">)</span>
+
+    <span class="c"># disable depth buffer</span>
+    <span class="c"># transparent objects still write to depth buffer</span>
+    <span class="c"># so normally you would render solid geometry</span>
+    <span class="c"># then back to front for transparent</span>
+    <span class="c"># we don&#39;t want the transparent objects causing</span>
+    <span class="c"># other objects to not render beheind them</span>
+    <span class="n">glDepthMask</span><span class="p">(</span> <span class="n">GL_FALSE</span> <span class="p">)</span>
+
+    <span class="n">translation</span> <span class="o">=</span> <span class="mf">6.0</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">inv_scale</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">scale</span>
+
+    <span class="c"># draw X label</span>
+    <span class="n">glTranslatef</span><span class="p">(</span> <span class="n">translation</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="p">)</span>
+    <span class="n">label_x</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span> <span class="p">)</span>
+
+    <span class="c"># draw Y label</span>
+    <span class="n">glTranslatef</span><span class="p">(</span><span class="o">-</span><span class="n">translation</span><span class="p">,</span> <span class="n">translation</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="p">)</span>
+    <span class="n">label_y</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span> <span class="p">)</span>
+
+    <span class="c"># draw Z label</span>
+    <span class="n">glTranslatef</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span><span class="o">-</span><span class="n">translation</span><span class="p">,</span> <span class="n">translation</span> <span class="p">)</span>
+    <span class="c"># rotate down z axis</span>
+    <span class="n">glRotatef</span><span class="p">(</span> <span class="mf">90.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">)</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="p">)</span>
+    <span class="n">label_z</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">glScalef</span><span class="p">(</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span><span class="p">,</span> <span class="n">inv_scale</span> <span class="p">)</span>
+
+    <span class="c"># reset our gl state</span>
+    <span class="n">glPopMatrix</span><span class="p">()</span>
+    <span class="n">glPopAttrib</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="render"><a class="viewcode-back" href="../../api_debugging.html#pygly.debug_axis.render">[docs]</a><span class="k">def</span> <span class="nf">render</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Renders the axis arrows and labels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">render_axis</span><span class="p">()</span>
+    <span class="n">render_labels</span><span class="p">()</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyGLy 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Griffiths.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

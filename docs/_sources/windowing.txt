@@ -1,0 +1,22 @@
+.. _windowing:
+
+Windowing
+*********
+
+.. _window_creation:
+
+Window creation
+===============
+
+Window creation and management is performed using the normal Pyglet methods.
+
+See the `Pyglet docs <http://www.pyglet.org/doc/programming_guide/windowing.html>`_ for more information.
+
+
+.. _window_events:
+
+Window events
+=============
+
+View matrices are dependent on the viewport's aspect ratio. If a viewport changes size, usually when the window is resized, any relevant view matrices must be informed.
+

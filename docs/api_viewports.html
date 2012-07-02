@@ -1,0 +1,376 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Viewport &mdash; PyGLy 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyGLy 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="View Matrices" href="api_view_matrices.html" />
+    <link rel="prev" title="Common GL functions" href="api_common.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api_view_matrices.html" title="View Matrices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api_common.html" title="Common GL functions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyGLy 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="viewport">
+<span id="viewports"></span><h1>Viewport<a class="headerlink" href="#viewport" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pygly.viewport"><span id="id1"></span></span><dl class="class">
+<dt id="pygly.viewport.Viewport">
+<em class="property">class </em><tt class="descclassname">pygly.viewport.</tt><tt class="descname">Viewport</tt><big>(</big><em>window</em>, <em>rect</em><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper around the basic viewport functionality.</p>
+<dl class="method">
+<dt id="pygly.viewport.Viewport.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>window</em>, <em>rect</em><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a viewport with the size of rect.</p>
+<p>Automatically hooks into the window&#8217;s &#8216;on_resize&#8217;
+event.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>window: The window the viewport belongs to.
+rect: An array with the shape (2,2).
+Values are in pixels
+Values may exceed the window size but will be
+off the screen.</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">OpenGL places platform-dependent limits on how far
+off screen a viewport may go.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.aspect_ratio">
+<tt class="descname">aspect_ratio</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.aspect_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.aspect_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the aspect ratio of the viewport.</p>
+<p>Aspect ratio is the ratio of width to height
+a value of 2.0 means width is 2*height</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.bottom">
+<tt class="descname">bottom</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.bottom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.bottom" title="Permalink to this definition">¶</a></dt>
+<dd><p>The bottom most point of the viewport in pixels.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.event_types">
+<tt class="descname">event_types</tt><em class="property"> = ['on_viewport_resize', 'on_change_aspect_ratio']</em><a class="headerlink" href="#pygly.viewport.Viewport.event_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.height">
+<tt class="descname">height</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.height"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>The height of the viewport in pixels.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.left">
+<tt class="descname">left</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.left"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.left" title="Permalink to this definition">¶</a></dt>
+<dd><p>The left most point of the viewport in pixels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.viewport.Viewport.on_resize">
+<tt class="descname">on_resize</tt><big>(</big><em>width</em>, <em>height</em><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.on_resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.on_resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for pyglet window&#8217;s on_resize
+event.</p>
+<p>Called when the window is resized.</p>
+<p>This is a stub function and is intended to be
+over-ridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.viewport.Viewport.pop_viewport_attributes">
+<tt class="descname">pop_viewport_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.pop_viewport_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.pop_viewport_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pops the OGL attributes.</p>
+<p>Called when tearing down viewport.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method mirrors &#8216;push_viewport_attributes&#8217;</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.position">
+<tt class="descname">position</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The origin of the viewport in pixels as a 2D vector.</p>
+<p>This is the bottom left corner.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.viewport.Viewport.push_viewport_attributes">
+<tt class="descname">push_viewport_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.push_viewport_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.push_viewport_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes the current OGL attributes
+and then calls self.setup_viewport.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.rect">
+<tt class="descname">rect</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.rect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.rect" title="Permalink to this definition">¶</a></dt>
+<dd><p>The viewports 2D rectangle in pixels.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Changing this value will dispatch an</p>
+</div>
+<p>&#8216;on_viewport_resize&#8217; and &#8216;on_change_aspect_ratio&#8217;
+events.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The viewport size in pixels in the form of a
+NumPy with shape (2,2).</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.right">
+<tt class="descname">right</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.right"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.right" title="Permalink to this definition">¶</a></dt>
+<dd><p>The right most point of the viewport in pixels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.viewport.Viewport.scissor_to_viewport">
+<tt class="descname">scissor_to_viewport</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.scissor_to_viewport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.scissor_to_viewport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls glScissor with the size of the viewport.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is up to the user to call glEnable(GL_SCISSOR_TEST).</p>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">Function <a class="reference internal" href="api_common.html#pygly.gl.set_scissor" title="pygly.gl.set_scissor"><tt class="xref py py-func docutils literal"><span class="pre">pygly.gl.set_scissor()</span></tt></a>
+Documentation of the
+<a class="reference internal" href="api_common.html#pygly.gl.set_scissor" title="pygly.gl.set_scissor"><tt class="xref py py-func docutils literal"><span class="pre">pygly.gl.set_scissor()</span></tt></a> function.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.viewport.Viewport.setup_viewport">
+<tt class="descname">setup_viewport</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.setup_viewport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.setup_viewport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the viewport rendering attributes.</p>
+<p>Over-ride this method to customise
+the opengl settings for this viewport.</p>
+<dl class="docutils">
+<dt>The default method sets the following:</dt>
+<dd><ol class="first last arabic simple">
+<li>glEnable( GL_DEPTH_TEST )</li>
+<li>glShadeModel( GL_SMOOTH )</li>
+<li>glEnable( GL_RESCALE_NORMAL )</li>
+<li>glEnable( GL_SCISSOR_TEST )</li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.size">
+<tt class="descname">size</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The size of the viewport in pixels as a 2D vector.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.viewport.Viewport.switch_to">
+<tt class="descname">switch_to</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.switch_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.switch_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls glViewport which sets up the viewport
+for rendering.</p>
+<p>&#64;see pygly.gl.set_viewport.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.top">
+<tt class="descname">top</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.top"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.top" title="Permalink to this definition">¶</a></dt>
+<dd><p>The top most point of the viewport in pixels.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.width">
+<tt class="descname">width</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.width"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The width of the viewport in pixels.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.x">
+<tt class="descname">x</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.x" title="Permalink to this definition">¶</a></dt>
+<dd><p>The X value of the viewport in pixels.</p>
+<p>This is the X value of the bottom left corner.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.viewport.Viewport.y">
+<tt class="descname">y</tt><a class="reference internal" href="_modules/pygly/viewport.html#Viewport.y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.viewport.Viewport.y" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Y value of the viewport in pixels.</p>
+<p>This is the Y value of the bottom left corner.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pygly.ratio_viewport"><span id="ratio-viewport"></span></span><dl class="class">
+<dt id="pygly.ratio_viewport.RatioViewport">
+<em class="property">class </em><tt class="descclassname">pygly.ratio_viewport.</tt><tt class="descname">RatioViewport</tt><big>(</big><em>window</em>, <em>ratio</em><big>)</big><a class="reference internal" href="_modules/pygly/ratio_viewport.html#RatioViewport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.ratio_viewport.RatioViewport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maintains a set size ratio within a window.</p>
+<p>A RatioViewport will automatically resize itself when
+the window is resized, to maintain a specific ratio of
+the window size.</p>
+<dl class="method">
+<dt id="pygly.ratio_viewport.RatioViewport.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>window</em>, <em>ratio</em><big>)</big><a class="reference internal" href="_modules/pygly/ratio_viewport.html#RatioViewport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.ratio_viewport.RatioViewport.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a viewport with the specified ratio.</p>
+<p>Automatically hooks into the window&#8217;s &#8216;on_resize&#8217;
+event.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>window: The window the viewport belongs to.
+rect: The viewport size as a ratio (percentage)
+of the window in the form of a NumPy array
+with the shape (2,2).
+Values are in percentages (0.0 -&gt; 1.0).
+Values may exceed the window size but will be off
+the screen.</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">OpenGL places platform-dependent limits on how far
+off screen a viewport may go.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygly.ratio_viewport.RatioViewport.on_resize">
+<tt class="descname">on_resize</tt><big>(</big><em>width</em>, <em>height</em><big>)</big><a class="reference internal" href="_modules/pygly/ratio_viewport.html#RatioViewport.on_resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.ratio_viewport.RatioViewport.on_resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler to be called when the window
+is resized.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>width (int): The width, in pixels, of the window&#8217;s
+renderable area.
+height (int): The height, in pixels, of the window&#8217;s
+renderable area.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygly.ratio_viewport.RatioViewport.ratio">
+<tt class="descname">ratio</tt><a class="reference internal" href="_modules/pygly/ratio_viewport.html#RatioViewport.ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygly.ratio_viewport.RatioViewport.ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>The viewport&#8217;s ratio.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is an &#64;property decorated method which allows
+retrieval and assignment of the scale value.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">Module <a class="reference internal" href="api_common.html#module-pygly.gl" title="pygly.gl"><tt class="xref py py-mod docutils literal"><span class="pre">pygly.gl</span></tt></a>
+Documentation of the <a class="reference internal" href="api_common.html#module-pygly.gl" title="pygly.gl"><tt class="xref py py-mod docutils literal"><span class="pre">pygly.gl</span></tt></a> module.
+Contains viewport controls.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api_common.html"
+                        title="previous chapter">Common GL functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api_view_matrices.html"
+                        title="next chapter">View Matrices</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/api_viewports.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api_view_matrices.html" title="View Matrices"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api_common.html" title="Common GL functions"
+             >previous</a> |</li>
+        <li><a href="index.html">PyGLy 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Griffiths.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
