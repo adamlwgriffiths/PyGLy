@@ -10,6 +10,9 @@ pushd $DIR
 # move up to the parent and down into docs
 cd ../docs
 
+# remove our existing docs
+rm -rf build/*
+
 # run our makefile
 make html
 
