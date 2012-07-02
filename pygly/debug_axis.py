@@ -14,8 +14,9 @@ label_x = None
 label_y = None
 label_z = None
 
-def initialise():
+def initialise_axis():
     global display_list
+
     display_list = glGenLists( 1 )
     glNewList( display_list, GL_COMPILE )
 
@@ -23,21 +24,40 @@ def initialise():
     glBegin( GL_LINES )
 
     # X axis
+    glColor3f( 1.0, 0.0, 0.0 )
     glVertex3f( 0.0, 0.0, 0.0 )
+    glVertex3f( 1.0, 0.0, 0.0 )
+    # arrow
+    glVertex3f( 0.7, 0.3, 0.0 )
+    glVertex3f( 1.0, 0.0, 0.0 )
+    glVertex3f( 0.7,-0.3, 0.0 )
     glVertex3f( 1.0, 0.0, 0.0 )
 
     # Y axis
+    glColor3f( 0.0, 1.0, 0.0 )
     glVertex3f( 0.0, 0.0, 0.0 )
+    glVertex3f( 0.0, 1.0, 0.0 )
+    # arrow
+    glVertex3f(-0.3, 0.7, 0.0 )
+    glVertex3f( 0.0, 1.0, 0.0 )
+    glVertex3f( 0.3, 0.7, 0.0 )
     glVertex3f( 0.0, 1.0, 0.0 )
 
     # Z axis
+    glColor3f( 0.0, 0.0, 1.0 )
     glVertex3f( 0.0, 0.0, 0.0 )
+    glVertex3f( 0.0, 0.0, 1.0 )
+    # arrow
+    glVertex3f( 0.0, -0.3, 0.7 )
+    glVertex3f( 0.0, 0.0, 1.0 )
+    glVertex3f( 0.0, 0.3, 0.7 )
     glVertex3f( 0.0, 0.0, 1.0 )
 
     glEnd()
 
     glEndList()
 
+def initialise_labels():
     # create some labels
     global label_x
     global label_y
@@ -72,14 +92,15 @@ def initialise():
         anchor_y = 'center'
         )
 
-def render():
+def initialise():
+    initialise_axis()
+    initialise_labels()
+
+def render_axis():
     global display_list
-    global label_x
-    global label_y
-    global label_z
 
     if display_list == None:
-        initialise()
+        initialise_axis()
 
     # we're going to mess around with GL state
     # so push the existing values on the stack
@@ -87,14 +108,35 @@ def render():
     glPushMatrix()
 
     # change the line width
-    glLineWidth( 3.0 )
+    glLineWidth( 5.0 )
 
     # render the axis
     scale = 5.0
     inv_scale = 1.0 / scale
+
     glScalef( scale, scale, scale )
     glCallList( display_list )
     glScalef( inv_scale, inv_scale, inv_scale )
+
+    # reset our gl state
+    glPopMatrix()
+    glPopAttrib()
+
+def render_labels():
+    global label_x
+    global label_y
+    global label_z
+
+    if \
+        label_x == None or \
+        label_y == None or \
+        label_z == None:
+        initialise_labels()
+
+    # we're going to mess around with GL state
+    # so push the existing values on the stack
+    glPushAttrib( GL_ALL_ATTRIB_BITS )
+    glPushMatrix()
 
     # enable alpha blending
     glEnable( GL_BLEND )
@@ -112,8 +154,8 @@ def render():
     # other objects to not render beheind them
     glDepthMask( GL_FALSE )
 
-    translation = 5.0
-    scale = 0.1
+    translation = 6.0
+    scale = 0.05
     inv_scale = 1.0 / scale
 
     # draw X label
@@ -139,4 +181,9 @@ def render():
     # reset our gl state
     glPopMatrix()
     glPopAttrib()
+
+def render():
+    render_axis()
+    render_labels()
+
 
