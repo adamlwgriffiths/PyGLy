@@ -1,7 +1,5 @@
 '''
-Created on 07/06/2012
-
-@author: adam
+.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import numpy
@@ -14,6 +12,21 @@ def sort_plane_front_to_back(
     objects,
     object_positions
     ):
+    """Sorts objects from front to back along a flat plane.
+
+    Sorts objects based upon their dot product value along
+    the camera direction.
+
+    Args:
+        render_position: The position of the camera the scene
+        is being rendered from.
+        render_direction: The direction the camera is facing.
+        objects: List of objects to be sorted.
+        object_positions: List of object positions. These values
+        map directly to the objects list.
+    Returns:
+        Returns a sorted list containing the objects.
+    """
     if len( object_positions ) <= 0:
         return numpy.empty( 0 )
 
@@ -44,6 +57,21 @@ def sort_plane_back_to_front(
     objects,
     object_positions
     ):
+    """Sorts objects from back to front along a flat plane.
+
+    Sorts objects based upon their dot product value along
+    the camera direction.
+
+    Args:
+        render_position: The position of the camera the scene
+        is being rendered from.
+        render_direction: The direction the camera is facing.
+        objects: List of objects to be sorted.
+        object_positions: List of object positions. These values
+        map directly to the objects list.
+    Returns:
+        Returns a sorted list containing the objects.
+    """
     # sort front to back
     sorted_objects = sort_plane_front_to_back(
         render_position,
@@ -61,6 +89,19 @@ def sort_radius_front_to_back(
     objects,
     object_positions
     ):
+    """Sorts objects from front to back based on their distance
+    from the camera.
+
+    Args:
+        render_position: The position of the camera the scene
+        is being rendered from.
+        render_direction: The direction the camera is facing.
+        objects: List of objects to be sorted.
+        object_positions: List of object positions. These values
+        map directly to the objects list.
+    Returns:
+        Returns a sorted list containing the objects.
+    """
     if len( object_positions ) <= 0:
         return numpy.empty( 0 )
 
@@ -91,6 +132,19 @@ def sort_radius_back_to_front(
     objects,
     object_positions
     ):
+    """Sorts objects from back to front based on their distance
+    from the camera.
+
+    Args:
+        render_position: The position of the camera the scene
+        is being rendered from.
+        render_direction: The direction the camera is facing.
+        objects: List of objects to be sorted.
+        object_positions: List of object positions. These values
+        map directly to the objects list.
+    Returns:
+        Returns a sorted list containing the objects.
+    """
     # sort front to back
     sorted_objects = sort_radius_front_to_back(
         render_position,
