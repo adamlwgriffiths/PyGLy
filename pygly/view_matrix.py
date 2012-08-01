@@ -39,6 +39,12 @@ class ViewMatrix( object ):
         self._matrix = None
         self.dirty = True
 
+    def _enter(self):
+        self.push_view_matrix()
+
+    def _exit(self):
+        self.pop_view_matrix()
+
     @property
     def matrix( self ):
         """The current view matrix.

@@ -112,6 +112,23 @@ class Viewport( EventDispatcher ):
         # update our viewport size
         gl.set_viewport( self.rect )
 
+    def _enter(self):
+        # activate our viewport
+        # scissor to the viewport
+        # and set our gl state
+        self.switch_to()
+        self.scissor_to_viewport()
+        self.push_viewport_attributes()
+
+    def _exit(self):
+        # pop our gl state
+        # reset our scissor
+        # and reset our viewport to full size
+        self.pop_viewport_attributes()
+        window_rect = window.create_rectangle( self.window )
+        gl.set_scissor( window_rect )
+        gl.set_viewport( window_rect )
+
     @property
     def aspect_ratio( self ):
         """Returns the aspect ratio of the viewport.
