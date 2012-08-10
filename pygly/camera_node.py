@@ -32,13 +32,13 @@ class CameraNode( SceneNode ):
         #: the camer's view matrix
         self.view_matrix = view_matrix
 
-    def __enter__(self):
+    def __enter__( self ):
         # apply our view matrix
         # and push our model view
         self.view_matrix.push_view_matrix()
         self.push_model_view()
 
-    def __exit__(self):
+    def __exit__( self, type, value, traceback ):
         # pop our model view
         # and our view matrix
         self.pop_model_view()
