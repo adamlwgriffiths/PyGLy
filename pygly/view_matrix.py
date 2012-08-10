@@ -39,10 +39,10 @@ class ViewMatrix( object ):
         self._matrix = None
         self.dirty = True
 
-    def _enter(self):
+    def __enter__(self):
         self.push_view_matrix()
 
-    def _exit(self):
+    def __exit__(self):
         self.pop_view_matrix()
 
     @property

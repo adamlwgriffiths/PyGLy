@@ -112,7 +112,7 @@ class Viewport( EventDispatcher ):
         # update our viewport size
         gl.set_viewport( self.rect )
 
-    def _enter(self):
+    def __enter__(self):
         # activate our viewport
         # scissor to the viewport
         # and set our gl state
@@ -120,7 +120,7 @@ class Viewport( EventDispatcher ):
         self.scissor_to_viewport()
         self.push_viewport_attributes()
 
-    def _exit(self):
+    def __exit__(self):
         # pop our gl state
         # reset our scissor
         # and reset our viewport to full size
