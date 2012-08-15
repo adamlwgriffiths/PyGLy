@@ -9,6 +9,23 @@ by Jason Costello, @jsncostello
 MeyerWeb Reset
 *******************************************************************************/
 
+.logo {
+	float: left;
+	padding: 0px;
+	margin: 5px 5px;
+	border-style: none;
+}
+
+.logo-img {
+	margin: 5px 5px;
+	border-style: none;
+	box-shadow: 0 0 0px;
+	-webkit-box-shadow: 0 0 0px;
+	-moz-box-shadow: 0 0 0px;
+	-o-box-shadow: 0 0 0px;
+	-ms-box-shadow: 0 0 0px;
+}
+
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
