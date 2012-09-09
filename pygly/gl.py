@@ -78,4 +78,31 @@ def begin( mode ):
     yield
     glEnd()
 
+@contextmanager
+def matrix_mode( mode ):
+    """Wraps glMatrixMode in a context manager,
+    providing the 'with' keyword.
+    Automatically restores the existing matrix
+    mode on exit.
+
+    For example:
+    with gl.matrix( GL_MODELVIEW ):
+        pass
+    """
+    glPushAttrib( GL_MATRIX_MODE )
+    glMatrixMode( mode )
+    yield
+    glPopAttrib()
+
+def matrix( mat ):
+    """Wraps glPushMatrix and glPopMatrix in a
+    context manager, providing the 'with' keyword.
+
+    For example:
+    with gl.matrix( world_matrix ):
+        pass
+    """
+    glPushMatrix( mat )
+    yield
+    glPopMatrix()
 
