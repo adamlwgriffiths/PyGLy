@@ -4,6 +4,7 @@
 from contextlib import contextmanager
 
 from pyglet.gl import *
+import numpy
 
 
 @contextmanager
@@ -50,8 +51,7 @@ def load_matrix( mat ):
     with load_matrix( world_matrix ):
         pass
     """
-    glPushMatrix( mat )
-
+    glPushMatrix()
     m = mat
 
     # check if the matrix is a numpy array or
