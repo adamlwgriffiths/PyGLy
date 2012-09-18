@@ -5,7 +5,6 @@
 import math
 
 import numpy
-from pyglet.gl import *
 
 from view_matrix import ViewMatrix
 from pyrr import ray

@@ -4,7 +4,6 @@
 
 import math
 
-from pyglet.gl import *
 import numpy
 
 from view_matrix import ViewMatrix
