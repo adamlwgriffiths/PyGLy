@@ -39,12 +39,6 @@ class ViewMatrix( object ):
         self._matrix = None
         self.dirty = True
 
-    def __enter__( self ):
-        self.push_view_matrix()
-
-    def __exit__( self, type, value, traceback ):
-        self.pop_view_matrix()
-
     @property
     def matrix( self ):
         """The current view matrix.
@@ -63,29 +57,6 @@ class ViewMatrix( object ):
             aspect_ratio: The new aspect ratio to set.
         """
         self.aspect_ratio = aspect_ratio
-
-    def push_view_matrix( self ):
-        """Pushes the frustrum matrix onto the projection
-        viewport.
-
-        Updates the matrix if self.dirty == True
-        Sets the glMatrixMode to GL_PROJECTION.
-        It is up to the caller to change this after calling
-        this function.
-        """
-        # setup our projection matrix
-        glMatrixMode( GL_PROJECTION )
-        glPushMatrix()
-
-        glLoadMatrixf(
-            (GLfloat * self.matrix.size)(*self.matrix.flat)
-            )
-
-    def pop_view_matrix( self ):
-        """Pops the current viewport off the matrix stack.
-        """
-        glMatrixMode( GL_PROJECTION )
-        glPopMatrix()
 
     def _update( self ):
         """Updates the matrix and sets the dirty flag to False

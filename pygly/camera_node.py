@@ -32,18 +32,6 @@ class CameraNode( SceneNode ):
         #: the camer's view matrix
         self.view_matrix = view_matrix
 
-    def __enter__( self ):
-        # apply our view matrix
-        # and push our model view
-        self.view_matrix.push_view_matrix()
-        self.push_model_view()
-
-    def __exit__( self, type, value, traceback ):
-        # pop our model view
-        # and our view matrix
-        self.pop_model_view()
-        self.view_matrix.pop_view_matrix()
-
     @property
     def model_view( self ):
         """Property for the camera's model view matrix.
@@ -72,28 +60,6 @@ class CameraNode( SceneNode ):
             )
 
         return matrix
-    
-    def push_model_view( self ):
-        """Pushes the model view matrix onto the OGL stack.
-
-        Gets the current model view matrix and set's pushes
-        it onto the OpenGL GL_MODELVIEW matrix stack.
-
-        """
-        # setup our model view matrix
-        glMatrixMode( GL_MODELVIEW )
-        glPushMatrix()
-
-        # convert to ctype for OpenGL
-        glLoadMatrixf(
-            (GLfloat * self.model_view.size)(*self.model_view.flat)
-            )
-
-    def pop_model_view( self ):
-        """Pops the model view matrix from the OGL stack.
-        """
-        glMatrixMode( GL_MODELVIEW )
-        glPopMatrix()
 
     def create_ray_from_ratio_point( self, point ):
         """Returns a ray cast from 2d camera co-ordinates
