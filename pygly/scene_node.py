@@ -61,40 +61,4 @@ class SceneNode( TreeNode ):
             new_parent.world_transform.add_child(
                 self.world_transform
                 )
-    
-    def render_debug( self ):
-        """Renders debug information to aid in visualising
-        scene graphs.
-
-        Does the following in order:
-            #. Pushes the current gl matrix.
-            #. Applies the node's translations.
-            #. Renders debug info.
-            #. Calls this method on all child nodes.
-            #. Pops the gl matrix.
-        """
-
-        #
-        # render the cube
-        #
-
-        # store the existing matrix state
-        glPushMatrix()
-
-        # apply our transforms
-        matrix = self.world_transform.matrix
-        glMultMatrixf(
-            (GLfloat * matrix.size)(*matrix.flat)
-            )
-        
-        # render some debug info
-        debug_cube.render()
-        debug_axis.render()
-
-        # undo our transforms
-        glPopMatrix()
-        
-        # continue on to our children
-        for child in self.children:
-            child.render_debug()
 
