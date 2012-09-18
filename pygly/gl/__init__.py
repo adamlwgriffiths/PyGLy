@@ -48,10 +48,10 @@ def set_scissor( rect ):
         set_scissor( rect )
     """
     glScissor(
-        int(rect[ (0,0) ]),
-        int(rect[ (0,1) ]),
-        int(rect[ (1,0) ]),
-        int(rect[ (1,1) ])
+        int(rect[ 0 ][ 0 ]),
+        int(rect[ 0 ][ 1 ]),
+        int(rect[ 1 ][ 0 ]),
+        int(rect[ 1 ][ 1 ])
         )
 
 @contextmanager
