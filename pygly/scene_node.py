@@ -20,9 +20,6 @@ from pyrr import matrix44
 from tree_node import TreeNode
 from transform import Transform
 from world_transform import WorldTransform
-import debug_cube
-import debug_axis
-
 
     
 class SceneNode( TreeNode ):

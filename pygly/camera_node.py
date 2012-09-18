@@ -12,7 +12,6 @@ from pyrr import ray
 
 from view_matrix import ViewMatrix
 from scene_node import SceneNode
-import debug_axis
 
 
 class CameraNode( SceneNode ):
