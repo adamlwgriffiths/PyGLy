@@ -20,8 +20,12 @@ def begin( mode ):
         glVertex2f( 1.0, 0.0 )
     """
     glBegin( mode )
-    yield
-    glEnd()
+    try:
+        yield
+    finally:
+        glEnd()
+
+from ctypes import byref
 
 @contextmanager
 def matrix_mode( mode ):
@@ -34,10 +38,12 @@ def matrix_mode( mode ):
     with matrix_mode( GL_MODELVIEW ):
         pass
     """
-    glPushAttrib( GL_MATRIX_MODE )
+    glPushAttrib( GL_TRANSFORM_BIT )
     glMatrixMode( mode )
-    yield
-    glPopAttrib()
+    try:
+        yield
+    finally:
+        glPopAttrib()
 
 @contextmanager
 def load_matrix( mat ):
@@ -52,6 +58,7 @@ def load_matrix( mat ):
         pass
     """
     glPushMatrix()
+
     m = mat
 
     # check if the matrix is a numpy array or
@@ -60,6 +67,9 @@ def load_matrix( mat ):
         m = mat.astype('float32').flat
 
     glLoadMatrixf( (GLfloat * len(m))(*m) )
-    yield
-    glPopMatrix()
+
+    try:
+        yield
+    finally:
+        glPopMatrix()
 
