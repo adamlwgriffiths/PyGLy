@@ -151,23 +151,6 @@ class Viewport( EventDispatcher ):
         """
         gl.set_scissor( self.rect )
 
-    def push_viewport_attributes( self ):
-        """Pushes the current OGL attributes
-        and then calls self.setup_viewport.
-        """
-        glPushAttrib( GL_ALL_ATTRIB_BITS )
-        self.setup_viewport()
-
-    def pop_viewport_attributes( self ):
-        """Pops the OGL attributes.
-
-        Called when tearing down viewport.
-
-        .. note::
-            This method mirrors 'push_viewport_attributes'
-        """
-        glPopAttrib()
-
     def setup_viewport( self ):
         """Sets the viewport rendering attributes.
         
