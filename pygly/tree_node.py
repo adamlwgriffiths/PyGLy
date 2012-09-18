@@ -123,7 +123,12 @@ class TreeNode( EventDispatcher ):
             )
 
     def dfs( self ):
-        queue = deque( list(self._children) )
+        # begin with ourself
+        queue = deque( [self] )
+
+        # pop the next node in the queue
+        # take it's children and add them to the front
+        # of the queue
         while queue:
             node = queue.pop()
             if hasattr( node, 'children' ):
@@ -131,7 +136,12 @@ class TreeNode( EventDispatcher ):
             yield node
 
     def bfs( self ):
-        queue = deque( list(self._children) )
+        # begin with ourself
+        queue = deque( [self] )
+
+        # pop the next node in the queue
+        # take it's children and add them to the end
+        # of the queue
         while queue:
             node = queue.pop()
             if hasattr( node, 'children' ):
