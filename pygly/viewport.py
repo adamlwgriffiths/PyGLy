@@ -116,18 +116,14 @@ class Viewport( EventDispatcher ):
         # activate our viewport
         # scissor to the viewport
         # and set our gl state
+        glPushAttrib( GL_ALL_ATTRIB_BITS )
         self.switch_to()
         self.scissor_to_viewport()
-        self.push_viewport_attributes()
+        self.setup_viewport()
 
     def __exit__( self, type, value, traceback ):
         # pop our gl state
-        # reset our scissor
-        # and reset our viewport to full size
-        self.pop_viewport_attributes()
-        window_rect = window.create_rectangle( self.window )
-        gl.set_scissor( window_rect )
-        gl.set_viewport( window_rect )
+        glPopAttrib()
 
     @property
     def aspect_ratio( self ):
