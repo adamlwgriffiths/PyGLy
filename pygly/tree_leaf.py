@@ -2,8 +2,6 @@
 .. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
-import weakref
-
     
 class TreeLeaf( object ):
     """Base class for Tree Leaf objects.

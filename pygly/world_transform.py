@@ -5,7 +5,6 @@ Created on 11/06/2012
 '''
 
 import sys
-import weakref
 
 import numpy
 from pyglet.event import EventDispatcher

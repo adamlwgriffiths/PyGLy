@@ -3,7 +3,6 @@
 '''
 
 import sys
-import weakref
 
 import numpy
 from pyglet.event import EventDispatcher
