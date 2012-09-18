@@ -18,8 +18,12 @@ class RenderCallbackNode( RenderNode ):
             name: The name to give the node.
             initialise_callback: The function to call when the
             node is to be initialised.
+            The function must accept a pointer to this object.
             render_callback: The function to call when the
             node is to be rendered.
+            The function must accept a pointer to this object.
+            It must also accept a **kwargs parameter which will
+            be passed from the render() method.
         Raises:
             ValueError: Raised if the render callback == None.
         """
@@ -35,13 +39,13 @@ class RenderCallbackNode( RenderNode ):
         
         # initialise the mesh now
         if self.initialise_callback != None:
-            self.initialise_callback()
+            self.initialise_callback( self )
     
     def on_context_lost( self ):
         # re-create any data for the mesh
         if self.initialise_callback != None:
-            self.initialise_callback()
+            self.initialise_callback( self )
     
-    def render_mesh( self ):
-        self.render_callback()
+    def render( self, **kwargs ):
+        self.render_callback( self, **kwargs )
         

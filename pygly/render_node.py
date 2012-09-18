@@ -25,30 +25,7 @@ class RenderNode( SceneNode ):
         """
         pass
     
-    def render( self ):
-        """Renders the scene node at it's world transform.
-        
-        Does the following:
-            #. Pushes the SceneNode's world transform onto the GL stack.
-            #. Calls render_mesh.
-            #. Pops the matrix off the GL stack.
-        """
-        # store the existing matrix state
-        glPushMatrix()
-
-        # apply our transforms
-        matrix = self.world_transform.matrix
-        glMultMatrixf(
-            (GLfloat * matrix.size)(*matrix.flat)
-            )
-        
-        # render ourself
-        self.render_mesh()
-
-        # undo our transforms
-        glPopMatrix()
-        
-    def render_mesh( self ):
+    def render( self, **kwargs ):
         """Called to render the mesh.
 
         This method is a stub and is intended to be over-ridden.
