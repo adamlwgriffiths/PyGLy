@@ -4,10 +4,9 @@ to both Core and Legacy profiles.
 .. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 """
 
-from pyglet.gl import *
-import numpy
+from contextlib import contextmanager
 
-from pyrr import rectangle
+from pyglet.gl import *
 
 
 def set_viewport( rect ):
@@ -17,6 +16,10 @@ def set_viewport( rect ):
     This call can be undone by first calling
     glPushAttrib( GL_VIEWPORT_BIT )
     and later calling glPopAttrib().
+
+    Or using the attribute context:
+    with attributes( GL_VIEWPORT_BIT ):
+        set_viewport( rect )
     """
     glViewport(
         int(rect[ 0 ][ 0 ]),
@@ -39,6 +42,10 @@ def set_scissor( rect ):
     This call can be undone by first calling
     glPushAttrib( GL_SCISSOR_BIT )
     and later calling glPopAttrib().
+
+    Or using the attribute context:
+    with attributes( GL_SCISSOR_BIT ):
+        set_scissor( rect )
     """
     glScissor(
         int(rect[ (0,0) ]),
