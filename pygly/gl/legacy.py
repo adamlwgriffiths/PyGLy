@@ -7,20 +7,6 @@ from pyglet.gl import *
 
 
 @contextmanager
-def attributes( attributes ):
-    """Wraps glPushAttrib and glPopAttrib
-    in a context manager, providing the 'with'
-    keyword.
-
-    For example:
-    with attributes( GL_VIEWPORT_BIT ):
-        glViewport( 0, 0, 100, 100 )
-    """
-    glPushAttrib( attributes )
-    yield
-    glPopAttrib()
-
-@contextmanager
 def begin( mode ):
     """Wraps glBegin and glEnd in a
     context manager, providing the 'with'

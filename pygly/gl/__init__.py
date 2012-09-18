@@ -47,3 +47,17 @@ def set_scissor( rect ):
         int(rect[ (1,1) ])
         )
 
+@contextmanager
+def attributes( attributes ):
+    """Wraps glPushAttrib and glPopAttrib
+    in a context manager, providing the 'with'
+    keyword.
+
+    For example:
+    with attributes( GL_VIEWPORT_BIT ):
+        glViewport( 0, 0, 100, 100 )
+    """
+    glPushAttrib( attributes )
+    yield
+    glPopAttrib()
+
