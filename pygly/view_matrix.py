@@ -4,8 +4,6 @@
 
 import weakref
 
-from pyglet.gl import *
-
 
 class ViewMatrix( object ):
     """Base class for View Matrix objects.
