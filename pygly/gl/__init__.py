@@ -55,7 +55,7 @@ def set_scissor( rect ):
         )
 
 @contextmanager
-def attributes( attributes ):
+def attributes( attribs ):
     """Wraps glPushAttrib and glPopAttrib
     in a context manager, providing the 'with'
     keyword.
@@ -64,7 +64,9 @@ def attributes( attributes ):
     with attributes( GL_VIEWPORT_BIT ):
         glViewport( 0, 0, 100, 100 )
     """
-    glPushAttrib( attributes )
-    yield
-    glPopAttrib()
+    glPushAttrib( attribs )
+    try:
+        yield
+    finally:
+        glPopAttrib()
 
