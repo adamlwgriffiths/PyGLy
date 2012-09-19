@@ -3,7 +3,7 @@
 .. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
-from pyglet.gl import *
+import pyglet
 
 
 def idle( self ):
