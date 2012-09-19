@@ -1,15 +1,12 @@
-'''
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
-'''
-
+"""Window management functions.
+"""
 import numpy
-
-from pyrr import rectangle
 
 
 def create_rectangle( window ):
     """Creates a rectangle object representing the window
     size in pixels.
+    The rectangle is in the format of Pyrr.rectangle.
 
     Returns:
         The size of the window in pixels represented as a
@@ -28,6 +25,8 @@ def aspect_ratio( rect ):
 
     Aspect ratio is the ratio of width to height
     a value of 2.0 means width is 2*height
+
+    The rectangle is in the format of Pyrr.rectangle.
 
     Returns:
         The aspect ratio of the rectangle.
