@@ -73,3 +73,31 @@ def load_matrix( mat ):
     finally:
         glPopMatrix()
 
+@contextmanager
+def multiply_matrix( mat ):
+    """Wraps glPushMatrix, glPopMatrix and
+    glMultMatrixf in a context manager,
+    providing the 'with' keyword.
+
+    Arrays will be loaded as 32-bit floats.
+
+    For example:
+    with multiply_matrix( world_matrix ):
+        pass
+    """
+    glPushMatrix()
+
+    m = mat
+
+    # check if the matrix is a numpy array or
+    if isinstance( mat, numpy.ndarray ):
+        # ensure we use float32s
+        m = mat.astype('float32').flat
+
+    glMultMatrixf( (GLfloat * len(m))(*m) )
+
+    try:
+        yield
+    finally:
+        glPopMatrix()
+
