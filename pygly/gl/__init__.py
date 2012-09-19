@@ -5,6 +5,7 @@ to both Core and Legacy profiles.
 """
 
 from contextlib import contextmanager
+from ctypes import string_at
 
 from pyglet.gl import *
 
@@ -69,4 +70,22 @@ def attributes( attribs ):
         yield
     finally:
         glPopAttrib()
+
+def gl_version():
+    return gl_info.get_version()
+
+def is_legacy():
+    gl_info.have_version( major = 1 )
+
+def is_core():
+    gl_info.have_version( major = 3 )
+
+def glsl_version():
+    return string_at(
+        glGetString( GL_SHADING_LANGUAGE_VERSION )
+        )
+
+def print_gl_info():
+    print "OpenGL version:", gl_info.get_version()
+    print "GLSL version:", glsl_version()
 
