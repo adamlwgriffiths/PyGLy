@@ -47,7 +47,7 @@ void main (void)
         # self.createShader(frag, GL_GEOMETRY_SHADER_EXT)
 
         # attempt to link the program
-        self.link()
+        #self.link()
 
     def createShader(self, strings, type):
         if strings == None:
@@ -121,34 +121,49 @@ void main (void)
     # upload a floating point uniform
     # this program must be currently bound
     def uniformf(self, name, *vals):
+        loc = glGetUniformLocation(self.handle, name)
+
         # check there are 1-4 values
-        if len(vals) in range(1, 5):
-            # select the correct function
-            { 1 : glUniform1f,
-                2 : glUniform2f,
-                3 : glUniform3f,
-                4 : glUniform4f
-                # retrieve the uniform location, and set
-            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+        if len(vals) not in range(1, 5):
+            raise ValueError()
+
+        # select the correct function
+        { 1 : glUniform1f,
+            2 : glUniform2f,
+            3 : glUniform3f,
+            4 : glUniform4f
+            # retrieve the uniform location, and set
+        }[len(vals)](loc, *vals)
 
     # upload an integer uniform
     # this program must be currently bound
     def uniformi(self, name, *vals):
+        loc = glGetUniformLocation(self.handle, name)
+
         # check there are 1-4 values
-        if len(vals) in range(1, 5):
-            # select the correct function
-            { 1 : glUniform1i,
-                2 : glUniform2i,
-                3 : glUniform3i,
-                4 : glUniform4i
-                # retrieve the uniform location, and set
-            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+        if len(vals) not in range(1, 5):
+            raise ValueError()
+
+        # select the correct function
+        { 1 : glUniform1i,
+            2 : glUniform2i,
+            3 : glUniform3i,
+            4 : glUniform4i
+            # retrieve the uniform location, and set
+        }[len(vals)](loc, *vals)
 
     # upload a uniform matrix
     # works with matrices stored as lists,
     # as well as euclid matrices
     def uniform_matrixf(self, name, mat):
         # obtian the uniform location
-        loc = glGetUniformLocation(self.Handle, name)
+        loc = glGetUniformLocation(self.handle, name)
         # uplaod the 4x4 floating point matrix
         glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))
+
+    def attribute( self, index, name ):
+        glBindAttribLocation(self.handle, index, name)
+
+    def frag_location( self, name, buffers = 0 ):
+        glBindFragDataLocation(self.handle, buffers, name)
+
