@@ -59,10 +59,10 @@ def gl_version():
     return gl_info.get_version()
 
 def is_legacy():
-    gl_info.have_version( major = 1 )
+    return gl_info.have_version( major = 1 )
 
 def is_core():
-    gl_info.have_version( major = 3 )
+    return gl_info.have_version( major = 3 )
 
 def glsl_version():
     return string_at(
