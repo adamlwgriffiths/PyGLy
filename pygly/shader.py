@@ -10,26 +10,6 @@ from ctypes import *
 from pyglet.gl import *
 
 class Shader:
-    default_vert = """
-void main()
-{
-    gl_Position = ftransform();
-}
-"""
-
-    default_frag = """
-varying vec3 normal, lightDir0, lightDir1, eyeVec;
-
-void main (void)
-{
-    vec4 final_color =
-    (gl_FrontLightModelProduct.sceneColor * gl_FrontMaterial.ambient) +
-    (gl_LightSource[0].ambient * gl_FrontMaterial.ambient) +
-    (gl_LightSource[1].ambient * gl_FrontMaterial.ambient);
-
-    gl_FragColor = final_color;
-}
-"""
     
     # vert, frag and geom take arrays of source strings
     # the arrays will be concattenated into one string by OpenGL
