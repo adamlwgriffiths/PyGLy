@@ -101,45 +101,62 @@ class Shader:
     # upload a floating point uniform
     # this program must be currently bound
     def uniformf(self, name, *vals):
-        loc = glGetUniformLocation(self.handle, name)
-
         # check there are 1-4 values
         if len(vals) not in range(1, 5):
             raise ValueError()
 
+        # retrieve the uniform location
+        loc = glGetUniformLocation(self.handle, name)
+
         # select the correct function
-        { 1 : glUniform1f,
-            2 : glUniform2f,
-            3 : glUniform3f,
-            4 : glUniform4f
-            # retrieve the uniform location, and set
-        }[len(vals)](loc, *vals)
+        func = {
+            1:  glUniform1f,
+            2:  glUniform2f,
+            3:  glUniform3f,
+            4:  glUniform4f
+            }[len(vals)]
+
+        func(loc, *vals)
 
     # upload an integer uniform
     # this program must be currently bound
     def uniformi(self, name, *vals):
-        loc = glGetUniformLocation(self.handle, name)
-
         # check there are 1-4 values
         if len(vals) not in range(1, 5):
             raise ValueError()
 
+        # retrieve the uniform location
+        loc = glGetUniformLocation(self.handle, name)
+
         # select the correct function
-        { 1 : glUniform1i,
-            2 : glUniform2i,
-            3 : glUniform3i,
-            4 : glUniform4i
-            # retrieve the uniform location, and set
-        }[len(vals)](loc, *vals)
+        func = {
+            1:  glUniform1i,
+            2:  glUniform2i,
+            3:  glUniform3i,
+            4:  glUniform4i
+            }[len(vals)]
+
+        func(loc, *vals)
 
     # upload a uniform matrix
     # works with matrices stored as lists,
     # as well as euclid matrices
     def uniform_matrixf(self, name, mat):
+        # we support 2x2, 3x3, 4x4
+        if len(mat) not in (4, 8, 16):
+            raise ValueError()
+
         # obtian the uniform location
         loc = glGetUniformLocation(self.handle, name)
+
         # uplaod the 4x4 floating point matrix
-        glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))
+        func = {
+            4:  glUniformMatrix2fv,
+            8:  glUniformMatrix3fv,
+            16: glUniformMatrix4fv,
+            }[len(mat)]
+
+        func(loc, 1, False, (c_float * len(mat))(*mat))
 
     def attribute( self, index, name ):
         glBindAttribLocation(self.handle, index, name)
