@@ -252,6 +252,12 @@ class Viewport( EventDispatcher ):
         """
         return rectangle.top( self.rect )
 
+    def __getitem__( self, key ):
+        """Allow the viewport to be accessed as if
+        it is an array
+        """
+        return self.rect[ key ]
+
     # document our events
     if hasattr( sys, 'is_epydoc' ):
         def on_viewport_resize( rect ):
