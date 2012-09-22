@@ -71,8 +71,8 @@ class RatioViewport( Viewport ):
         window_rect = pygly.window.create_rectangle( self.window )
 
         # calculate our viewport size
-        rect = window_rect.view( dtype = numpy.float ) * self.ratio
-        self.rect = rect.view( dtype = numpy.int )
+        rect = window_rect.astype( numpy.float ) * self.ratio
+        self.rect = rect.astype( numpy.int )
 
     @property
     def ratio( self ):
