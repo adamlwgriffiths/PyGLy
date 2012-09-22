@@ -67,12 +67,15 @@ class RatioViewport( Viewport ):
             renderable area.
         """
         # update our pixel size
-        # find our window's dimensions
-        window_rect = pygly.window.create_rectangle( self.window )
-
         # calculate our viewport size
-        rect = window_rect.astype( numpy.float ) * self.ratio
-        self.rect = rect.astype( numpy.int )
+        dimensions = numpy.array(
+            [width, height],
+            dtype = numpy.float
+            )
+        self.rect[:] = [
+            (dimensions * self.ratio[ 0 ]).astype( numpy.int ),
+            (dimensions * self.ratio[ 1 ]).astype( numpy.int )
+            ]
 
     @property
     def ratio( self ):
