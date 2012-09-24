@@ -16,7 +16,6 @@ from cocos.layer.base_layers import Layer as CocosLayer
 from cocos.director import director
 from pyglet.gl import *
 
-import pygly.viewport
 import pygly.window
 
 
@@ -49,9 +48,8 @@ class Layer( CocosLayer ):
         Apply the model view transform for the camera
         """
         if self.pygly_camera:
-            # TODO: convert this to a simple 'model_view'
-            # call with no pushing
-            self.pygly_camera.push_model_view()
+            glMatrixMode( GL_MODELVIEW )
+            glLoadMatrix( self.pygly_camera.model_view )
 
     def draw(self, *args, **kwargs):
         """
