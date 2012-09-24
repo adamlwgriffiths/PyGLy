@@ -12,14 +12,14 @@ get '1 pixel' accuracy as cocos works on
 a pixel scale.
 '''
 
-from cocos.layer.base_layers import Layer as CocosLayer
+from cocos.layer.base_layers import Layer as Layer
 from cocos.director import director
 from pyglet.gl import *
 
 import pygly.window
 
 
-class Layer( CocosLayer ):
+class PyGLyLayer( Layer ):
     """
     Provides a Cocos2D layer which renders a PyGLy scene.
     """
@@ -27,21 +27,12 @@ class Layer( CocosLayer ):
     def __init__(
         self,
         camera = None,
-        render_callback = None,
-        viewport_rect = None
+        render_callback = None
         ):
-        super( CocosLayer, self ).__init__()
+        super( PyGLyLayer, self ).__init__()
 
         self.pygly_camera = camera
         self.render_callback = render_callback
-        self.pygly_viewport = viewport_rect
-
-        # create a default viewport that
-        # stretches the entire screen
-        if viewport_rect == None:
-            self.pygly_viewport = pygly.window.create_rectangle(
-                director.window
-                )
 
     def transform( self ):
         """
@@ -57,9 +48,10 @@ class Layer( CocosLayer ):
 
         This is called by Cocos2D Director.
         """
-        super( CocosLayer, self ).draw( *args, **kwargs )
+        print 'layer draw'
+        super( PyGLyLayer, self ).draw( *args, **kwargs )
 
         # render the scene
         if self.render_callback:
-            self.render_callback( self )
+            self.render_callback( self, *args, **kwargs )
 
