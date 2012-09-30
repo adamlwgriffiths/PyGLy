@@ -1,58 +1,507 @@
 """
+http://www.opengl.org/sdk/docs/man3/
 http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
+http://www.opengl.org/sdk/docs/man3/xhtml/glBindTexture.xml
 http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+http://www.opengl.org/sdk/docs/man3/xhtml/glTexImage2D.xml
 http://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
+http://www.opengl.org/sdk/docs/man3/xhtml/glTexParameter.xml
 """
 
 import numpy
 from pygly.gl import *
 from PIL import Image
+from ctypes import *
 
 from collections import namedtuple
 
 
+def opengl_enum_to_type( enum ):
+    """Converts an OpenGL type enumeration
+    into an actual OpenGL data type.
+    """
+    return {
+        GL_BYTE:            GLbyte,
+        GL_UNSIGNED_BYTE:   GLubyte,
+        GL_SHORT:           GLshort,
+        GL_UNSIGNED_SHORT:  GLushort,
+        GL_INT:             GLint,
+        GL_UNSIGNED_INT:    GLuint,
+        GL_FLOAT:           GLfloat,
+        GL_DOUBLE:          GLdouble,
+        }[ enum ]
+
+def set_properties( target, properties ):
+    """Convenience function that calls any array of
+    specified functions with the specified data.
+
+    Target is the texture target type.
+    Eg. GL_TEXTURE_2D.
+
+    Properties is a list of triples.
+    The format of these is:
+        function, parameter, value
+
+    The purpose of this function is to call
+    glTexParameteri, glTexParameterf,
+    glTexParameterfv, glTexParameteriv, glTexParameterIiv,
+    and glTexParameterIuiv.
+
+    This is used by some functions because it is more
+    efficient to call this before loading the texture
+    data, but after texture creation.
+
+    The most common reason for this is to pass
+    (at the least) the minification and magnification
+    parameters during texture creation.
+
+    For example:
+    set_properties(
+        GL_TEXTURE_2D,
+        [
+            (glTexParameteri, GL_TEXTURE_MIN_FILTER, GL_LINEAR),
+            (glTexParameteri, GL_TEXTURE_MAX_FILTER, GL_LINEAR),
+            ]
+        )
+
+    A list of OpenGL functions and properties can
+    be found here:
+    http://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
+    http://www.opengl.org/sdk/docs/man3/xhtml/glTexParameter.xml
+    """
+    for function, property, values in properties:
+        if type(values) is not list:
+            values = list([values])
+        function( target, property, *values )
+
+
+class ArrayTexture( object ):
+
+    def __init__( self, data ):
+        super( ArrayTexture, self ).__init__()
+
+        # store the data as a numpy array
+        self.data = numpy.array( data )
+
+    def create_texture_2d(
+        self,
+        target = GL_TEXTURE_2D,
+        properties = None,
+        level = 0,
+        border = False,
+        internal_format = None,
+        format = None,
+        swizzle = None
+        ):
+        """Uses the loaded PIL image to create
+        a 2D texture.
+        This creates a texture using the
+        set_texture_2D method but creates the
+        texture and binds and unbinds it for you.
+
+        This will create a new texture each time
+        this function is called.
+        """
+        # create the texture
+        texture = Texture( target )
+        texture.bind()
+
+        # set our texture data
+        self.set_texture_2d(
+            target,
+            properties,
+            level,
+            border,
+            internal_format,
+            format,
+            swizzle
+            )
+
+        # unbind
+        texture.unbind()
+
+        return texture
+
+    def set_texture_2d(
+        self,
+        target = GL_TEXTURE_2D,
+        properties = None,
+        level = 0,
+        border = False,
+        internal_format = None,
+        format = None,
+        swizzle = None
+        ):
+        """Sets the data of the currently bound
+        texture to this image.
+        This calls glTexImage2D.
+
+        data: The texture data to load as a list or numpy array.
+            The shape of the data will determine if
+            it is treated as a 1d, 2d or 3d array.
+            The data must have a shape of either,
+            1, 2 or 3 dimensions.
+        level: Specifies the mip level the data is being set for.
+        border: Specifies if the texture is to use a border.
+
+        target: Specifies the image target type.
+            Valid values are:
+            GL_TEXTURE_2D,
+            GL_PROXY_TEXTURE_2D,
+            GL_TEXTURE_1D_ARRAY,
+            GL_PROXY_TEXTURE_1D_ARRAY,
+            GL_TEXTURE_RECTANGLE,
+            GL_PROXY_TEXTURE_RECTANGLE,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+            GL_PROXY_TEXTURE_CUBE_MAP
+
+        internal_format: Specifies the format the data
+            is stored in.
+            Leave as None to auto-detect.
+            Auto detection will specify the following
+            depending on the number of
+            channels:
+            1: GL_RED,
+            2: GL_RG,
+            3: GL_RGB,
+            4: GL_RGBA.
+            If the detected type is GL_FLOAT,
+            the auto-detection will change to the following:
+            1: GL_RED32F,
+            2: GL_R32F,
+            3: GL_RBG32F,
+            4: GL_RGBA32F.
+
+        format: The format the is to be used for.
+            This must correlate to both the type,
+            and internal format.
+            This is usually GL_RGB or GL_RGBA.
+            Leave as None to auto-detect.
+            Auto detection will specify the following
+            depending on the number of channels:
+            1: GL_RED,
+            3: GL_RGB,
+            4: GL_RGBA.
+        type: Specifies the data type used.
+            This must correlate to both the format
+            and internal format.
+            Leave as None to auto-detect.
+            Auto detection will specify the following
+            depending on the data type:
+            uint8:      GL_UNSIGNED_BYTE
+            int8:       GL_BYTE
+            uint16:     GL_UNSIGNED_SHORT
+            int16:      GL_SHORT
+            uint32:     GL_UNSIGNED_INT
+            int32:      GL_INT
+            float32:    GL_FLOAT
+            float64:    GL_DOUBLE
+        """
+        # set our opengl texture properties
+        # we do this now so the driver can convert the
+        # data as it loads, rather than afterwards.
+        set_properties( target, properties )
+
+        # determine our texture type first
+        # we use this later in the loading process
+        #_type_enum = type if type else ArrayTexture.numpy_to_type( self.data )
+        _type_enum = ArrayTexture.numpy_to_type( self.data )
+
+        _type_obj = opengl_enum_to_type( _type_enum )
+
+        _internal_format = internal_format if internal_format else ArrayTexture.numpy_to_internal_format( self.data, _type_enum )
+
+        _format = format if format else ArrayTexture.numpy_to_format( self.data )
+
+        _border = 0 if not border else 1
+
+        if swizzle != None:
+            # set our texture swizzle if one was passed
+            swizzle = (GLint * 4)(*swizzle)
+            glTexParameteriv(
+                target,
+                GL_TEXTURE_SWIZZLE_RGBA,
+                swizzle
+                )
+
+        # construct our function args
+        # the only difference between glTexImage1D/2D/3D
+        # is the addition of extra size dimensions
+        # we will dynamically add these to the middle
+        # of the parameter list
+        glTexImage2D(
+            target,
+            level,
+            _internal_format,
+            self.data.shape[ 0 ],
+            self.data.shape[ 1 ],
+            _border,
+            _format,
+            _type_enum,
+            (_type_obj * self.data.size)(*self.data.flat)
+            )
+
+    @staticmethod
+    def numpy_to_internal_format( data, type ):
+        if type == GL_FLOAT:
+            # check if we've got float textures
+            return {
+                1:  GL_RED32F,
+                2:  GL_RG32F,
+                3:  GL_RGB32F,
+                4:  GL_RGBA32F,
+                }[ data.shape[ -1 ] ]
+        elif type == GL_HALF_FLOAT:
+            return {
+                1:  GL_RED16F,
+                2:  GL_RG16F,
+                3:  GL_RGB16F,
+                4:  GL_RGBA16F,
+                }[ data.shape[ -1 ] ]
+        else:
+            # standard textures
+            return {
+                1:  GL_RED,
+                2:  GL_RG,
+                3:  GL_RGB,
+                4:  GL_RGBA,
+                }[ data.shape[ -1 ] ]
+
+    @staticmethod
+    def numpy_to_format( data ):
+        return {
+            1:  GL_RED,
+            2:  GL_RG,
+            3:  GL_RGB,
+            4:  GL_RGBA,
+            }[ data.shape[ -1 ] ]
+
+    @staticmethod
+    def numpy_to_type( data ):
+        return {
+            numpy.dtype('int8'):    GL_BYTE,
+            numpy.dtype('uint8'):   GL_UNSIGNED_BYTE,
+            numpy.dtype('int16'):   GL_SHORT,
+            numpy.dtype('uint16'):  GL_UNSIGNED_SHORT,
+            numpy.dtype('int32'):   GL_INT,
+            numpy.dtype('uint32'):  GL_UNSIGNED_INT,
+            numpy.dtype('float32'): GL_FLOAT,
+            #numpy.dtype('float64'): GL_DOUBLE,
+            numpy.dtype('float64'): GL_FLOAT,
+            }[ data.dtype ]
+
+
+class PIL_Texture( object ):
+    
+    def __init__( self, image ):
+        super( PIL_Texture, self ).__init__()
+
+        self.image = image
+
+        # some TIFF images don't render correctly
+        # if we convert them to RGBX they suddenly
+        # begin rendering correctly
+        # so let's do that
+        # some TIFF images can't be converted
+        # this may throw an IOError exception
+        if self.image.format == 'TIFF':
+            self.image = self.image.convert('RGBX')
+
+        # handle unsupported formats
+        if \
+            self.image.mode == 'P' or \
+            self.image.mode == 'CMYK' or \
+            self.image.mode == 'YCbCr':
+            # handle unsupported texture formats
+            # convert from unsupported formats to RGBX
+            self.image = self.image.convert('RGBX')
+
+        # flip the image
+        # PIL loads images upside down to OpenGL
+        self.image = self.image.transpose(
+            Image.FLIP_TOP_BOTTOM
+            )
+
+    def setup_swizzle( self, target ):
+        """Sets up some OpenGL state for the image
+        that is required to load correctly.
+        This is called after the texture is bound
+        but before the data is loaded.
+        """
+        # some formats need conversion or
+        # special opengl parameters to load correctly
+        if \
+            self.image.mode == 'L' or \
+            self.image.mode == 'I' or \
+            self.image.mode == 'F':
+            # GL_LUMINANCE is deprecated
+            # we need to provide a swizzle to
+            # tell OpenGL how to read the data
+            # http://stackoverflow.com/questions/9355869/invalid-enumerant-when-creating-16-bit-texture
+            # http://www.opengl.org/wiki/Texture#Swizzle_mask
+            # luminance uses the one value for all
+            # RGB channels and 1.0 for alpha.
+            swizzle = (GLint * 4)(GL_RED, GL_RED, GL_RED, GL_ONE)
+            glTexParameteriv(
+                target,
+                GL_TEXTURE_SWIZZLE_RGBA,
+                swizzle
+                )
+        elif self.image.mode == 'LA':
+            # GL_LUMINANCE_ALPHA is also deprecated
+            # perform a swizzle, but preserve the alpha value
+            # luminance Alpha uses the first value for all
+            # RGB channels and the second for the alpha.
+            swizzle = (GLint * 4)(GL_RED, GL_RED, GL_RED, GL_GREEN)
+            glTexParameteriv(
+                target,
+                GL_TEXTURE_SWIZZLE_RGBA,
+                swizzle
+                )
+
+    @property
+    def opengl_enums( self ):
+        """Returns the OpenGL enumerations for the
+        PIL image mode.
+        """
+        mode = self.image.mode
+
+        # treat RGBX and RGBa as RGBA
+        if mode == 'RGBX' or mode == 'RGBa':
+            mode = 'RGBA'
+
+        return {
+            'RGB':  (
+                GL_UNSIGNED_BYTE,       # type
+                GL_RGB,                 # format
+                GL_RGB8,                # internal format
+                ),
+            'RGBA': (
+                GL_UNSIGNED_BYTE,       # type
+                GL_RGBA,                # format
+                GL_RGBA8,               # internal format
+                ),
+            'L':    (
+                GL_UNSIGNED_BYTE,       # type
+                GL_RED,                 # format
+                GL_RGBA,                # internal format
+                ),
+            'LA':   (
+                GL_UNSIGNED_BYTE,       # type
+                GL_RG,                  # format
+                GL_RGBA,                # internal format
+                ),
+            'F':    (
+                GL_FLOAT,               # type
+                GL_RGB,                 # format
+                GL_RGB32F,              # internal format
+                ),
+            'I':    (
+                GL_INT,                 # type
+                GL_RGB,                 # format
+                GL_RGB32I,              # internal format
+                ),
+            }[ mode ]
+
+    def create_texture_2d(
+        self,
+        target = GL_TEXTURE_2D,
+        properties = None,
+        level = 0,
+        border = False
+        ):
+        """Uses the loaded PIL image to create
+        a 2D texture.
+        This creates a texture using the
+        set_texture_2D method but creates the
+        texture and binds and unbinds it for you.
+
+        This will create a new texture each time
+        this function is called.
+        """
+        # create the texture
+        texture = Texture( target )
+        texture.bind()
+
+        # set our texture data
+        self.set_texture_2d( target, properties, level, border )
+
+        # unbind
+        texture.unbind()
+
+        return texture
+
+    def set_texture_2d(
+        self,
+        target = GL_TEXTURE_2D,
+        properties = None,
+        level = 0,
+        border = False
+        ):
+        """Sets the data of the currently bound
+        texture to this image.
+        This calls glTexImage2D.
+        """
+        # set our opengl texture properties
+        # we do this now so the driver can convert the
+        # data as it loads, rather than afterwards.
+        set_properties( target, properties )
+
+        # determine what type of texture we're loading
+        _type, _format, _internal_format = self.opengl_enums
+        _type_obj = opengl_enum_to_type( _type )
+        _border = 0 if not border else 1
+
+        # perform any opengl conversion that we need
+        # for this image format
+        self.setup_swizzle( target )
+
+        # set data
+        glTexImage2D(
+            target,
+            level,
+            _internal_format,
+            self.image.size[ 0 ],
+            self.image.size[ 1 ],
+            _border,
+            _format,
+            _type,
+            self.image.tostring()
+            )
+
+
 class Texture( object ):
-    """
-    Once the texture object is created, data must
-    be loaded into it.
-    There are a number of data loading methods to
-    suit your needs.
+    """Provides a convenience wrapper around
+    the glGenTexture and glBindTexture functions.
 
-    Once data is loaded, you __MUST__ set the
-    GL_TEXTURE_MAG_FILTER and GL_TEXTURE_MIN_FILTER
-    parameters or the texture will NOT render!
-    Wrappers for this are not provided.
-    Simple bind the texture and call the appopriate
-    GL functions.
-
-    Ie:
-    data = numpy.random.random_integers( 120, 255, (32,32,3) )
-    texture = Texture()
-    texture.data( data.astype('uint8') )
-    texture.bind()
-    glTexParameteri(            texture.target,
-        GL_TEXTURE_MIN_FILTER,
-        GL_LINEAR
-        )
-    glTexParameteri(            texture.target,
-        GL_TEXTURE_MAG_FILTER,
-        GL_LINEAR
-        )
-    texture.unbind()
+    You __MUST__ set the GL_TEXTURE_MAG_FILTER
+    and GL_TEXTURE_MIN_FILTER parameters or the
+    texture will NOT render!
+    It is recommended, for performance reasons, to
+    set any texture properties before loading the data
+    so the driver doesn't have to re-format data
+    after loading.
     """
 
-    def __init__( self ):
-        """If you wish to bind the texture prior to loading
-        and data, you MUST set texture.target to an
-        appropriate value as it is required for the bind call.
-        texture.target is the 'target' parameter passed to the
-        'glBindTexture( target, id )' function.
+    def __init__( self, target ):
+        """Creates a Texture object of the
+        specified type.
+
+        This class will call glGenTextures and
+        create a texture ID which is accessible
+        through the 'texture' property.
+
+        The texture will be freed when this
+        object is deleted.
         """
         super( Texture, self ).__init__()
 
-        self.size = None
-        self.unit = GL_TEXTURE0
-        self.target = None
+        self.target = target
 
         self.texture = (GLuint)()
         glGenTextures( 1, self.texture )
@@ -64,391 +513,9 @@ class Texture( object ):
             glDeleteTextures( 1, texture )
 
     def bind( self ):
-        glActiveTexture( self.unit )
         glBindTexture( self.target, self.texture )
 
     def unbind( self ):
-        glActiveTexture( self.unit )
         glBindTexture( self.target, 0 )
 
-    def pil_data_convert( self, image, level = 0, border = 0, format = None ):
-        """Sets the data for the currently bound texture using a PIL image.
-        The PIL data is converted to the specified format.
-        """
-        channels = {
-            GL_COLOR_INDEX:     1,
-            GL_RED:             1,
-            GL_GREEN:           1,
-            GL_BLUE:            1,
-            GL_ALPHA:           1,
-            GL_RGB:             3,
-            GL_BGR:             3,
-            GL_RGBA:            4,
-            GL_BGRA:            4,
-            GL_LUMINANCE:       1,
-            GL_LUMINANCE_ALPHA: 2,
-            }
-        mode = {
-            GL_COLOR_INDEX:     None,
-            GL_RED:             None,
-            GL_GREEN:           None,
-            GL_BLUE:            None,
-            GL_ALPHA:           None,
-            GL_RGB:             'RGB',
-            GL_BGR:             'RGB',
-            GL_RGBA:            'RGBA',
-            GL_BGRA:            'RGBA',
-            GL_LUMINANCE:       'L',
-            GL_LUMINANCE_ALPHA: 'LA',
-            }[ format ]
 
-        # ensure we have enough data for this format
-        if channels != image.bands:
-            # check if we're just adding an alpha component
-            if channels == 4 and image.bands == 3:
-                # just add an alpha
-                mode = 'RGBX'
-            else:
-                raise ValueError( 'Image format incompatible with requested format' )
-
-        # convert the image
-        image = image.convert( mode )
-
-        # extract the data
-        data = image.tostring()
-
-        # manipulate the channels if required
-        if format == GL_BGR:
-            data.shape = (-1,4)
-            data[:,] = data[:,-1]
-        elif format == GL_BGRA:
-            data.shape = (-1,4)
-            data[:,:3] = data[:,3:0]
-
-        # TODO:
-
-    def pil_data( self, image, level = 0, border = 0 ):
-        """Sets the data for the currently bound texture using a PIL image.
-        The data types are set based on the PIL format.
-        """
-        """
-        http://www.pythonware.com/library/pil/handbook/image.htm
-        http://www.pythonware.com/library/pil/handbook/concepts.htm
-
-        1 (1-bit pixels, black and white, stored with one pixel per byte)
-        L (8-bit pixels, black and white)
-        P (8-bit pixels, mapped to any other mode using a colour palette)
-        RGB (3x8-bit pixels, true colour)
-        RGBA (4x8-bit pixels, true colour with transparency mask)
-        CMYK (4x8-bit pixels, colour separation)
-        YCbCr (3x8-bit pixels, colour video format)
-        I (32-bit signed integer pixels)
-        F (32-bit floating point pixels)
-        """
-        mode = image.mode
-        pass
-
-    def data(
-        self,
-        data,
-        level = 0,
-        border = False,
-        target = None,
-        internal_format = None,
-        format = None,
-        type = None
-        ):
-        """Sets the data for the currently bound texture.
-
-        data: The texture data to load as a list or numpy array.
-            The shape of the data will determine if it is treated as a
-            1d, 2d or 3d array.
-            The data must have a shape of either, 1, 2 or 3 dimensions.
-        level: Specifies the mip level the data is being set for.
-        border: Specifies if the texture is to use a border.
-        internal_format: Specifies the format the data is stored in.
-            Leave as None to auto-detect.
-            Valid values are:
-            GL_ALPHA, GL_ALPHA4, GL_ALPHA8, GL_ALPHA12, GL_ALPHA16,
-            GL_COMPRESSED_ALPHA, GL_COMPRESSED_LUMINANCE,
-            GL_COMPRESSED_LUMINANCE_ALPHA, GL_COMPRESSED_INTENSITY,
-            GL_COMPRESSED_RGB, GL_COMPRESSED_RGBA, GL_DEPTH_COMPONENT,
-            GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24,
-            GL_DEPTH_COMPONENT32, GL_LUMINANCE, GL_LUMINANCE4,
-            GL_LUMINANCE8, GL_LUMINANCE12, GL_LUMINANCE16,
-            GL_LUMINANCE_ALPHA, GL_LUMINANCE4_ALPHA4,
-            GL_LUMINANCE6_ALPHA2, GL_LUMINANCE8_ALPHA8,
-            GL_LUMINANCE12_ALPHA4, GL_LUMINANCE12_ALPHA12,
-            GL_LUMINANCE16_ALPHA16, GL_INTENSITY, GL_INTENSITY4,
-            GL_INTENSITY8, GL_INTENSITY12, GL_INTENSITY16, GL_R3_G3_B2,
-            GL_RGB, GL_RGB4, GL_RGB5, GL_RGB8, GL_RGB10, GL_RGB12,
-            GL_RGB16, GL_RGBA, GL_RGBA2, GL_RGBA4, GL_RGB5_A1, GL_RGBA8,
-            GL_RGB10_A2, GL_RGBA12, GL_RGBA16, GL_SLUMINANCE, GL_SLUMINANCE8,
-            GL_SLUMINANCE_ALPHA, GL_SLUMINANCE8_ALPHA8, GL_SRGB, GL_SRGB8,
-            GL_SRGB_ALPHA, GL_SRGB8_ALPHA8.
-            Leave as None to auto-detect.
-            Auto detection will specify the following depending on the number of
-            channels:
-            1: GL_RED,
-            3: GL_RGB,
-            4: GL_RGBA.
-            If the specified type is GL_HALF_FLOAT, the auto-detection will change to
-            the following:
-            1: GL_REDF16,
-            3: GL_RBGF16,
-            4: GL_RGBAF16.
-            If the specified type is GL_FLOAT, the auto-detection will change to
-            the following:
-            1: GL_REDF32,
-            3: GL_RBGF32,
-            4: GL_RGBAF32.
-        format: The format the is to be used for. This must correlate to
-            both the type, and internal format.
-            This is usually GL_RGB or GL_RGBA.
-            Valid values are:
-            GL_COLOR_INDEX, GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_RGB, GL_BGR,
-            GL_RGBA, GL_BGRA, GL_LUMINANCE, GL_LUMINANCE_ALPHA.
-            Leave as None to auto-detect.
-            Auto detection will specify the following depending on the number of
-            channels:
-            1: GL_RED,
-            3: GL_RGB,
-            4: GL_RGBA.
-        type: Specifies the data type used.
-            This must correlate to both the format and internal format.
-            Valid values are:
-            GL_UNSIGNED_BYTE, GL_BYTE, GL_BITMAP, GL_UNSIGNED_SHORT, GL_SHORT,
-            GL_UNSIGNED_INT, GL_INT, GL_FLOAT, GL_UNSIGNED_BYTE_3_3_2,
-            GL_UNSIGNED_BYTE_2_3_3_REV, GL_UNSIGNED_SHORT_5_6_5,
-            GL_UNSIGNED_SHORT_5_6_5_REV, GL_UNSIGNED_SHORT_4_4_4_4,
-            GL_UNSIGNED_SHORT_4_4_4_4_REV, GL_UNSIGNED_SHORT_5_5_5_1,
-            GL_UNSIGNED_SHORT_1_5_5_5_REV, GL_UNSIGNED_INT_8_8_8_8,
-            GL_UNSIGNED_INT_8_8_8_8_REV, GL_UNSIGNED_INT_10_10_10_2,
-            GL_UNSIGNED_INT_2_10_10_10_REV.
-            Leave as None to auto-detect.
-            Auto detection will specify the following depending on the data type:
-            uint8:
-            int8:
-            uint16:
-            int16:
-            uint32:
-            int32:
-            float32:    GL_FLOAT
-            float64:
-        """
-        np_data = numpy.array( data )
-
-        # determine what target we need
-        _target = target if target else numpy_to_target( np_data )
-
-        glActiveTexture( self.unit )
-        glBindTexture( _target, self.texture )
-
-        # determine which texture type were setting
-        # we determine this based on the number of dimensions
-        # this must match self.target set in the constructor.
-        # we need to take into account that the
-        # final dimension is the colours
-        func = {
-            1:  glTexImage1D,
-            2:  glTexImage2D,
-            3:  glTexImage3D,
-            }[ np_data.ndim - 1 ]
-
-        # determine our texture type first
-        # we use this later in the loading process
-        _type = type if type else numpy_to_type( np_data )
-        _type_enum, _type_obj = _type[ 0 ], _type[ 1 ]
-
-        _internal_format = internal_format if internal_format else numpy_to_internal_format( np_data, _type_enum )
-        _format = format if format else numpy_to_format( np_data )
-        _border = 0 if not border else 1
-        _size = list(np_data.shape)[:-1]
-
-        # construct our function args
-        # the only difference between glTexImage1D/2D/3D
-        # is the addition of extra size dimensions
-        # we will dynamically add these to the middle
-        # of the parameter list
-        params = [
-            _target,
-            level,
-            _internal_format ] + \
-            _size + [ \
-            _border,
-            _format,
-            _type_enum,
-            (_type_obj * np_data.size)(*np_data.flat)
-            ]
-
-        # call opengl to set our data
-        func( *params )
-
-        # store our data
-        self.target = _target
-        self.size = np_data.shape[ :-1 ]
-
-        glActiveTexture( self.unit )
-        glBindTexture( _target, 0 )
-
-def numpy_to_target( data ):
-    # we need to take into account that the
-    # final dimension is the colours
-    return {
-        1:  GL_TEXTURE_1D,
-        2:  GL_TEXTURE_2D,
-        3:  GL_TEXTURE_3D,
-        }[ data.shape[ -1 ] - 1 ]
-
-def numpy_to_internal_format( data, type ):
-    if type == GL_FLOAT:
-        # check if we've got float textures
-        return {
-            1:  GL_REDF32,
-            3:  GL_RGBF32,
-            4:  GL_RGBAF32,
-            }[ data.shape[ -1 ] ]
-    elif type == GL_HALF_FLOAT:
-        return {
-            1:  GL_REDF16,
-            3:  GL_RGBF16,
-            4:  GL_RGBAF16,
-            }[ data.shape[ -1 ] ]
-    else:
-        # standard textures
-        return {
-            1:  GL_RED,
-            3:  GL_RGB,
-            4:  GL_RGBA,
-            }[ data.shape[ -1 ] ]
-
-def numpy_to_format( data ):
-    return {
-        1:  GL_RED,
-        3:  GL_RGB,
-        4:  GL_RGBA,
-        }[ data.shape[ -1 ] ]
-
-def numpy_to_type( data ):
-    return {
-        numpy.dtype('int8'):    (GL_BYTE, GLbyte),
-        numpy.dtype('uint8'):   (GL_UNSIGNED_BYTE, GLubyte),
-        numpy.dtype('int16'):   (GL_SHORT, GLshort),
-        numpy.dtype('uint16'):  (GL_UNSIGNED_SHORT, GLushort),
-        numpy.dtype('int32'):   (GL_INT, GLint),
-        numpy.dtype('uint32'):  (GL_UNSIGNED_INT, GLuint),
-        numpy.dtype('float32'): (GL_FLOAT, GLfloat),
-        numpy.dtype('float64'): (GL_DOUBLE, GLdouble),
-        }[ data.dtype ]
-
-
-
-"""
-
-    @classmethod
-    def create( cls, data, width, height, format = GL_RGBA ):
-        pass
-
-    @classmethod
-    def open( cls, filename, format = GL_RGBA ):
-        # open the file
-        im = Image.open( filename )
-        width, height = im.size
-        # convert to the requested format
-        #im.convert( pil_format )
-        return cls.create( im.tostring(), width, height, format )
-
-
-
-
-
-
-
-
-class Texture2D( Texture ):
-
-    def __init__( self ):
-        super( Texture2D, self ).__init__( GL_TEXTURE_2D )
-
-    @property
-    def width( self ):
-        if not self.dimensions:
-            return None
-        return self.dimensions[ 0 ]
-
-    @property
-    def height( self ):
-        if not self.dimensions:
-            return None
-        return self.dimensions[ 1 ]
-
-    def set_data( self, data, width, height, level = 0, border = False ):
-        with self:
-            glTexImage2D(
-                self.target,        # texture type
-                level,              # mip level
-                pass,               # internal data format
-                width,              # width
-                height,             # height
-                0 if border == False else 1,    # border
-                pass,               # format (channel format)
-                pass,               # type (data type)
-                data                # data
-                )
-
-            # store the dimensions
-            self.dimensions = (width, height)
-
-
-
-
-    Type = namedtuple(
-        'types',
-        [
-            'type',
-            'enum',
-            ]
-        )
-
-    InternalFormat = namedtuple(
-        'internal_format',
-        [
-            ],
-        )
-
-    Format = namedtuple(
-        'internal_format',
-        [
-            ],
-        )
-
-    types = {
-        'byte':     Type( GLubyte, GL_UNSIGNED_BYTE ),
-        'short':    Type( GLushort, GL_UNSIGNED_SHORT ),
-        'float':    Type( GLfloat, GL_FLOAT ),
-        }
-
-    internal_formats = {
-        1:          GL_RED,
-        2:          GL_RG,
-        3:          GL_RGB,
-        4:          GL_RGBA,
-        'rgb':      GL_RGB,
-        'rgba':     GL_RGBA,
-        }
-
-    formats = {
-        #GL_COLOR_INDEX,
-        GL_RED,
-        GL_GREEN,
-        GL_BLUE,
-        GL_ALPHA,
-        GL_RGB,
-        GL_BGR,
-        GL_RGBA,
-        GL_BGRA,
-        GL_LUMINANCE,
-        GL_LUMINANCE_ALPHA,
-        }
-
-"""
