@@ -137,10 +137,13 @@ class RawImage( object ):
         This calls glTexImage2D.
 
         data: The texture data to load as a list or numpy array.
-            The shape of the data will determine if
-            it is treated as a 1d, 2d or 3d array.
-            The data must have a shape of either,
-            1, 2 or 3 dimensions.
+            The shape of the array is important.
+            If format auto-detection is used, it is important
+            that the last dimension is the size of the number
+            of channels.
+            Ie, for a luminance texture, do not send an array
+            of shape (32,32).
+            Instead, send an array of shape (32,32,1)
         level: Specifies the mip level the data is being set for.
         border: Specifies if the texture is to use a border.
 
@@ -182,11 +185,15 @@ class RawImage( object ):
             and internal format.
             This is usually GL_RGB or GL_RGBA.
             Leave as None to auto-detect.
+            Auto-detection is based upon the size of
+            the last dimension of the array.
             Auto detection will specify the following
             depending on the number of channels:
             1: GL_RED,
+            2: GL_RG,
             3: GL_RGB,
             4: GL_RGBA.
+
         type: Specifies the data type used.
             This must correlate to both the format
             and internal format.
