@@ -34,10 +34,12 @@ class OrthogonalViewMatrix( ViewMatrix ):
             This can be updated at any time.
             scale: The scale to apply to the width and
             height of the orthogonal view.
+            This is a 2D array.
             The dimensions of the view matrix (left, right, bottom, top)
             are calculated as follows:
             height = 1.0 * scale.y
             width = 1.0 * scale.z * viewport aspect ratio 
+
             near_clip: The nearest distance to render objects.
             far_clip: The furthest distance to render objects.
         """
