@@ -75,10 +75,10 @@ def set_properties( target, properties ):
         function( target, property, *values )
 
 
-class ArrayTexture( object ):
+class RawImage( object ):
 
     def __init__( self, data ):
-        super( ArrayTexture, self ).__init__()
+        super( RawImage, self ).__init__()
 
         # store the data as a numpy array
         self.data = numpy.array( data )
@@ -209,14 +209,14 @@ class ArrayTexture( object ):
 
         # determine our texture type first
         # we use this later in the loading process
-        #_type_enum = type if type else ArrayTexture.numpy_to_type( self.data )
-        _type_enum = ArrayTexture.numpy_to_type( self.data )
+        #_type_enum = type if type else RawImage.numpy_to_type( self.data )
+        _type_enum = RawImage.numpy_to_type( self.data )
 
         _type_obj = opengl_enum_to_type( _type_enum )
 
-        _internal_format = internal_format if internal_format else ArrayTexture.numpy_to_internal_format( self.data, _type_enum )
+        _internal_format = internal_format if internal_format else RawImage.numpy_to_internal_format( self.data, _type_enum )
 
-        _format = format if format else ArrayTexture.numpy_to_format( self.data )
+        _format = format if format else RawImage.numpy_to_format( self.data )
 
         _border = 0 if not border else 1
 
@@ -296,10 +296,10 @@ class ArrayTexture( object ):
             }[ data.dtype ]
 
 
-class PIL_Texture( object ):
+class PIL_Image( object ):
     
     def __init__( self, image ):
-        super( PIL_Texture, self ).__init__()
+        super( PIL_Image, self ).__init__()
 
         self.image = image
 
