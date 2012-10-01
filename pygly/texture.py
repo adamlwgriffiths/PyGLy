@@ -101,20 +101,6 @@ def set_raw_texture_2d(
     border: Specifies if the texture is to use a border.
 
     target: Specifies the image target type.
-        Valid values are:
-        GL_TEXTURE_2D,
-        GL_PROXY_TEXTURE_2D,
-        GL_TEXTURE_1D_ARRAY,
-        GL_PROXY_TEXTURE_1D_ARRAY,
-        GL_TEXTURE_RECTANGLE,
-        GL_PROXY_TEXTURE_RECTANGLE,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-        GL_PROXY_TEXTURE_CUBE_MAP
 
     internal_format: Specifies the format the data
         is stored in.
@@ -160,7 +146,7 @@ def set_raw_texture_2d(
         uint32:     GL_UNSIGNED_INT
         int32:      GL_INT
         float32:    GL_FLOAT
-        float64:    GL_DOUBLE
+        float64:    GL_FLOAT
     """
     np_data = numpy.array( data )
 
