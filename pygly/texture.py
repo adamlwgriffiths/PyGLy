@@ -41,7 +41,6 @@ class Texture( object ):
         super( Texture, self ).__init__()
 
         self.target = target
-        self.unit = unit
 
         self.texture = (GLuint)()
         glGenTextures( 1, self.texture )
