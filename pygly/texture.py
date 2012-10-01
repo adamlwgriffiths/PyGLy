@@ -163,8 +163,8 @@ def set_raw_texture_2d(
         4: GL_RGBA.
         If the detected type is GL_FLOAT,
         the auto-detection will change to the following:
-        1: GL_RED32F,
-        2: GL_R32F,
+        1: GL_R32F,
+        2: GL_RG32F,
         3: GL_RBG32F,
         4: GL_RGBA32F.
 
@@ -238,14 +238,14 @@ def _numpy_to_internal_format( data, type ):
     if type == GL_FLOAT:
         # check if we've got float textures
         return {
-            1:  GL_RED32F,
+            1:  GL_R32F,
             2:  GL_RG32F,
             3:  GL_RGB32F,
             4:  GL_RGBA32F,
             }[ data.shape[ -1 ] ]
     elif type == GL_HALF_FLOAT:
         return {
-            1:  GL_RED16F,
+            1:  GL_R16F,
             2:  GL_RG16F,
             3:  GL_RGB16F,
             4:  GL_RGBA16F,
