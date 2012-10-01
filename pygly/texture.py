@@ -76,6 +76,58 @@ def _opengl_enum_to_type( enum ):
         GL_DOUBLE:          GLdouble,
         }[ enum ]
 
+def set_raw_texture_1d(
+    data,
+    target = GL_TEXTURE_1D,
+    level = 0,
+    border = False,
+    internal_format = None,
+    format = None,
+    swizzle = None
+    ):
+    """Sets the data of the currently bound
+    texture to this image.
+    This calls glTexImage1D.
+
+    The parameters are the same as in the set_raw_texture_2d
+    function.
+    """
+    np_data = numpy.array( data )
+
+    # determine our texture type first
+    # we use this later in the loading process
+    #_type_enum = type if type else numpy_to_type( self.data )
+    _type_enum = _numpy_to_type( np_data )
+    _type_obj = _opengl_enum_to_type( _type_enum )
+    _internal_format = internal_format if internal_format else _numpy_to_internal_format( np_data, _type_enum )
+    _format = format if format else _numpy_to_format( np_data )
+    _border = 0 if not border else 1
+
+    if swizzle != None:
+        # set our texture swizzle if one was passed
+        swizzle = (GLint * 4)(*swizzle)
+        glTexParameteriv(
+            target,
+            GL_TEXTURE_SWIZZLE_RGBA,
+            swizzle
+            )
+
+    # construct our function args
+    # the only difference between glTexImage1D/2D/3D
+    # is the addition of extra size dimensions
+    # we will dynamically add these to the middle
+    # of the parameter list
+    glTexImage1D(
+        target,
+        level,
+        _internal_format,
+        np_data.size,
+        _border,
+        _format,
+        _type_enum,
+        (_type_obj * np_data.size)(*np_data.flat)
+        )
+
 def set_raw_texture_2d(
     data,
     target = GL_TEXTURE_2D,
@@ -154,13 +206,9 @@ def set_raw_texture_2d(
     # we use this later in the loading process
     #_type_enum = type if type else numpy_to_type( self.data )
     _type_enum = _numpy_to_type( np_data )
-
     _type_obj = _opengl_enum_to_type( _type_enum )
-
     _internal_format = internal_format if internal_format else _numpy_to_internal_format( np_data, _type_enum )
-
     _format = format if format else _numpy_to_format( np_data )
-
     _border = 0 if not border else 1
 
     if swizzle != None:
