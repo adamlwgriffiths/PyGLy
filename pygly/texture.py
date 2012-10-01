@@ -27,7 +27,7 @@ class Texture( object ):
     after loading.
     """
 
-    def __init__( self, target, unit = GL_TEXTURE0 ):
+    def __init__( self, target ):
         """Creates a Texture object of the
         specified type.
 
@@ -53,11 +53,9 @@ class Texture( object ):
             glDeleteTextures( 1, texture )
 
     def bind( self ):
-        glActiveTexture( self.unit )
         glBindTexture( self.target, self.texture )
 
     def unbind( self ):
-        glActiveTexture( self.unit )
         glBindTexture( self.target, 0 )
 
 
