@@ -94,7 +94,6 @@ def texture_alignment( size ):
     width = size[ 0 ]
     if len(size) > 1:
         width = size[ 1 ]
-    print size, width,
         
     # we know the alignment is appropriate
     # if we can divide the width by the
