@@ -90,7 +90,10 @@ class TextureApplication( SimpleApplication ):
         self.current_texture = 0
 
         # find the textures relative to our module directory
-        path = os.path.dirname( __file__ ) + '/../../data/textures'
+        path = os.path.join(
+            os.path.dirname( __file__ ),
+            '../../data/textures'
+            )
         self.load_texture_directory( path )
         self.load_array_textures()
         self.print_texture_name()
