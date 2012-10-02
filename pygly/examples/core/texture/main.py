@@ -25,7 +25,8 @@ from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
 from pygly.orthogonal_view_matrix import OrthogonalViewMatrix
 import pygly.texture
-from pygly.texture import Texture
+from pygly.texture import Texture2D
+from pygly.texture.pil import PIL_Texture2D
 from pyrr import matrix44
 
 # patch pyglet's OpenGL legacy code out
@@ -81,14 +82,20 @@ class TextureApplication( SimpleApplication ):
         # the quad is from -1:+1, so scale down to -0.5:+0.5
         self.node.world_transform.scale = [0.5, 0.5, 0.5]
 
+        self.load_textures()
+
+    def load_textures( self ):
         # load our textures
         self.textures = []
         self.current_texture = 0
-        self.load_textures( 'examples/data/textures' )
-        self.load_random_data()
+
+        # find the textures relative to our module directory
+        path = os.path.dirname( __file__ ) + '/../../data/textures'
+        self.load_texture_directory( path )
+        self.load_array_textures()
         self.print_texture_name()
 
-    def load_textures( self, directory ):
+    def load_texture_directory( self, directory ):
         print 'Loading images from', directory
 
         extensions = [
@@ -110,57 +117,58 @@ class TextureApplication( SimpleApplication ):
                 full_path = '%s/%s' % (directory, filename)
 
                 image = Image.open( full_path )
-                if image.verify() == False:
-                    print 'image damaged', filename
-                    continue
+                print image.format, image.mode, image.getbands(),
 
-                image = Image.open( full_path )
-                print image.format, image.mode, image.getbands()
-
-                texture = Texture( GL_TEXTURE_2D )
+                texture = PIL_Texture2D()
                 texture.bind()
                 texture.set_min_mag_filter(
-                    min = GL_NEAREST,
-                    mag = GL_NEAREST
+                    GL_NEAREST,
+                    GL_NEAREST
                     )
-                pygly.texture.set_pil_texture_2d( image )
+                texture.set_image( image )
                 texture.unbind()
 
                 self.textures.append( (filename, texture) )
             except IOError as e:
                 print 'Exception:', e
+            finally:
+                # ensure we unbound our textures
+                glBindTexture( GL_TEXTURE_2D, 0 )
 
-    def load_random_data( self ):
+    def load_array_textures( self ):
         # create a random RGB texture
-        data = numpy.random.random_integers( 120, 255, (32,32,3) )
-        texture = Texture( GL_TEXTURE_2D )
+        name = 'Red Shade RGB'
+        format = 'u8/rgb/rgb8'
+        print name, format
+        data = numpy.linspace( 0, 255, 32 * 32 * 3 )
+        data.shape = (-1,3)
+        data[:,1:3] = 0.0
+        texture = Texture2D()
         texture.bind()
-        pygly.texture.set_raw_texture_2d( data.astype('uint8') )
-        texture.set_min_mag_filter(
-            min = GL_NEAREST,
-            mag = GL_NEAREST
+        texture.set_min_mag_filter( GL_NEAREST, GL_NEAREST )
+        texture.set_image(
+            data.astype('uint8').flat,
+            (32,32),
+            format
             )
         texture.unbind()
-
-        self.textures.append( ('Random RGB',texture) )
+        self.textures.append( (name, texture) )
 
         # create a random luminance texture
-        data = numpy.random.random_integers( 120, 255, (32,32,1) )
-        texture = Texture( GL_TEXTURE_2D )
+        name = 'Random Luminance'
+        format = 'u8/r/rgba8/rrr1'
+        print name, format
+        data = numpy.random.random_integers( 120, 255, 32 * 32 )
+        texture = Texture2D()
         texture.bind()
-        texture.set_swizzle( (GL_RED, GL_RED, GL_RED, GL_ONE) )
-        pygly.texture.set_raw_texture_2d(
-            data.astype('uint8'),
-            format = GL_RED,
-            internal_format = GL_RGBA,
-            )
-        texture.set_min_mag_filter(
-            min = GL_NEAREST,
-            mag = GL_NEAREST
+        texture.set_min_mag_filter( GL_NEAREST, GL_NEAREST )
+        texture.set_image(
+            data.astype('uint8').flat,
+            (32,32),
+            format
             )
         texture.unbind()
-
-        self.textures.append( ('Random Luminance',texture) )
+        self.textures.append( (name, texture) )
 
     def setup_camera( self ):
         # over-ride SimpleApplication's camera
