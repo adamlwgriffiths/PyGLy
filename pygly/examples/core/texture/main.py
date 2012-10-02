@@ -120,7 +120,7 @@ class TextureApplication( SimpleApplication ):
                 full_path = '%s/%s' % (directory, filename)
 
                 image = Image.open( full_path )
-                print image.format, image.mode, image.getbands(),
+                print image.format, image.mode, image.getbands()
 
                 texture = PIL_Texture2D()
                 texture.bind()
