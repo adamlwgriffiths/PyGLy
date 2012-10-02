@@ -5,32 +5,22 @@ Viewport is provided without any high level
 wrappers and is entirely managed through events.
 """
 import math
-from time import time
-
-import pyglet
-
-# disable the shadow window
-# this uses a legacy profile and causes issues
-# on OS-X
-pyglet.options['shadow_window'] = False
 
 from pyglet.gl import *
+import pyglet
 
 import pygly.window
 import pygly.gl
+from pygly.gl import legacy
+from pygly.projection_view_matrix import ProjectionViewMatrix
 from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
-from pyrr import matrix44
 
-# patch pyglet's OpenGL legacy code out
-import pygly.gl.core
-pygly.gl.core.patch_window()
-
-from examples.core.application import CoreApplication
-import examples.core.cube as cube
+from pygly.examples.legacy.application import LegacyApplication
+import pygly.examples.legacy.cube as cube
 
 
-class SimpleApplication( CoreApplication ):
+class SimpleApplication( LegacyApplication ):
     
     def __init__( self ):
         """Sets up the core functionality we need
@@ -40,14 +30,9 @@ class SimpleApplication( CoreApplication ):
         and update loop registration.
         """
         # setup our opengl requirements
-        # ensure we ask for at least OpenGL 3.2
-        # OS-X only supports legacy and Core 3.2
         config = pyglet.gl.Config(
-            depth_size = 24,#16,
+            depth_size = 16,
             double_buffer = True,
-            major_version = 3,
-            minor_version = 2,
-            forward_compatible = True,
             )
 
         super( SimpleApplication, self ).__init__( config )
@@ -58,9 +43,14 @@ class SimpleApplication( CoreApplication ):
         """
         super( SimpleApplication, self ).setup_scene()
 
-        # setup our GL state
         # enable z buffer
         glEnable( GL_DEPTH_TEST )
+
+        # enable smooth shading
+        glShadeModel( GL_SMOOTH )
+
+        # rescale only normals for lighting
+        glEnable( GL_RESCALE_NORMAL )
 
         # enable back face culling
         glEnable( GL_CULL_FACE )
@@ -125,7 +115,7 @@ class SimpleApplication( CoreApplication ):
 
         # tilt the camera downward
         self.cameras[ 0 ].transform.object.rotate_x(-math.pi / 4.0 )
-    
+
     def step( self, dt ):
         """Updates our scene and triggers the on_draw event.
         This is scheduled in our __init__ method and
@@ -158,6 +148,19 @@ class SimpleApplication( CoreApplication ):
         projection = camera.view_matrix.matrix
         model_view = camera.model_view
 
+        # apply our view matrix
+        # we can't nest these due python not
+        # closing context managers in reverse order
+        # if we nest these, it will first pop the projection
+        # matrix mode, then try and pop the projection matrix
+        # from the model view stack!
+        with legacy.matrix_mode( GL_PROJECTION ):
+            with legacy.load_matrix( projection ):
+                with legacy.matrix_mode( GL_MODELVIEW ):
+                    with legacy.load_matrix( model_view ):
+                        self.render_scene_graph( camera )
+
+    def render_scene_graph( self, camera ):
         # begin iterating through our scene graph
         # as we iterate over each node, we will set
         # our model view matrix as the node's world
@@ -168,17 +171,14 @@ class SimpleApplication( CoreApplication ):
             if isinstance( node, CameraNode ):
                 continue
 
-            # bind our model view matrix to the shader
-            world_matrix = node.world_transform.matrix
-            # calculate a new model view
-            current_mv = matrix44.multiply(
-                world_matrix,
-                model_view
-                )
+            model_matrix = node.world_transform.matrix
 
-            # render a cube
-            cube.draw( projection, current_mv )
-    
+            # multiply the existing model view matrix
+            # by the model's world matrix
+            # then render a cube
+            with legacy.multiply_matrix( model_matrix ):
+                cube.draw()
+
 
 def main():
     """Main function entry point.

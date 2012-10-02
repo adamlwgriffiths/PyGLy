@@ -2,7 +2,7 @@
 """
 import pyglet
 
-from examples.application import Application
+from pygly.examples.application import Application
 
 
 class LegacyApplication( Application ):

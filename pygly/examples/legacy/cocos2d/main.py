@@ -20,7 +20,7 @@ from pygly.render_callback_node import RenderCallbackNode
 from pygly.camera_node import CameraNode
 from pygly.cocos2d.layer import PyGLyLayer
 
-from examples.legacy.simple.main import SimpleApplication
+from pygly.examples.legacy.simple.main import SimpleApplication
 
 
 class PyglyScene( SimpleApplication ):

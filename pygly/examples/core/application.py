@@ -4,7 +4,7 @@ labels use OpenGL Legacy code.
 """
 from time import time
 
-from examples.application import Application
+from pygly.examples.application import Application
 
 
 class CoreApplication( Application ):

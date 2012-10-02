@@ -32,9 +32,9 @@ from pyrr import matrix44
 import pygly.gl.core
 pygly.gl.core.patch_window()
 
-from examples.core.application import CoreApplication
-from examples.core.simple.main import SimpleApplication
-import examples.core.quad as quad
+from pygly.examples.core.application import CoreApplication
+from pygly.examples.core.simple.main import SimpleApplication
+import pygly.examples.core.quad as quad
 
 
 class TextureApplication( SimpleApplication ):

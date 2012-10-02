@@ -4,7 +4,7 @@ a viewport.
 Viewport is provided without any high level
 wrappers and is entirely managed through events.
 """
-from examples.core.simple.main import SimpleApplication
+from pygly.examples.legacy.simple.main import SimpleApplication
 import pygly.window
 from pygly.orthogonal_view_matrix import OrthogonalViewMatrix
 

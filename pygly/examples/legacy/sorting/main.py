@@ -13,9 +13,9 @@ from pygly.scene_node import SceneNode
 import pygly.sorter
 from pygly.gl import legacy
 
-from examples.legacy.simple.main import SimpleApplication
-from examples.legacy.application import LegacyApplication
-import examples.legacy.colour_cube as cube
+from pygly.examples.legacy.simple.main import SimpleApplication
+from pygly.examples.legacy.application import LegacyApplication
+import pygly.examples.legacy.colour_cube as cube
 
 
 class SortingApplication( SimpleApplication ):

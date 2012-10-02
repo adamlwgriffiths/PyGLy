@@ -17,8 +17,8 @@ from pygly.scene_node import SceneNode
 import pygly.sorter
 from pyrr import matrix44
 
-from examples.core.application import CoreApplication
-import examples.core.colour_cube as cube
+from pygly.examples.core.application import CoreApplication
+import pygly.examples.core.colour_cube as cube
 
 
 class SortingApplication( SimpleApplication ):
