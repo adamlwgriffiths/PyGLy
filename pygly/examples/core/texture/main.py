@@ -26,7 +26,7 @@ from pygly.camera_node import CameraNode
 from pygly.orthogonal_view_matrix import OrthogonalViewMatrix
 import pygly.texture
 from pygly.texture import Texture2D
-from pygly.texture.pil import PIL_Texture2D
+import pygly.pil_texture
 from pyrr import matrix44
 
 # patch pyglet's OpenGL legacy code out
@@ -122,13 +122,13 @@ class TextureApplication( SimpleApplication ):
                 image = Image.open( full_path )
                 print image.format, image.mode, image.getbands()
 
-                texture = PIL_Texture2D()
+                texture = Texture2D()
                 texture.bind()
                 texture.set_min_mag_filter(
                     GL_NEAREST,
                     GL_NEAREST
                     )
-                texture.set_pil_image( image )
+                pygly.pil_texture.set_pil_image( texture, image )
                 texture.unbind()
 
                 self.textures.append( (filename, texture) )
