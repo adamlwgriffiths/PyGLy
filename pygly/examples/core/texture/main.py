@@ -128,7 +128,7 @@ class TextureApplication( SimpleApplication ):
                     GL_NEAREST,
                     GL_NEAREST
                     )
-                texture.set_image( image )
+                texture.set_pil_image( image )
                 texture.unbind()
 
                 self.textures.append( (filename, texture) )
