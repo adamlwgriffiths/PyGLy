@@ -11,17 +11,8 @@ import numpy
 from pygly.gl import *
 from ctypes import *
 
+import pygly.utils
 
-def extract_tuple( t, num, padding = None ):
-    """This lets us extract a specified number
-    of values from a tuple, even if there aren't
-    that many in the tuple itself.
-    """
-    result = list(t)
-    if len(result) < num:
-        remainder = num - len(result)
-        result.extend( [padding] * remainder )
-    return tuple(result)
 
 def create_texture( target ):
     texture = (GLuint)()
@@ -228,7 +219,7 @@ class Texture( object ):
 
         # extract the values from the format string
         values = format.split('/')
-        type, format, internal_format, swizzle = extract_tuple( values, 4 )
+        type, format, internal_format, swizzle = pygly.utils.extract_tuple( values, 4 )
 
         return (
             Texture.types[ type ],
