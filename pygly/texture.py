@@ -245,8 +245,8 @@ class Texture( object ):
             global targets
             target = targets[ target ]
 
-        self.image_func = image_func
-        self.sub_image_func = sub_image_func
+        self._image_func = image_func
+        self._sub_image_func = sub_image_func
 
         self.target = target
         self.texture = create_texture( target )
@@ -282,7 +282,7 @@ class Texture( object ):
         ):
         # set the data
         self._texture_func(
-            self.image_func,
+            self._image_func,
             data,
             size,
             format,
@@ -301,7 +301,7 @@ class Texture( object ):
         ):
         # set the data
         self._texture_func(
-            self.sub_image_func,
+            self._sub_image_func,
             data,
             [].extend(offset).extend(size),
             format,
