@@ -27,7 +27,7 @@ def create_texture( target ):
     texture = (GLuint)()
     glGenTextures( 1, texture )
 
-    return (target, texture)
+    return texture
 
 def active_texture( unit ):
     glActiveTexture( GL_TEXTURE0 + unit )
@@ -262,22 +262,14 @@ class Texture( object ):
         self.image_func = image_func
         self.sub_image_func = sub_image_func
 
-        self._texture = create_texture( target )
+        self.target = target
+        self.texture = create_texture( target )
 
     def __del__( self ):
         # free our texture
-        _texture = getattr( self, '_texture', None )
-        texture = _texture[ 1 ]
+        texture = getattr( self, 'texture', None )
         if texture and texture.value != 0:
             glDeleteTextures( 1, texture )
-
-    @property
-    def target( self ):
-        return self._texture[ 0 ]
-
-    @property
-    def texture( self ):
-        return self._texture[ 1 ]
 
     def bind( self ):
         glBindTexture( self.target, self.texture )
