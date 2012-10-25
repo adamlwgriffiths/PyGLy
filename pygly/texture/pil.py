@@ -59,7 +59,7 @@ class PIL_Texture2D( Texture ):
             sub_image_func = glTexSubImage2D
             )
 
-    def set_image( self, image, level = 0, border = False, flip = True ):
+    def set_pil_image( self, image, level = 0, border = False, flip = True ):
         """Sets the data of the currently bound
         texture to this image.
         This calls glTexImage2D.
