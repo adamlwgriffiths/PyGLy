@@ -47,68 +47,55 @@ def pil_format( image ):
     return format
 
 
-class PIL_Texture2D( Texture ):
+def set_pil_image( texture, image, level = 0, border = False, flip = True ):
+    """Sets the data of the currently bound
+    texture to this image.
+    This calls glTexImage2D.
+    """
+    # some TIFF images don't render correctly
+    # if we convert them to RGBX they suddenly
+    # begin rendering correctly
+    # so let's do that
+    # some TIFF images can't be converted
+    # this may throw an IOError exception
+    if image.format == 'TIFF':
+        image = image.convert('RGBX')
 
-    def __init__( self, target = GL_TEXTURE_2D ):
-        if type(target) is str:
-            target = Texture.targets[ target ]
+    # handle unsupported formats
+    # convert from unsupported formats to RGBX
+    conversion = ['P', 'CMYK', 'YCbCr' ]
+    if image.mode in conversion:
+        image = image.convert('RGBX')
 
-        super( PIL_Texture2D, self ).__init__(
-            target,
-            image_func = glTexImage2D,
-            sub_image_func = glTexSubImage2D
+    # create our format string
+    format = pil_format( image )
+
+    # check if we should flip the image
+    # we do this because PIL loads images
+    # upside down to OpenGL
+    # however, this may not be desired sometimes
+    if flip:
+        image = image.transpose(
+            Image.FLIP_TOP_BOTTOM
             )
 
-    def set_pil_image( self, image, level = 0, border = False, flip = True ):
-        """Sets the data of the currently bound
-        texture to this image.
-        This calls glTexImage2D.
-        """
-        # some TIFF images don't render correctly
-        # if we convert them to RGBX they suddenly
-        # begin rendering correctly
-        # so let's do that
-        # some TIFF images can't be converted
-        # this may throw an IOError exception
-        if image.format == 'TIFF':
-            image = image.convert('RGBX')
+    # convert the image to a list
+    # the list stores each pixel as a tuple
+    # so we need to unroll it
+    # we also need to handle single channel images
+    # that just store ints
+    _data = list(image.getdata())
+    if type(_data[ 0 ]) is tuple:
+        data = [item for sublist in _data for item in sublist]
+    else:
+        data = _data
 
-        # handle unsupported formats
-        # convert from unsupported formats to RGBX
-        conversion = ['P', 'CMYK', 'YCbCr' ]
-        if image.mode in conversion:
-            image = image.convert('RGBX')
-
-        # create our format string
-        format = pil_format( image )
-
-        # check if we should flip the image
-        # we do this because PIL loads images
-        # upside down to OpenGL
-        # however, this may not be desired sometimes
-        if flip:
-            image = image.transpose(
-                Image.FLIP_TOP_BOTTOM
-                )
-
-        # convert the image to a list
-        # the list stores each pixel as a tuple
-        # so we need to unroll it
-        # we also need to handle single channel images
-        # that just store ints
-        _data = list(image.getdata())
-        if type(_data[ 0 ]) is tuple:
-            data = [item for sublist in _data for item in sublist]
-        else:
-            data = _data
-
-        # send the data
-        self._texture_func(
-            self.image_func,
-            data,
-            image.size,
-            format,
-            level,
-            border
-            )
+    # send the data
+    texture.set_image(
+        data,
+        image.size,
+        format,
+        level,
+        border
+        )
 
