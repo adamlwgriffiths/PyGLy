@@ -215,11 +215,6 @@ class Texture( object ):
         using uint8 data type (GL_UNSIGNED_BYTE) to an RGBA
         texture using a swizzle with RGB channels receiving the
         'red' value and alpha receiving the constant '1' (rrr1).
-
-        Values can be the string representations of
-        their OpenGL counter parts.
-        Ie:
-        format = '%i/%i/%i' % (GL_UNSIGNED_BYTE,GL_RGBA,GL_RGBA)
         """
         def parse_swizzle( swizzle ):
             if not swizzle:
