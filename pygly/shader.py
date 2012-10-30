@@ -1,9 +1,48 @@
-#
-# Copyright Tristam Macdonald 2008.
-#
-# Distributed under the Boost Software License, Version 1.0
-# (see http://www.boost.org/LICENSE_1_0.txt)
-#
+"""Provides Shader and ShaderProgram classes.
+
+Example usage:
+
+shaders = {
+    'vert': '''
+    VERTEX SHADER TEXT GOES HERE
+    ''',
+
+    'frag': '''
+    FRAGMENT SHADER TEXT GOES HERE
+    ''',
+    }
+
+# compile and attach our shaders but don't link
+# the program just yet
+shader = ShaderProgram(
+    False,
+    Shader( GL_VERTEX_SHADER, shaders['vert'] ),
+    Shader( GL_FRAGMENT_SHADER, shaders['frag'] )
+    )
+# bind our vertex attributes
+shader.attribute( 0, 'in_position' )
+shader.attribute( 1, 'in_normal' )
+shader.attribute( 2, 'in_colour' )
+# bind our fragment output
+shader.frag_location( 'out_frag_colour' )
+# link the shader
+shader.link()
+
+# set any values that don't change
+shader.bind()
+shader.uniformi( 'in_texture_0', 0 )
+shader.unbind()
+
+# do some other things
+
+shader.bind()
+# set our per-frame uniforms
+shader.uniformf( 'time', 1.0 )
+
+# render some geometry
+
+shader.unbind()
+"""
 
 from ctypes import *
 import types
@@ -13,13 +52,27 @@ from pyglet.gl import *
 
 
 def parse_shader_error( error ):
+    """Parses a single GLSL error and extracts the line number
+    and error description.
+
+    Line number and description are returned as a tuple.
+
+    GLSL errors are not defined by the standard, as such,
+    each driver provider prints their own error format.
+
+    Nvidia print using the following format:
+    0(7): error C1008: undefined variable "MV"
+
+    ATi and Intel print using the following format:
+    ERROR: 0:131: '{' : syntax error parse error
+    """
     # Nvidia
     # 0(7): error C1008: undefined variable "MV"
     match = re.match( '(\\d)\\((\\d+)\\):\\s(.*)', error )
     if match:
         return (
-            match.group( 1 ),   # line number
-            match.group( 2 )    # description
+            int(match.group( 2 )),   # line number
+            match.group( 3 )    # description
             )
 
     # ATI
@@ -28,15 +81,19 @@ def parse_shader_error( error ):
     match = re.match( 'ERROR:\\s(\\d+):(\\d+):\\s(.*)', error )
     if match:
         return (
-            match.group( 1 ),   # line number
-            match.group( 2 )    # description
+            int(match.group( 2 )),   # line number
+            match.group( 3 )    # description
             )
 
     raise ValueError( 'Unknown GLSL error format' )
 
 def parse_shader_errors( errors ):
+    """Parses a GLSL error buffer and returns an list of
+    error tuples.
+    """
     results = []
-    for error in errors:
+    error_list = errors.split( '\n' )
+    for error in error_list:
         try:
             result = parse_shader_error( error )
             results.append( result )
@@ -63,23 +120,60 @@ class Shader( object ):
         GL_GEOMETRY_SHADER: 'GL_GEOMETRY_SHADER',
         }
 
+    @classmethod
+    def create_from_existing( cls, type, content, handle ):
+        """Creates a Shader object using an existing shader handle
+        """
+        obj = cls( type, content, False )
+        obj.handle = handle
+        return obj
+
     def __init__( self, type, content, compile_now = True ):
         super( Shader, self ).__init__()
 
         self.type = type
         self.content = content
-        self.handle = None
+        self._handle = None
 
         if compile_now:
             self.compile()
 
     def __del__( self ):
-        # mark our shader for deletion
-        handle = getattr( self, 'handle', None )
-        if handle:
-            glDeleteShader( handle )
+        try:
+            # del can be called when our modules have been torn down
+            # we can try our best to get access to this method
+            # but it may still throw an exception
+            from pyglet.gl import glDeleteShader
+
+            # mark our shader for deletion
+            handle = getattr( self, '_handle', None )
+            if handle:
+                glDeleteShader( handle )
+        except ImportError:
+            pass
+
+    @property
+    def handle( self ):
+        return self._handle
+
+    @handle.setter
+    def handle( self, handle ):
+        # free our existing handle
+        if self._handle:
+            glDeleteShader( self._handle )
+        self._handle = handle
 
     def compile( self ):
+        """Compiles the shader using the current content
+        value.
+
+        This is required before a ShaderProgram is linked.
+
+        This is not required to be performed in order to
+        attach a Shader to a ShaderProgram. As long as the
+        Shader is compiled prior to the ShaderProgram being
+        linked.
+        """
         self.handle = glCreateShader( self.type )
 
         # convert to c-string
@@ -99,18 +193,36 @@ class Shader( object ):
         return self.check_for_errors()
 
     def print_errors( self, buffer ):
+        """Parses the error buffer and prints it to the console.
+
+        The buffer should be the exact contents of the GLSL
+        error buffer converted to a Python String.
+        """
         # print the log to the console
         errors = parse_shader_errors( buffer )
+        content = self.content.split('\n')
+
         for error in errors:
             line, desc = error
 
-            print desc
-            print self.content[ line - 1 ]
-
-        #print 'Original output:'
-        #print buffer.value
+            print """Error compiling shader type: %s
+\tLine: %i
+\tDescription: %s
+\tCode: %s""" % (
+            Shader.types[ self.type ],
+            line,
+            desc,
+            content[ line - 1 ]
+            )
 
     def check_for_errors( self ):
+        """Checks for any errors in the shader.
+
+        This is called automatically by the compile method.
+
+        Prints any errors to the console.
+        Returns False if an error is set, otherwise True.
+        """
         # retrieve the compile status
         value = c_int(0)
         glGetShaderiv( self.handle, GL_COMPILE_STATUS, byref(value) )
@@ -122,9 +234,9 @@ class Shader( object ):
 
             # retrieve the log text
             buffer = create_string_buffer( value.value )
-            glGetShaderInfoLog( handle, value, None, buffer )
+            glGetShaderInfoLog( self.handle, value, None, buffer )
 
-            print 'Error compiling shader %s', Shader.types[ self.type ]
+            # print the errors
             self.print_errors( buffer.value )
 
             # free our shader
@@ -138,59 +250,19 @@ class Shader( object ):
 
 
 class ShaderProgram( object ):
-    """
+    """Defines a complete Shader Program, consisting of at least
+    a vertex and fragment shader.
+    
     Shader objects are decoupled from ShaderPrograms to avoid recompilation
     when re-using shaders.
 
     Multiple shaders of the same type can be attached together.
     This lets you combine multiple smaller shaders into a single larger one.
-
-    Example usage:
-
-    shaders = {
-        'vert': '''
-        VERTEX SHADER TEXT GOES HERE
-        ''',
-
-        'frag': '''
-        FRAGMENT SHADER TEXT GOES HERE
-        ''',
-        }
-
-    vert = Shader( GL_VERTEX_SHADER, shaders['vert'] )
-    vert.compile()
-
-    frag = Shader( GL_FRAGMENT_SHADER, shaders['frag'] )
-    frag.compile()
-
-    shader = ShaderProgram()
-    # attach our shaders
-    shader.attach_shader( vert )
-    shader.attach_shader( frag )
-    # bind our vertex attributes
-    shader.attribute( 0, 'in_position' )
-    shader.attribute( 1, 'in_normal' )
-    shader.attribute( 2, 'in_colour' )
-    # bind our fragment output
-    shader.frag_location( 'out_frag_colour' )
-    # link the shader
-    shader.link()
-
-    shader.bind()
-    # set our per-frame uniforms
-    shader.uniformf( 'time', 1.0 )
-
-    # render some geometry
-
-    shader.unbind()
-
     """
     
-    # vert, frag and geom take arrays of source strings
-    # the arrays will be concattenated into one string by OpenGL
     def __init__( self, link_now = True, *args ):
         # create the program handle
-        self.handle = glCreateProgram()
+        self._handle = glCreateProgram()
 
         for shader in args:
             self.attach_shader( shader )
@@ -199,28 +271,63 @@ class ShaderProgram( object ):
             self.link()
 
     def __del__( self ):
-        program = getattr( self, 'program', None )
-        if program:
-            glDeleteProgram( program )
+        # del can be called when our modules have been torn down
+        # we can try our best to get access to this method
+        # but it may still throw an exception
+        try:
+            from pyglet.gl import glDeleteProgram
+
+            handle = getattr( self, '_handle', None )
+            if handle:
+                glDeleteProgram( handle )
+        except ImportError:
+            pass
+
+    @property
+    def handle( self ):
+        return self._handle
+
+    @handle.setter
+    def handle( self, handle ):
+        # free our existing handle
+        if self._handle:
+            glDeleteProgram( self._handle )
+        self._handle = handle
 
     def attach_shader( self, shader ):
         """Attaches a Shader object for the specified GL_*_SHADER type.
 
-        This can use both a shader object or a GL shader handle.
-        If an object instance is passed in, the GL shader handle will
-        be extracted as shader.handle.
-        Otherwise, the shader arguement itself will be used as the handle.
+        This expects an instance of the Shader class (or equivalent).
+        If you need to attach a normal GL shader handle, use the
+        Shader.create_from_existing class method to instantiate a
+        Shader object first.
         """
-        handle = shader
-        # check if we've been passed a GL integer or a python object
-        if not isinstance( shader, types.IntType ):
-            handle = shader.handle
+        try:
+            # attach the shader
+            glAttachShader( self.handle, shader.handle )
+        except Exception as e:
+            print """Error attaching shader type: %s
+\tException: %s
+""" % (
+                Shader.types[ shader.type ],
+                str(e)
+                )
+            # chain the exception
+            raise
 
-        # attach the shader
-        glAttachShader( self.handle, handle )
+    def print_errors( self, buffer ):
+        """Parses the error buffer and prints it to the console.
+
+        The buffer should be the exact contents of the GLSL
+        error buffer converted to a Python String.
+        """
+        print """Error linking shader:
+\tDescription: %s""" % ( buffer )
 
     def check_for_errors( self ):
         """Checks for any errors in the program.
+
+        This is called automatically by the link method.
 
         Prints any errors to the console.
         Returns False if an error is set, otherwise True.
@@ -231,17 +338,15 @@ class ShaderProgram( object ):
 
         # if linking failed, print the log
         if not value:
-            # retrieve the log
             # retrieve the log length
             glGetProgramiv( self.handle, GL_INFO_LOG_LENGTH, byref(value) )
-            # create a buffer for the log
+
+            # retrieve the log text
             buffer = create_string_buffer( value.value )
-            # get the buffer
             glGetProgramInfoLog( self.handle, value, None, buffer )
 
-            # print the log to the console
-            print "Failed to link shader"
-            print buffer.value
+            # print the errors
+            self.print_errors( buffer.value )
 
             return False
 
@@ -285,10 +390,26 @@ class ShaderProgram( object ):
         return self.check_for_errors()
 
     def bind(self):
+        """Binds the shader program to be the active shader program.
+
+        The shader MUST be linked for this to be valid.
+
+        It is valid to bind one shader after another without calling
+        unbind.
+        """
         # bind the program
         glUseProgram( self.handle )
 
     def unbind(self):
+        """Unbinds the shader program.
+
+        This sets the current shader to null.
+
+        It is valid to bind one shader after another without calling
+        unbind.
+        Be aware that this will NOT unwind the bind calls.
+        Calling unbind will set the active shader to null.
+        """
         # unbind the
         glUseProgram( 0 )
 
@@ -342,6 +463,8 @@ class ShaderProgram( object ):
         """Upload a uniform matrix.
 
         Works with matrices stored as lists, as well as euclid matrices
+
+        This program must be currently bound.
         """
         # we support 2x2, 3x3, 4x4
         length = len( mat )
