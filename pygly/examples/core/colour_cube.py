@@ -1,7 +1,7 @@
 import pyglet.graphics
 from pyglet.gl import *
 
-from pygly.shader import Shader
+from pygly.shader import Shader, ShaderProgram
 import cube
 
 from ctypes import *
@@ -54,10 +54,19 @@ def create():
     global shader
     global shader_source
 
-    shader = Shader(
-        vert = shader_source['vert'],
-        frag = shader_source['frag']
+    # create our shader but don't link it yet
+    shader = ShaderProgram(
+        False,
+        Shader( GL_VERTEX_SHADER, shader_source['vert'] ),
+        Shader( GL_FRAGMENT_SHADER, shader_source['frag'] ),
         )
+    # set our shader data
+    # we MUST do this before we link the shader
+    shader.attribute( 0, 'in_position' )
+    shader.frag_location( 'fragColor' )
+
+    # link the shader now
+    shader.link()
 
     vao = (GLuint)()
     glGenVertexArrays( 1, vao )
@@ -83,12 +92,6 @@ def create():
     # unbind our buffers
     glBindVertexArray( 0 )
 
-    # update our shader
-    shader.attribute( 0, 'in_position' )
-    shader.frag_location( 'fragColor' )
-
-    # link the shader now
-    shader.link()
 
 def draw( projection, model_view, colour ):
     global vao

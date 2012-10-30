@@ -2,7 +2,7 @@ import pyglet.graphics
 from pyglet.gl import *
 import numpy
 
-from pygly.shader import Shader
+from pygly.shader import Shader, ShaderProgram
 
 from ctypes import *
 
@@ -83,10 +83,26 @@ def create():
     global shader
     global shader_source
 
-    shader = Shader(
-        vert = shader_source['vert'],
-        frag = shader_source['frag']
+    # create our shader but don't link it yet
+    shader = ShaderProgram(
+        False,
+        Shader( GL_VERTEX_SHADER, shader_source['vert'] ),
+        Shader( GL_FRAGMENT_SHADER, shader_source['frag'] ),
         )
+    # set our shader data
+    # we MUST do this before we link the shader
+    shader.attribute( 0, 'in_position' )
+    shader.attribute( 1, 'in_uv' )
+    shader.frag_location( 'fragColor' )
+
+    # link the shader now
+    shader.link()
+
+    # set our diffuse texture stage
+    # do this now as the value doesn't change
+    shader.bind()
+    shader.uniformi( 'texture0', 0 )
+    shader.unbind()
 
     vao = (GLuint)()
     glGenVertexArrays( 1, vao )
@@ -123,19 +139,6 @@ def create():
 
     # unbind our buffers
     glBindVertexArray( 0 )
-
-    # update our shader
-    shader.attribute( 0, 'in_position' )
-    shader.attribute( 1, 'in_uv' )
-    shader.frag_location( 'fragColor' )
-
-    # link the shader now
-    shader.link()
-
-    # set our diffuse texture stage
-    shader.bind()
-    shader.uniformi( 'texture0', 0 )
-    shader.unbind()
 
 def draw( projection, model_view ):
     global vao
