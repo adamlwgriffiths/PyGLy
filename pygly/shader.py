@@ -68,7 +68,7 @@ def parse_shader_error( error ):
     """
     # Nvidia
     # 0(7): error C1008: undefined variable "MV"
-    match = re.match( '(\\d)\\((\\d+)\\):\\s(.*)', error )
+    match = re.match( r'(\d)\((\d+)\):\s(.*)', error )
     if match:
         return (
             int(match.group( 2 )),   # line number
@@ -78,7 +78,7 @@ def parse_shader_error( error ):
     # ATI
     # Intel
     # ERROR: 0:131: '{' : syntax error parse error
-    match = re.match( 'ERROR:\\s(\\d+):(\\d+):\\s(.*)', error )
+    match = re.match( r'ERROR:\s(\d+):(\d+):\s(.*)', error )
     if match:
         return (
             int(match.group( 2 )),   # line number
