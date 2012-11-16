@@ -82,6 +82,8 @@ class CameraNode( SceneNode ):
         local_ray = self.view_matrix.create_ray_from_ratio_point(
             point
             )
+        ray_start = local_ray[ 0 ]
+        ray_direction = local_ray[ 1 ]
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
@@ -89,7 +91,11 @@ class CameraNode( SceneNode ):
             )
 
         # apply our rotation to the ray direction
-        matrix44.apply_to_vector( local_ray[ 1 ], matrix )
+        matrix44.apply_to_vector(
+            ray_direction,
+            matrix,
+            out = ray_direction
+            )
 
         # apply our scale
         scale_matrix = matrix44.create_from_scale(
@@ -103,12 +109,16 @@ class CameraNode( SceneNode ):
         matrix44.multiply( matrix, translate_matrix )
 
         # apply the full matrix to the ray origin
-        matrix44.apply_to_vector( local_ray[ 0 ], matrix )
+        matrix44.apply_to_vector(
+            ray_start,
+            matrix,
+            out = ray_start
+            )
 
         # make sure the ray is unit length
         ray.create_ray(
-            local_ray[ 0 ],
-            local_ray[ 1 ],
+            ray_start,
+            ray_direction,
             out = local_ray
             )
 
