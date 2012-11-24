@@ -141,14 +141,11 @@ class WorldTransform( TreeNode ):
                 parent_world_matrix = self.parent.matrix
 
                 # apply to our local translation
-                object_translation = matrix33.apply_to_vector(
+                # this will include our parent's world translation
+                self._translation = matrix44.apply_to_vector(
                     self._transform.translation,
                     parent_world_matrix
                     )
-
-                # add our local translation to our parents
-                # world translation
-                self._translation = self.parent.translation + object_translation
 
         return self._translation
 

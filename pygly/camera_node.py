@@ -50,12 +50,11 @@ class CameraNode( SceneNode ):
         matrix = matrix.T
 
         # multiply by our inverse world transform
-        matrix44.multiply(
+        matrix = matrix44.multiply(
             matrix44.create_from_translation(
                 -self.world_transform.translation
                 ),
-            matrix,
-            out = matrix
+            matrix
             )
 
         return matrix
@@ -82,8 +81,8 @@ class CameraNode( SceneNode ):
         local_ray = self.view_matrix.create_ray_from_ratio_point(
             point
             )
-        ray_start = local_ray[ 0 ]
-        ray_direction = local_ray[ 1 ]
+        start = local_ray[ 0 ]
+        direction = local_ray[ 1 ]
 
         # convert our quaternion to a matrix
         matrix = matrix44.create_from_quaternion(
@@ -91,11 +90,7 @@ class CameraNode( SceneNode ):
             )
 
         # apply our rotation to the ray direction
-        matrix44.apply_to_vector(
-            ray_direction,
-            matrix,
-            out = ray_direction
-            )
+        direction = matrix44.apply_to_vector( direction, matrix )
 
         # apply our scale
         scale_matrix = matrix44.create_from_scale(
@@ -104,23 +99,15 @@ class CameraNode( SceneNode ):
         matrix44.multiply( matrix, scale_matrix )
 
         translate_matrix = matrix44.create_from_translation(
-            self.world_transform.translation,
+            self.world_transform.translation
             )
         matrix44.multiply( matrix, translate_matrix )
 
         # apply the full matrix to the ray origin
-        matrix44.apply_to_vector(
-            ray_start,
-            matrix,
-            out = ray_start
-            )
+        start = matrix44.apply_to_vector( start, matrix )
 
         # make sure the ray is unit length
-        ray.create_ray(
-            ray_start,
-            ray_direction,
-            out = local_ray
-            )
+        local_ray = ray.create_ray( start, direction )
 
         return local_ray
 

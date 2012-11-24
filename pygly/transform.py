@@ -175,22 +175,16 @@ class Transform( EventDispatcher ):
             self._matrix = matrix44.create_from_scale( self.scale )
 
             # apply our quaternion
-            matrix44.multiply(
+            self._matrix = matrix44.multiply(
                 self._matrix,
-                matrix44.create_from_quaternion(
-                    self.orientation
-                    ),
-                out = self._matrix
+                matrix44.create_from_quaternion( self.orientation )
                 )
 
             # apply our translation
             # we MUST do this after the orientation
-            matrix44.multiply(
+            self._matrix = matrix44.multiply(
                 self._matrix,
-                matrix44.create_from_translation(
-                    self.translation,
-                    ),
-                out = self._matrix
+                matrix44.create_from_translation( self.translation )
                 )
 
         return self._matrix
