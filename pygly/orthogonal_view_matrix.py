@@ -85,8 +85,7 @@ class OrthogonalViewMatrix( ViewMatrix ):
             top,
             bottom,
             self.near_clip,
-            self.far_clip,
-            out = self._matrix
+            self.far_clip
             )
         self.dirty = False
 
