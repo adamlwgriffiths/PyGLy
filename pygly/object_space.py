@@ -63,7 +63,7 @@ class ObjectSpace( object ):
         if radians == 0.0:
             return
 
-        quat = quaternion.set_to_rotation_about_x( radians )
+        quat = quaternion.create_from_x_rotation( radians )
         self.rotate_quaternion( quat )
 
     def rotate_y( self, radians ):
@@ -76,7 +76,7 @@ class ObjectSpace( object ):
         if radians == 0.0:
             return
 
-        quat = quaternion.set_to_rotation_about_y( radians )
+        quat = quaternion.create_from_y_rotation( radians )
         self.rotate_quaternion( quat )
     
     def rotate_z( self, radians ):
@@ -89,7 +89,7 @@ class ObjectSpace( object ):
         if radians == 0.0:
             return
 
-        quat = quaternion.set_to_rotation_about_z( radians )
+        quat = quaternion.create_from_z_rotation( radians )
         self.rotate_quaternion( quat )
 
     @property
