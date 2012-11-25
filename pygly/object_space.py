@@ -177,7 +177,7 @@ class ObjectSpace( object ):
         matrix = matrix33.create_from_quaternion(
             self.transform._orientation
             )
-        # apply the matrix to an X vector
+        # apply the matrix to the specified vector
         self.transform.translation += matrix33.apply_to_vector(
             matrix,
             numpy.array( vector )
