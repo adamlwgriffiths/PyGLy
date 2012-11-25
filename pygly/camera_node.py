@@ -90,7 +90,7 @@ class CameraNode( SceneNode ):
             )
 
         # apply our rotation to the ray direction
-        direction = matrix44.apply_to_vector( direction, matrix )
+        direction = matrix44.apply_to_vector( matrix, direction )
 
         # apply our scale
         scale_matrix = matrix44.create_from_scale(
@@ -104,7 +104,7 @@ class CameraNode( SceneNode ):
         matrix44.multiply( matrix, translate_matrix )
 
         # apply the full matrix to the ray origin
-        start = matrix44.apply_to_vector( start, matrix )
+        start = matrix44.apply_to_vector( matrix, start )
 
         # make sure the ray is unit length
         local_ray = ray.create_ray( start, direction )

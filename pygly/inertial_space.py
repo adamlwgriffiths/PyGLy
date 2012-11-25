@@ -7,6 +7,7 @@ import sys
 import numpy
 from pyglet.event import EventDispatcher
 
+from pyrr import vector3
 from pyrr import quaternion
 from pyrr import matrix33
 from pyrr import matrix44
@@ -67,24 +68,15 @@ class InertialSpace( object ):
 
     @property
     def x( self ):
-        return numpy.array(
-            [ 1.0, 0.0, 0.0 ],
-            dtype = numpy.float
-            )
+        return numpy.array( vector3.unit.x )
 
     @property
     def y( self ):
-        return numpy.array(
-            [ 0.0, 1.0, 0.0 ],
-            dtype = numpy.float
-            )
+        return numpy.array( vector3.unit.y )
 
     @property
     def z( self ):
-        return numpy.array(
-            [ 0.0, 0.0, 1.0 ],
-            dtype = numpy.float
-            )
+        return numpy.array( vector3.unit.z )
 
     def translate( self, vector ):
         """Translates the node along it's inertial axis.
@@ -92,7 +84,7 @@ class InertialSpace( object ):
         The inertial axis of the object does not include
         it's local orientation.
         """
-        if numpy.array_equal( vector, [ 0.0, 0.0, 0.0 ] ):
+        if numpy.count_nonzero( vector ) == 0:
             # don't bother to update anything
             return
 

@@ -7,6 +7,7 @@ import sys
 import numpy
 from pyglet.event import EventDispatcher
 
+from pyrr import vector3
 from pyrr import quaternion
 from pyrr import matrix33
 from pyrr import matrix44
@@ -116,8 +117,8 @@ class ObjectSpace( object ):
             )
         # apply the matrix to an X vector
         return matrix33.apply_to_vector(
-            [1.0, 0.0, 0.0],
-            matrix
+            matrix,
+            vector3.unit.x
             )
 
     @property
@@ -136,8 +137,8 @@ class ObjectSpace( object ):
             )
         # apply the matrix to a Y vector
         return matrix33.apply_to_vector(
-            [0.0, 1.0, 0.0],
-            matrix
+            matrix,
+            vector3.unit.y
             )
 
     @property
@@ -157,8 +158,8 @@ class ObjectSpace( object ):
             )
         # apply the matrix to a Y vector
         return matrix33.apply_to_vector(
-            [0.0, 0.0, 1.0],
-            matrix
+            matrix,
+            vector3.unit.z
             )
 
     def translate( self, vector ):
@@ -178,7 +179,7 @@ class ObjectSpace( object ):
             )
         # apply the matrix to an X vector
         self.transform.translation += matrix33.apply_to_vector(
-            vector,
-            matrix
+            matrix,
+            vector
             )
 

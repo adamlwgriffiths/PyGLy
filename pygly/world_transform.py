@@ -143,8 +143,8 @@ class WorldTransform( TreeNode ):
                 # apply to our local translation
                 # this will include our parent's world translation
                 self._translation = matrix44.apply_to_vector(
-                    self._transform.translation,
-                    parent_world_matrix
+                    parent_world_matrix,
+                    self._transform.translation
                     )
 
         return self._translation
