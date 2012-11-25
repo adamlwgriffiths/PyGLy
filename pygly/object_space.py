@@ -180,6 +180,6 @@ class ObjectSpace( object ):
         # apply the matrix to an X vector
         self.transform.translation += matrix33.apply_to_vector(
             matrix,
-            vector
+            numpy.array( vector )
             )
 
