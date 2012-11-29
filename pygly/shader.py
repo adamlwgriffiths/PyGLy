@@ -378,7 +378,7 @@ class ShaderProgram( object ):
         """
         glBindFragDataLocation( self.handle, buffers, name )
 
-    def link(self):
+    def link( self ):
         """Links the specified shader into a complete program.
 
         It is important to set any attribute locations and
@@ -389,7 +389,7 @@ class ShaderProgram( object ):
         glLinkProgram( self.handle )
         return self.check_for_errors()
 
-    def bind(self):
+    def bind( self ):
         """Binds the shader program to be the active shader program.
 
         The shader MUST be linked for this to be valid.
@@ -400,7 +400,7 @@ class ShaderProgram( object ):
         # bind the program
         glUseProgram( self.handle )
 
-    def unbind(self):
+    def unbind( self ):
         """Unbinds the shader program.
 
         This sets the current shader to null.
@@ -413,7 +413,7 @@ class ShaderProgram( object ):
         # unbind the
         glUseProgram( 0 )
 
-    def uniformf(self, name, *vals):
+    def uniformf( self, name, *vals ):
         """Upload a floating point uniform.
 
         This program must be currently bound.
@@ -436,7 +436,7 @@ class ShaderProgram( object ):
 
         func( loc, *vals )
 
-    def uniformi(self, name, *vals):
+    def uniformi( self, name, *vals ):
         """Upload an integer uniform.
 
         This program must be currently bound.
@@ -459,7 +459,7 @@ class ShaderProgram( object ):
 
         func( loc, *vals )
 
-    def uniform_matrixf(self, name, mat):
+    def uniform_matrixf( self, name, mat ):
         """Upload a uniform matrix.
 
         Works with matrices stored as lists, as well as euclid matrices
