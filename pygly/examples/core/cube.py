@@ -159,8 +159,8 @@ def create():
         )
     # set our shader data
     # we MUST do this before we link the shader
-    shader.attribute( 0, 'in_position' )
-    shader.attribute( 1, 'in_colour' )
+    shader.attributes.in_position = 0
+    shader.attributes.in_colour = 1
     shader.frag_location( 'fragColor' )
 
     # link the shader now
@@ -209,8 +209,8 @@ def draw( projection, model_view ):
     global shader
 
     shader.bind()
-    shader.uniform_matrixf( 'model_view', model_view.flat )
-    shader.uniform_matrixf( 'projection', projection.flat )
+    shader.uniforms.model_view = model_view
+    shader.uniforms.projection = projection
 
     glBindVertexArray( vao )
 
