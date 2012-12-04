@@ -5,7 +5,7 @@ Viewport is provided without any high level
 wrappers and is entirely managed through events.
 """
 # import this first
-from examples.core.simple.main import SimpleApplication
+from pygly.examples.core.simple.main import SimpleApplication
 
 import math
 
