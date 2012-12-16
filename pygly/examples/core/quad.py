@@ -103,6 +103,7 @@ def create():
     # do this now as the value doesn't change
     shader.bind()
     shader.uniforms.texture0 = 0
+    shader.uniforms.fake = 1
     shader.unbind()
 
     vao = (GLuint)()
@@ -140,6 +141,16 @@ def create():
 
     # unbind our buffers
     glBindVertexArray( 0 )
+
+    def print_shader_info():
+        # print the shader variables we've found via GL calls
+        print "Uniforms:"
+        for uniform in shader.uniforms.all().values():
+            print "%s\t%s" % (uniform.name, uniform.type)
+        print "Attributes:"
+        for name, type in shader.attributes.all().items():
+            print "%s\t%s" % (name, type)
+    print_shader_info()
 
 def draw( projection, model_view ):
     global vao
