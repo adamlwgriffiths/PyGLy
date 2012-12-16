@@ -103,7 +103,6 @@ def create():
     # do this now as the value doesn't change
     shader.bind()
     shader.uniforms.texture0 = 0
-    shader.uniforms.fake = 1
     shader.unbind()
 
     vao = (GLuint)()
