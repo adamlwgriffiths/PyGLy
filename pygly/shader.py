@@ -73,6 +73,7 @@ import re
 import numpy
 from pyglet.gl import *
 
+import pygly.gl
 from pyrr.utils import parameters_as_numpy_arrays
 
 
@@ -215,7 +216,7 @@ class Shader( object ):
         # compile the shader
         glCompileShader( self.handle )
 
-        return self.check_for_errors()
+        return self.errors()
 
     def print_errors( self, buffer ):
         """Parses the error buffer and prints it to the console.
@@ -240,7 +241,7 @@ class Shader( object ):
             content[ line - 1 ]
             )
 
-    def check_for_errors( self ):
+    def errors( self ):
         """Checks for any errors in the shader.
 
         This is called automatically by the compile method.
@@ -282,9 +283,14 @@ class ShaderProgram( object ):
 
     Multiple shaders of the same type can be attached together.
     This lets you combine multiple smaller shaders into a single larger one.
+
+    kwargs supported arguments:
+        raise_invalid_variables:    defaults to False. If set to True,
+            accessing invalid Uniforms and Attributes will trigger a
+            ValueError exception to be raised.
     """
     
-    def __init__( self, link_now = True, *args ):
+    def __init__( self, link_now = True, *args, **kwargs ):
         # create the program handle
         self._handle = glCreateProgram()
 
@@ -294,6 +300,10 @@ class ShaderProgram( object ):
 
         for shader in args:
             self.attach_shader( shader )
+
+        self.raise_invalid_variables = False \
+            if 'raise_invalid_variables' not in kwargs \
+            else kwargs['raise_invalid_variables']
 
         if link_now:
             self.link()
@@ -352,7 +362,7 @@ class ShaderProgram( object ):
         print """Error linking shader:
 \tDescription: %s""" % ( buffer )
 
-    def check_for_errors( self ):
+    def errors( self ):
         """Checks for any errors in the program.
 
         This is called automatically by the link method.
@@ -376,9 +386,10 @@ class ShaderProgram( object ):
             # print the errors
             self.print_errors( buffer.value )
 
-            return False
+            return True
 
-        return True
+        # no errors
+        return False
 
     def frag_location( self, name, buffers = 0 ):
         """Sets the fragment output name used within the program.
@@ -403,7 +414,10 @@ class ShaderProgram( object ):
         """
         # link the program
         glLinkProgram( self.handle )
-        return self.check_for_errors()
+        if self.errors():
+            return False
+        self.uniforms.program_linked()
+        return True
 
     @property
     def linked( self ):
@@ -463,6 +477,67 @@ class Uniforms( object ):
 
         self.__dict__[ 'program' ] = program
 
+    def program_linked( self ):
+        """Called by a ShaderProgram when the program is linked
+        successfully.
+        """
+        # clear the existing uniforms, if any
+        for key, value in self.__dict__.items():
+            if key != 'program':
+                del self.__dict__[ key ]
+
+        # iterate through our auto-detected uniforms
+        # and create objects for them
+        for name, glType in self._gl_all():
+            self.__dict__[ name ] = self.types[ glType ]()
+            self.__dict__[ name ]._set_data( name, self.program )
+
+    def _gl_all( self ):
+        """Returns a list of all the available uniforms.
+
+        The list is composed of tuples. Each tuple is
+        composed of the name and the GLtype (as a string)
+        of the uniform.
+        """
+        # get number of active uniforms
+        handle = self.__dict__[ 'program' ].handle
+        glValue = (GLint)()
+        glGetProgramiv( handle, GL_ACTIVE_UNIFORMS, glValue )
+
+        uniforms = []
+
+        for index in range( glValue.value ):
+            name_length = 30
+            glNameSize = (GLsizei)()
+            glSize = (GLint)()
+            glType = (GLenum)()
+            glName = (GLchar * name_length)()
+
+            glGetActiveUniform(
+                handle,
+                index,
+                name_length,
+                glNameSize,
+                glSize,
+                glType,
+                glName
+                )
+
+            uniforms.append( (glName.value, glType.value) )
+        return uniforms
+
+    def all( self ):
+        """Returns a dictionary of all uniform objects.
+
+        The key is the uniform name.
+        The value is the uniform type as a string.
+        Any uniform automatically detected or accessed programmatically
+        in python will appear in this list.
+        """
+        uniforms = self.__dict__.copy()
+        del uniforms['program']
+        # convert to a list
+        return uniforms
 
     def __getattr__( self, name ):
         """Simply calls __getitem__ with the same parameters.
@@ -484,25 +559,12 @@ class Uniforms( object ):
             # return the existing uniform
             return self.__dict__[ name ]
         else:
-            # determine what type the uniform is
-            glType = Uniform.variable_type(
-                self.__dict__['program'],
-                name
-                )
-
-            # if we didn't get a type, the uniform doesn't exist
-            if glType == None:
+            if self.__dict__[ 'program' ].raise_invalid_variables:
                 raise ValueError( "Uniform '%s' not specified in ShaderProgram" % name )
-
-            # determine what uniform type to make it
-            # and create an object of that type
-            if glType in self.types:
-                self.__dict__[ name ] = self.types[ glType ]()
-
-            # pass the shader and name to the uniform
-            self.__dict__[ name ]._set_data( name, self.program )
-
-            return self.__dict__[ name ]
+            else:
+                self.__dict__[ name ] = InvalidUniform()
+                self.__dict__[ name ]._set_data( name, self.program )
+                return self.__dict__[ name ]
 
     def __setattr__( self, name, value ):
         self.__setitem__( name, value )
@@ -514,6 +576,8 @@ class Uniforms( object ):
         """
         if isinstance( value, Uniform ):
             # allow the manual assignment of uniforms
+            if name in self.__dict__:
+                raise ValueError( "Uniform already set '%s'" % name )
             self.__dict__[ name ] = value
             value._set_data( name, self.program )
         else:
@@ -568,6 +632,18 @@ class Uniform( object ):
         return None
 
     @property
+    def gl_type( self ):
+        """Extracts the values for the uniform.
+
+        Due to there not being an efficient way of doing this, we
+        manually iterate through the active uniforms and find the
+        uniform by its name.
+        """
+        # result may be None type
+        return Uniform.variable_type( self.program, self.name )
+
+
+    @property
     def type( self ):
         """Extracts the values for the uniform.
 
@@ -575,13 +651,8 @@ class Uniform( object ):
         manually iterate through the active uniforms and find the
         uniform by its name.
         """
-        result = Uniform.variable_type( self.program, self.name )
-
-        if result == None:
-            # no uniform found
-            raise ValueError( "Not matching Uniform value for name '%s' found" % self.name )
-        else:
-            return result
+        # result may be None type
+        return pygly.gl.enum_to_string( self.gl_type )
 
     def _set_data( self, name, program ):
         """Used by the Uniforms class to pass the uniform name
@@ -605,6 +676,26 @@ class Uniform( object ):
         raise NotImplementedError
 
 
+class InvalidUniform( Uniform ):
+
+    def __init__( self ):
+        super( InvalidUniform, self ).__init__()
+
+    def _set_data( self, name, program ):
+        Uniform._set_data( self, name, program )
+
+        # ensure we have the right uniform type
+        print "Uniform '%s' not specified in ShaderProgram" % name
+
+    @property
+    def value( self ):
+        pass
+
+    @value.setter
+    def value( self, *args ):
+        pass
+
+
 class UniformFloat( Uniform ):
     types = [
         GL_FLOAT,
@@ -620,7 +711,7 @@ class UniformFloat( Uniform ):
         super( UniformFloat, self )._set_data( name, program )
 
         # ensure we have the right uniform type
-        if self.type not in self.types:
+        if self.gl_type not in self.types:
             raise ValueError( "Uniform '%s' is not of type Float" % self.name )
 
     @property
@@ -705,8 +796,7 @@ class UniformInt( Uniform ):
         GL_INT,
         GL_INT_VEC2,
         GL_INT_VEC3,
-        GL_INT_VEC4,
-        GL_UNSIGNED_INT_ATOMIC_COUNTER,
+        GL_INT_VEC4
         ]
 
     def __init__( self ):
@@ -716,7 +806,7 @@ class UniformInt( Uniform ):
         super( UniformInt, self )._set_data( name, program )
 
         # ensure we have the right uniform type
-        if self.type not in self.types:
+        if self.gl_type not in self.types:
             raise ValueError( "Uniform '%s' is not of type Int" % self.name )
 
     @property
@@ -801,7 +891,8 @@ class UniformUint( Uniform ):
         GL_UNSIGNED_INT,
         GL_UNSIGNED_INT_VEC2,
         GL_UNSIGNED_INT_VEC3,
-        GL_UNSIGNED_INT_VEC4
+        GL_UNSIGNED_INT_VEC4,
+        GL_UNSIGNED_INT_ATOMIC_COUNTER,
         ]
 
     def __init__( self ):
@@ -811,7 +902,7 @@ class UniformUint( Uniform ):
         super( UniformUint, self )._set_data( name, program )
 
         # ensure we have the right uniform type
-        if self.type not in self.types:
+        if self.gl_type not in self.types:
             raise ValueError( "Uniform '%s' is not of type Uint" % self.name )
 
     @property
@@ -911,7 +1002,7 @@ class UniformFloatMatrix( Uniform ):
         super( UniformFloatMatrix, self )._set_data( name, program )
 
         # ensure we have the right uniform type
-        if self.type not in self.types:
+        if self.gl_type not in self.types:
             raise ValueError( "Uniform '%s' is not of type Uint" % self.name )
 
     @property
@@ -1059,12 +1150,15 @@ class UniformSampler( UniformInt ):
         Uniform._set_data( self, name, program )
 
         # ensure we have the right uniform type
-        if self.type not in self.types:
+        if self.gl_type not in self.types:
             raise ValueError( "Uniform '%s' is not of type Sampler" % self.name )
 
 
 class Attributes( object ):
     """Provides access to ShaderProgram attribute bindings.
+
+    Because Attributes must be updated before the shader is linked,
+    we cannot do the same validation as we can with Uniforms.
 
     Usage:
     shader.attributes.in_position = 0
@@ -1079,6 +1173,39 @@ class Attributes( object ):
 
         self.__dict__[ 'program' ] = program
 
+    def all( self ):
+        """Returns a dictionary of all the available attributes.
+
+        The key is the attribute name.
+        The value is the attribute type as a string.
+        """
+        # get number of active attributes
+        handle = self.__dict__[ 'program' ].handle
+        glValue = (GLint)()
+        glGetProgramiv( handle, GL_ACTIVE_ATTRIBUTES, glValue )
+
+        attributes = {}
+
+        for index in range( glValue.value ):
+            name_length = 30
+            glNameSize = (GLsizei)()
+            glSize = (GLint)()
+            glType = (GLenum)()
+            glName = (GLchar * name_length)()
+
+            glGetActiveAttrib(
+                handle,
+                index,
+                name_length,
+                glNameSize,
+                glSize,
+                glType,
+                glName
+                )
+
+            attributes[ glName.value ] = pygly.gl.enum_to_string( glType.value )
+        return attributes
+
     def __getattr__( self, name ):
         """Simply calls __getitem__ with the same parameters.
         """
@@ -1088,11 +1215,20 @@ class Attributes( object ):
         """Returns the currently bound attribute value.
 
         The ShaderProgram MUST be linked or a ValueError is raised.
+
+        If the attribute is invalid, None will be returned.
+        An invalid attribute is signified as OpenGL's glGetAttribLocation
+        function returning -1.
         """
         if not self.program.linked:
             raise ValueError( "ShaderProgram must be linked before attribute can be queried" )
 
-        return glGetAttribLocation( self.program.handle, name )
+        location = glGetAttribLocation( self.program.handle, name )
+
+        # return None if the location is invalid
+        if location < 0:
+            return None
+        return location
 
     def __setattr__( self, name, value ):
         """Simply calls __setitem__ with the same parameters
