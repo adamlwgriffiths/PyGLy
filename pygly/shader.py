@@ -73,7 +73,6 @@ import re
 import numpy
 from pyglet.gl import *
 
-import pygly.gl
 from pyrr.utils import parameters_as_numpy_arrays
 
 
@@ -126,6 +125,98 @@ def parse_shader_errors( errors ):
         except ValueError as e:
             pass
     return results
+
+def enum_to_string( glEnum ):
+    return {
+        GL_FLOAT:               "GL_FLOAT",
+        GL_FLOAT_VEC2:          "GL_FLOAT_VEC2",
+        GL_FLOAT_VEC3:          "GL_FLOAT_VEC3",
+        GL_FLOAT_VEC4:          "GL_FLOAT_VEC4",
+        GL_INT:                 "GL_INT",
+        GL_INT_VEC2:            "GL_INT_VEC2",
+        GL_INT_VEC3:            "GL_INT_VEC3",
+        GL_INT_VEC4:            "GL_INT_VEC4",
+        GL_UNSIGNED_INT:        "GL_UNSIGNED_INT",
+        GL_UNSIGNED_INT_VEC2:   "GL_UNSIGNED_INT_VEC2",
+        GL_UNSIGNED_INT_VEC3:   "GL_UNSIGNED_INT_VEC3",
+        GL_UNSIGNED_INT_VEC4:   "GL_UNSIGNED_INT_VEC4",
+        GL_UNSIGNED_INT_ATOMIC_COUNTER: "GL_UNSIGNED_INT_ATOMIC_COUNTER",
+        GL_FLOAT_MAT2:          "GL_FLOAT_MAT2",
+        GL_FLOAT_MAT3:          "GL_FLOAT_MAT3",
+        GL_FLOAT_MAT4:          "GL_FLOAT_MAT4",
+        GL_FLOAT_MAT2x3:        "GL_FLOAT_MAT2x3",
+        GL_FLOAT_MAT2x4:        "GL_FLOAT_MAT2x4",
+        GL_FLOAT_MAT3x2:        "GL_FLOAT_MAT3x2",
+        GL_FLOAT_MAT3x4:        "GL_FLOAT_MAT3x4",
+        GL_FLOAT_MAT4x2:        "GL_FLOAT_MAT4x2",
+        GL_FLOAT_MAT4x3:        "GL_FLOAT_MAT4x3",
+        GL_SAMPLER_1D:          "GL_SAMPLER_1D",
+        GL_SAMPLER_2D:          "GL_SAMPLER_2D",
+        GL_SAMPLER_3D:          "GL_SAMPLER_3D",
+        GL_SAMPLER_CUBE:        "GL_SAMPLER_CUBE",
+        GL_SAMPLER_1D_SHADOW:   "GL_SAMPLER_1D_SHADOW",
+        GL_SAMPLER_2D_SHADOW:   "GL_SAMPLER_2D_SHADOW",
+        GL_SAMPLER_1D_ARRAY:    "GL_SAMPLER_1D_ARRAY",
+        GL_SAMPLER_2D_ARRAY:    "GL_SAMPLER_2D_ARRAY",
+        GL_SAMPLER_1D_ARRAY_SHADOW: "GL_SAMPLER_1D_ARRAY_SHADOW",
+        GL_SAMPLER_2D_ARRAY_SHADOW: "GL_SAMPLER_2D_ARRAY_SHADOW",
+        GL_SAMPLER_2D_MULTISAMPLE:  "GL_SAMPLER_2D_MULTISAMPLE",
+        GL_SAMPLER_2D_MULTISAMPLE_ARRAY:    "GL_SAMPLER_2D_MULTISAMPLE_ARRAY",
+        GL_SAMPLER_CUBE_SHADOW: "GL_SAMPLER_CUBE_SHADOW",
+        GL_SAMPLER_BUFFER:      "GL_SAMPLER_BUFFER",
+        GL_SAMPLER_2D_RECT:     "GL_SAMPLER_2D_RECT",
+        GL_SAMPLER_2D_RECT_SHADOW:  "GL_SAMPLER_2D_RECT_SHADOW",
+        GL_INT_SAMPLER_1D:      "GL_INT_SAMPLER_1D",
+        GL_INT_SAMPLER_2D:      "GL_INT_SAMPLER_2D",
+        GL_INT_SAMPLER_3D:      "GL_INT_SAMPLER_3D",
+        GL_INT_SAMPLER_CUBE:    "GL_INT_SAMPLER_CUBE",
+        GL_INT_SAMPLER_1D_ARRAY:    "GL_INT_SAMPLER_1D_ARRAY",
+        GL_INT_SAMPLER_2D_ARRAY:    "GL_INT_SAMPLER_2D_ARRAY",
+        GL_INT_SAMPLER_2D_MULTISAMPLE:  "GL_INT_SAMPLER_2D_MULTISAMPLE",
+        GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:    "GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
+        GL_INT_SAMPLER_BUFFER:  "GL_INT_SAMPLER_BUFFER",
+        GL_INT_SAMPLER_2D_RECT: "GL_INT_SAMPLER_2D_RECT",
+        GL_UNSIGNED_INT_SAMPLER_1D: "GL_UNSIGNED_INT_SAMPLER_1D",
+        GL_UNSIGNED_INT_SAMPLER_2D: "GL_UNSIGNED_INT_SAMPLER_2D",
+        GL_UNSIGNED_INT_SAMPLER_3D: "GL_UNSIGNED_INT_SAMPLER_3D",
+        GL_UNSIGNED_INT_SAMPLER_CUBE:   "GL_UNSIGNED_INT_SAMPLER_CUBE",
+        GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:   "GL_UNSIGNED_INT_SAMPLER_1D_ARRAY",
+        GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:   "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY",
+        GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE: "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE",
+        GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:   "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
+        GL_UNSIGNED_INT_SAMPLER_BUFFER: "GL_UNSIGNED_INT_SAMPLER_BUFFER",
+        GL_UNSIGNED_INT_SAMPLER_2D_RECT:    "GL_UNSIGNED_INT_SAMPLER_2D_RECT",
+        GL_IMAGE_1D:            "GL_IMAGE_1D",
+        GL_IMAGE_2D:            "GL_IMAGE_2D",
+        GL_IMAGE_3D:            "GL_IMAGE_3D",
+        GL_IMAGE_2D_RECT:       "GL_IMAGE_2D_RECT",
+        GL_IMAGE_CUBE:          "GL_IMAGE_CUBE",
+        GL_IMAGE_BUFFER:        "GL_IMAGE_BUFFER",
+        GL_IMAGE_1D_ARRAY:      "GL_IMAGE_1D_ARRAY",
+        GL_IMAGE_2D_ARRAY:      "GL_IMAGE_2D_ARRAY",
+        GL_IMAGE_2D_MULTISAMPLE:    "GL_IMAGE_2D_MULTISAMPLE",
+        GL_IMAGE_2D_MULTISAMPLE_ARRAY:  "GL_IMAGE_2D_MULTISAMPLE_ARRAY",
+        GL_INT_IMAGE_1D:        "GL_INT_IMAGE_1D",
+        GL_INT_IMAGE_2D:        "GL_INT_IMAGE_2D",
+        GL_INT_IMAGE_3D:        "GL_INT_IMAGE_3D",
+        GL_INT_IMAGE_2D_RECT:   "GL_INT_IMAGE_2D_RECT",
+        GL_INT_IMAGE_CUBE:      "GL_INT_IMAGE_CUBE",
+        GL_INT_IMAGE_BUFFER:    "GL_INT_IMAGE_BUFFER",
+        GL_INT_IMAGE_1D_ARRAY:  "GL_INT_IMAGE_1D_ARRAY",
+        GL_INT_IMAGE_2D_ARRAY:  "GL_INT_IMAGE_2D_ARRAY",
+        GL_INT_IMAGE_2D_MULTISAMPLE:    "GL_INT_IMAGE_2D_MULTISAMPLE",
+        GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY:  "GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY",
+        GL_UNSIGNED_INT_IMAGE_1D:   "GL_UNSIGNED_INT_IMAGE_1D",
+        GL_UNSIGNED_INT_IMAGE_2D:   "GL_UNSIGNED_INT_IMAGE_2D",
+        GL_UNSIGNED_INT_IMAGE_3D:   "GL_UNSIGNED_INT_IMAGE_3D",
+        GL_UNSIGNED_INT_IMAGE_2D_RECT:  "GL_UNSIGNED_INT_IMAGE_2D_RECT",
+        GL_UNSIGNED_INT_IMAGE_CUBE: "GL_UNSIGNED_INT_IMAGE_CUBE",
+        GL_UNSIGNED_INT_IMAGE_BUFFER:   "GL_UNSIGNED_INT_IMAGE_BUFFER",
+        GL_UNSIGNED_INT_IMAGE_1D_ARRAY: "GL_UNSIGNED_INT_IMAGE_1D_ARRAY",
+        GL_UNSIGNED_INT_IMAGE_2D_ARRAY: "GL_UNSIGNED_INT_IMAGE_2D_ARRAY",
+        GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE:   "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE",
+        GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY: "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY",
+        }[ glEnum ]
 
 
 class Shader( object ):
@@ -652,7 +743,7 @@ class Uniform( object ):
         uniform by its name.
         """
         # result may be None type
-        return pygly.gl.enum_to_string( self.gl_type )
+        return enum_to_string( self.gl_type )
 
     def _set_data( self, name, program ):
         """Used by the Uniforms class to pass the uniform name
@@ -1203,7 +1294,7 @@ class Attributes( object ):
                 glName
                 )
 
-            attributes[ glName.value ] = pygly.gl.enum_to_string( glType.value )
+            attributes[ glName.value ] = enum_to_string( glType.value )
         return attributes
 
     def __getattr__( self, name ):
