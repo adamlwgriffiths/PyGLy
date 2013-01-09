@@ -1,6 +1,7 @@
 import pyglet.graphics
 from pyglet.gl import *
 
+import pygly.gl
 from pygly.shader import Shader, ShaderProgram
 import cube
 
@@ -58,11 +59,11 @@ def create():
     shader = ShaderProgram(
         False,
         Shader( GL_VERTEX_SHADER, shader_source['vert'] ),
-        Shader( GL_FRAGMENT_SHADER, shader_source['frag'] ),
+        Shader( GL_FRAGMENT_SHADER, shader_source['frag'] )
         )
     # set our shader data
     # we MUST do this before we link the shader
-    shader.attribute( 0, 'in_position' )
+    shader.attributes.in_position = 0
     shader.frag_location( 'fragColor' )
 
     # link the shader now
@@ -92,6 +93,16 @@ def create():
     # unbind our buffers
     glBindVertexArray( 0 )
 
+    def print_shader_info():
+        # print the shader variables we've found via GL calls
+        print "Uniforms:"
+        for uniform in shader.uniforms.all().values():
+            print "%s\t%s" % (uniform.name, uniform.type)
+        print "Attributes:"
+        for name, type in shader.attributes.all().items():
+            print "%s\t%s" % (name, type)
+    print_shader_info()
+
 
 def draw( projection, model_view, colour ):
     global vao
@@ -99,9 +110,9 @@ def draw( projection, model_view, colour ):
     global shader
 
     shader.bind()
-    shader.uniform_matrixf( 'model_view', model_view.flat )
-    shader.uniform_matrixf( 'projection', projection.flat )
-    shader.uniformf( 'colour', *colour )
+    shader.uniforms.model_view = model_view
+    shader.uniforms.projection = projection
+    shader.uniforms.colour = colour
 
     glBindVertexArray( vao )
 

@@ -91,8 +91,9 @@ def create():
         )
     # set our shader data
     # we MUST do this before we link the shader
-    shader.attribute( 0, 'in_position' )
-    shader.attribute( 1, 'in_uv' )
+    shader.attributes.in_position = 0
+    shader.attributes.in_uv = 1
+
     shader.frag_location( 'fragColor' )
 
     # link the shader now
@@ -101,7 +102,7 @@ def create():
     # set our diffuse texture stage
     # do this now as the value doesn't change
     shader.bind()
-    shader.uniformi( 'texture0', 0 )
+    shader.uniforms.texture0 = 0
     shader.unbind()
 
     vao = (GLuint)()
@@ -140,15 +141,24 @@ def create():
     # unbind our buffers
     glBindVertexArray( 0 )
 
+    def print_shader_info():
+        # print the shader variables we've found via GL calls
+        print "Uniforms:"
+        for uniform in shader.uniforms.all().values():
+            print "%s\t%s" % (uniform.name, uniform.type)
+        print "Attributes:"
+        for name, type in shader.attributes.all().items():
+            print "%s\t%s" % (name, type)
+    print_shader_info()
+
 def draw( projection, model_view ):
     global vao
     global vertices
     global shader
 
     shader.bind()
-    shader.uniform_matrixf( 'model_view', model_view.flat )
-    shader.uniform_matrixf( 'projection', projection.flat )
-    shader.uniformi( 'texture0', 0 )
+    shader.uniforms.model_view = model_view
+    shader.uniforms.projection = projection
 
     glBindVertexArray( vao )
 
