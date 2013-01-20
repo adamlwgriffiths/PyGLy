@@ -11,7 +11,7 @@ from pyglet.gl import *
 
 from pygly.scene_node import SceneNode
 import pygly.sorter
-from pygly.gl import legacy
+from pygly.gl.legacy import utils as legacy_utils
 
 from pygly.examples.legacy.simple.main import SimpleApplication
 from pygly.examples.legacy.application import LegacyApplication
@@ -83,8 +83,9 @@ class SortingApplication( SimpleApplication ):
         self.cube_colours[:,2] = 0.5
         self.cube_colours[:,3] = 0.5
 
-    def setup_camera( self ):
-        LegacyApplication.setup_camera( self )
+    def setup_cameras( self ):
+        # over-ride SimpleApplication's camera
+        LegacyApplication.setup_cameras( self )
 
         # move the camera so we're not inside
         # the root scene node's debug cube
@@ -144,7 +145,7 @@ class SortingApplication( SimpleApplication ):
             # multiply the existing model view matrix
             # by the model's world matrix
             # then render a cube
-            with legacy.multiply_matrix( model_matrix ):
+            with legacy_utils.multiply_matrix( model_matrix ):
                 cube.draw( colour )
 
 

@@ -11,6 +11,8 @@ from pyglet.gl import *
 
 import pygly.window
 import pygly.gl
+import pygly.viewport
+from pygly.viewport import Viewport
 from pygly.projection_view_matrix import ProjectionViewMatrix
 from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
@@ -69,7 +71,7 @@ class Application( object ):
     def setup( self ):
         self.setup_viewports()
         self.setup_scene()
-        self.setup_camera()
+        self.setup_cameras()
 
     def setup_viewports( self ):
         # create a viewport that spans
@@ -98,10 +100,10 @@ class Application( object ):
         # technique we will use to render it
         self.scene_node = SceneNode( 'root' )
 
-    def setup_camera( self ):
+    def setup_cameras( self ):
         # create a camera and a view matrix
         view_matrix = ProjectionViewMatrix(
-            pygly.window.aspect_ratio( self.viewports[ 0 ] ),
+            pygly.viewport.aspect_ratio( self.viewports[ 0 ] ),
             fov = 45.0,
             near_clip = 1.0,
             far_clip = 200.0
@@ -162,13 +164,13 @@ class Application( object ):
         self.render()
 
     def render( self ):
-        # set our window
+        # ensure our window is the active one
+        # incase we have more than one
         self.window.switch_to()
 
         # render each viewport
         for viewport, camera, colour in zip( self.viewports, self.cameras, self.colours ):
             glClearColor( *colour )
-
 
             # render the viewport
             self.render_viewport(
@@ -177,18 +179,15 @@ class Application( object ):
                 )
 
         # undo our viewport and our scissor
-        pygly.gl.set_scissor(
-            pygly.window.create_rectangle( self.window )
-            )
-        pygly.gl.set_viewport(
-            pygly.window.create_rectangle( self.window )
-            )
+        window_rect = pygly.window.create_rectangle( self.window )
+        pygly.viewport.set_scissor( window_rect )
+        pygly.viewport.set_viewport( window_rect )
 
     def render_viewport( self, viewport, camera ):
         # activate our viewport
-        pygly.gl.set_viewport( viewport )
+        pygly.viewport.set_viewport( viewport )
         # scissor to our viewport
-        pygly.gl.set_scissor( viewport )
+        pygly.viewport.set_scissor( viewport )
 
         # clear our frame buffer and depth buffer
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
@@ -199,7 +198,7 @@ class Application( object ):
         # but because 1 camera could be used to render
         # to multiple viewports in our example, we
         # will do it each frame
-        camera.view_matrix.aspect_ratio = pygly.window.aspect_ratio(
+        camera.view_matrix.aspect_ratio = pygly.viewport.aspect_ratio(
             viewport
             )
 

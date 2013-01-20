@@ -23,8 +23,8 @@ from pygly.camera_node import CameraNode
 from pyrr import matrix44
 
 # patch pyglet's OpenGL legacy code out
-import pygly.gl.core
-pygly.gl.core.patch_window()
+import pygly.gl.core.monkey_patch
+pygly.gl.core.monkey_patch.patch_window()
 
 from pygly.examples.core.application import CoreApplication
 import pygly.examples.core.cube as cube
@@ -114,8 +114,8 @@ class SimpleApplication( CoreApplication ):
         self.b1.transform.object.rotate_x( math.pi / 4.0 )
         self.b2.transform.object.rotate_x( math.pi / 4.0 )
 
-    def setup_camera( self ):
-        super( SimpleApplication, self ).setup_camera()
+    def setup_cameras( self ):
+        super( SimpleApplication, self ).setup_cameras()
 
         # move the camera so we're not inside
         # the root scene node's debug cube

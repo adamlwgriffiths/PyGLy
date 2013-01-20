@@ -19,8 +19,7 @@ pyglet.options['shadow_window'] = False
 
 from pyglet.gl import *
 
-import pygly.window
-import pygly.gl
+import pygly.viewport
 from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
 from pygly.orthogonal_view_matrix import OrthogonalViewMatrix
@@ -30,8 +29,8 @@ import pygly.pil_texture
 from pyrr import matrix44
 
 # patch pyglet's OpenGL legacy code out
-import pygly.gl.core
-pygly.gl.core.patch_window()
+import pygly.gl.core.monkey_patch
+pygly.gl.core.monkey_patch.patch_window()
 
 from pygly.examples.core.application import CoreApplication
 from pygly.examples.core.simple.main import SimpleApplication
@@ -173,13 +172,13 @@ class TextureApplication( SimpleApplication ):
         texture.unbind()
         self.textures.append( (name, texture) )
 
-    def setup_camera( self ):
+    def setup_cameras( self ):
         # over-ride SimpleApplication's camera
-        CoreApplication.setup_camera( self )
+        CoreApplication.setup_cameras( self )
 
         # change our view matrix to an orthogonal one
         self.cameras[ 0 ].view_matrix = OrthogonalViewMatrix(
-            pygly.window.aspect_ratio( self.viewports[ 0 ] ),
+            pygly.viewport.aspect_ratio( self.viewports[ 0 ] ),
             scale = [1.0, 1.0],
             near_clip = 1.0,
             far_clip = 200.0

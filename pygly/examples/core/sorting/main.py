@@ -14,7 +14,7 @@ import pyglet
 from pyglet.gl import *
 
 from pygly.scene_node import SceneNode
-import pygly.sorter
+import pygly.sort
 from pyrr import matrix44
 
 from pygly.examples.core.application import CoreApplication
@@ -86,8 +86,8 @@ class SortingApplication( SimpleApplication ):
         self.cube_colours[:,2] = 0.5
         self.cube_colours[:,3] = 0.5
 
-    def setup_camera( self ):
-        CoreApplication.setup_camera( self )
+    def setup_cameras( self ):
+        CoreApplication.setup_cameras( self )
 
         # move the camera so we're not inside
         # the root scene node's debug cube
@@ -135,7 +135,7 @@ class SortingApplication( SimpleApplication ):
         # from the camera
         # sort based on the -Z axis (the direction the
         # camera faces)
-        sorted = pygly.sorter.sort_radius_back_to_front(
+        sorted = pygly.sort.sort_radius_back_to_front(
             camera.world_transform.translation,
             -(camera.transform.object.z),
             self.renderables,

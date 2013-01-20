@@ -14,8 +14,8 @@ import pygly.monkey_patch
 pygly.monkey_patch.patch_idle_loop()
 
 # patch pyglet's OpenGL legacy code out
-import pygly.gl.core
-pygly.gl.core.patch_window()
+import pygly.gl.core.monkey_patch
+pygly.gl.core.monkey_patch.patch_window()
 
 
 
