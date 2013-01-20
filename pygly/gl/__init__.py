@@ -1,62 +1,51 @@
-"""Provides OpenGL functionality that is common
-to both Core and Legacy profiles.
-
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
-"""
-
-from contextlib import contextmanager
 from ctypes import string_at
 
 from pyglet.gl import *
 
+profiles = [
+    'legacy',
+    'core'
+    ]
 
-def set_viewport( rect ):
-    """Calls glViewport with the dimensions of
-    the rectangle
+profile = None
+version = None
+major_version = None
+minor_version = None
+glsl_version = None
+glsl_major_version = None
+glsl_minor_version = None
 
-    This call can be undone by first calling
-    glPushAttrib( GL_VIEWPORT_BIT )
-    and later calling glPopAttrib().
+def _extract_version(version):
+    import re
+    # version is guaranteed to be 'MAJOR.MINOR<XXX>'
+    # there can be a 3rd version
+    # split full stops and spaces and take the first 2 results
+    versions = re.split( r'[\.\s\-]', version )
+    return versions[ 0 ], versions[ 1 ]
 
-    Or using the attribute context:
-    with attributes( GL_VIEWPORT_BIT ):
-        set_viewport( rect )
-    """
-    glViewport(
-        int(rect[ 0 ][ 0 ]),
-        int(rect[ 0 ][ 1 ]),
-        int(rect[ 1 ][ 0 ]),
-        int(rect[ 1 ][ 1 ])
-        )
-
-def set_scissor( rect ):
-    """Calls glScissor with the size of the rectangle.
-
-    .. note:: It is up to the user to call glEnable(GL_SCISSOR_TEST).
-
-    .. note:: To undo this, call this function again with the window's size as a rectangle.
-
-    .. seealso::
-        Module :py:mod:`pygly.window`
-          Documentation of the :py:mod:`pygly.window` module.
-
-    This call can be undone by first calling
-    glPushAttrib( GL_SCISSOR_BIT )
-    and later calling glPopAttrib().
-
-    Or using the attribute context:
-    with attributes( GL_SCISSOR_BIT ):
-        set_scissor( rect )
-    """
-    glScissor(
-        int(rect[ 0 ][ 0 ]),
-        int(rect[ 0 ][ 1 ]),
-        int(rect[ 1 ][ 0 ]),
-        int(rect[ 1 ][ 1 ])
-        )
 
 def gl_version():
     return gl_info.get_version()
+
+def gl_version_tuple():
+    return extract_version(
+        gl_info.get_version()
+        )
+
+def gl_profile():
+    major, minor = version_tuple()
+    if major <= 2:
+        return 'legacy'
+    else:
+        return 'core'
+
+def glsl_version():
+    return string_at(
+        glGetString( GL_SHADING_LANGUAGE_VERSION )
+        )
+
+def glsl_version_tuple():
+    return extract_version( glsl_version() )
 
 def is_legacy():
     return gl_info.have_version( major = 1 )
@@ -64,24 +53,6 @@ def is_legacy():
 def is_core():
     return gl_info.have_version( major = 3 )
 
-def glsl_version():
-    return string_at(
-        glGetString( GL_SHADING_LANGUAGE_VERSION )
-        )
-
 def print_gl_info():
-    print "OpenGL version:", gl_info.get_version()
+    print "OpenGL version:", gl_version()
     print "GLSL version:", glsl_version()
-
-def type_to_string( glType ):
-    return {
-        GLbyte:     "GLbyte",
-        GLubyte:    "GLubyte",
-        GLshort:    "GLshort",
-        GLushort:   "GLushort",
-        GLint:      "GLint",
-        GLuint:     "GLuint",
-        GLfloat:    "GLfloat",
-        GLdouble:   "GLdouble",
-        }[ glType ]
-

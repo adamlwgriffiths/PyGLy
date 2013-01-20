@@ -10,8 +10,87 @@ from pyglet.gl import *
 
 from pyrr import rectangle
 from pyrr import geometric_tests
-import gl
-import window
+
+
+def aspect_ratio( rect ):
+    """Calculates the aspect ratio of the rectangle.
+
+    Aspect ratio is the ratio of width to height
+    a value of 2.0 means width is 2*height
+
+    The rectangle is in the format of Pyrr.rectangle.
+
+    Returns:
+        The aspect ratio of the rectangle.
+    """
+    width = float(rectangle.abs_width(rect))
+    height = float(rectangle.abs_height(rect))
+    return width / height
+
+def get_viewport():
+    rect = (GLint * 4)()
+    glGetIntegerv( GL_VIEWPORT, rect )
+    return rectangle.create_from_position(
+        x = rect[ 0 ],
+        y = rect[ 1 ],
+        width = rect[ 2 ],
+        height = rect[ 3 ]
+        )
+
+def set_viewport( rect ):
+    """Calls glViewport with the dimensions of
+    the rectangle
+
+    This call can be undone by first calling
+    glPushAttrib( GL_VIEWPORT_BIT )
+    and later calling glPopAttrib().
+
+    Or using the attribute context:
+    with attributes( GL_VIEWPORT_BIT ):
+        set_viewport( rect )
+    """
+    glViewport(
+        int(rectangle.x_minimum(rect)),
+        int(rectangle.y_minimum(rect)),
+        int(rectangle.abs_width(rect)),
+        int(rectangle.abs_height(rect))
+        )
+
+def get_scissor():
+    rect = (GLint * 4)()
+    glGetIntegerv( GL_SCISSOR_BOX, rect )
+    return rectangle.create_from_position(
+        x = rect[ 0 ],
+        y = rect[ 1 ],
+        width = rect[ 2 ],
+        height = rect[ 3 ]
+        )
+
+def set_scissor( rect ):
+    """Calls glScissor with the size of the rectangle.
+
+    .. note:: It is up to the user to call glEnable(GL_SCISSOR_TEST).
+
+    .. note:: To undo this, call this function again with the window's size as a rectangle.
+
+    .. seealso::
+        Module :py:mod:`pygly.window`
+          Documentation of the :py:mod:`pygly.window` module.
+
+    This call can be undone by first calling
+    glPushAttrib( GL_SCISSOR_BIT )
+    and later calling glPopAttrib().
+
+    Or using the attribute context:
+    with attributes( GL_SCISSOR_BIT ):
+        set_scissor( rect )
+    """
+    glScissor(
+        int(rectangle.x_minimum(rect)),
+        int(rectangle.y_minimum(rect)),
+        int(rectangle.abs_width(rect)),
+        int(rectangle.abs_height(rect))
+        )
 
 
 class Viewport( EventDispatcher ):
@@ -90,7 +169,7 @@ class Viewport( EventDispatcher ):
     def on_resize( self, width, height ):
         """Event handler for pyglet window's on_resize
         event.
-        
+
         Called when the window is resized.
 
         This is a stub function and is intended to be
@@ -104,12 +183,12 @@ class Viewport( EventDispatcher ):
         for rendering.
 
         .. seealso::
-            Function :py:func:`pygly.gl.set_viewport`
+            Function :py:func:`pygly.viewport.set_viewport`
             Documentation of the
-            :py:func:`pygly.gl.set_viewport` function.
+            :py:func:`pygly.viewport.set_viewport` function.
         """
         # update our viewport size
-        gl.set_viewport( self.rect )
+        set_viewport( self.rect )
 
     def __enter__( self ):
         # activate our viewport
@@ -135,7 +214,7 @@ class Viewport( EventDispatcher ):
             This is an @property decorated method which allows
             retrieval and assignment of the scale value.
         """
-        return window.aspect_ratio( self.rect )
+        return aspect_ratio( self.rect )
 
     def scissor_to_viewport( self ):
         """Calls glScissor with the size of the viewport.
@@ -144,11 +223,11 @@ class Viewport( EventDispatcher ):
             It is up to the user to call glEnable(GL_SCISSOR_TEST).
 
         .. seealso::
-            Function :py:func:`pygly.gl.set_scissor`
+            Function :py:func:`pygly.viewport.set_scissor`
             Documentation of the
-            :py:func:`pygly.gl.set_scissor` function.
+            :py:func:`pygly.viewport.set_scissor` function.
         """
-        gl.set_scissor( self.rect )
+        set_scissor( self.rect )
 
     def setup_viewport( self ):
         """Sets the viewport rendering attributes.
