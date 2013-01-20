@@ -88,8 +88,11 @@ class WorldTransform( TreeNode ):
     def scale( self ):
         if self._scale == None:
             if self.parent == None:
+                # we don't have a parent
+                # so just use our current local scale
                 self._scale = self._transform.scale.copy()
             else:
+                # apply our parents scale to our local scale
                 self._scale = self._transform.scale * self.parent.scale
 
         return self._scale
@@ -110,6 +113,8 @@ class WorldTransform( TreeNode ):
     def orientation( self ):
         if self._orientation == None:
             if self.parent == None:
+                # we don't have a parent
+                # so just use our current local orientation
                 self._orientation = self._transform.orientation.copy()
             else:
                 # multiply our rotation by our parents
@@ -134,16 +139,15 @@ class WorldTransform( TreeNode ):
     def translation( self ):
         if self._translation == None:
             if self.parent == None:
+                # we don't have a parent
+                # so just use our current local translation
                 self._translation = self._transform.translation.copy()
             else:
                 # rotate our translation by our parent's
                 # world orientation
-                parent_world_matrix = self.parent.matrix
-
-                # apply to our local translation
                 # this will include our parent's world translation
                 self._translation = matrix44.apply_to_vector(
-                    parent_world_matrix,
+                    self.parent.matrix,
                     self._transform.translation
                     )
 
