@@ -107,17 +107,19 @@ class TreeNode( EventDispatcher ):
             parent or if the node is not a child of the
             new parent.
         """
+        if parent == self.parent:
+            return
+
+        new_parent = None
         if parent:
-            if self.parent != None:
+            new_parent = weakref.ref( parent )
+            if self.parent:
                 raise ValueError( "Node has an existing parent" )
             if self not in parent.children:
                 raise ValueError( "Node not child of parent" )
 
         old_parent = self.parent
-        if parent:
-            self._parent = weakref.ref( parent )
-        else:
-            self._parent = None
+        self._parent = new_parent
 
         # notify others of our change
         self.dispatch_event(
