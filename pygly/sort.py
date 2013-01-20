@@ -94,16 +94,17 @@ def sort_radius_front_to_back(
 
     Args:
         render_position: The position of the camera the scene
-        is being rendered from.
+            is being rendered from.
         render_direction: The direction the camera is facing.
         objects: List of objects to be sorted.
         object_positions: List of object positions. These values
-        map directly to the objects list.
+            map directly to the objects list.
     Returns:
         Returns a sorted list containing the objects.
+        If no objects are passed, an empty numpy array is returned.
     """
     if len( object_positions ) <= 0:
-        return numpy.empty( 0 )
+        return numpy.zeros( 0 )
 
     # make positions relative to render position
     relative_positions = object_positions - render_position
