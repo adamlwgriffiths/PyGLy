@@ -69,9 +69,25 @@ class Application( object ):
         self.setup()
 
     def setup( self ):
+        self.setup_render_parameters()
         self.setup_viewports()
         self.setup_scene()
         self.setup_cameras()
+
+    def setup_render_parameters( self ):
+        """Setup our common OpenGL rendering parameters.
+        """
+        # enable some default options
+        # use the z-buffer when drawing
+        glEnable( GL_DEPTH_TEST )
+
+        # enable GL_SCISSOR_TEST so we can selectively
+        # clear areas of the window
+        glEnable( GL_SCISSOR_TEST )
+
+        # enable back face culling
+        glEnable( GL_CULL_FACE )
+        glCullFace( GL_BACK )
 
     def setup_viewports( self ):
         # create a viewport that spans
