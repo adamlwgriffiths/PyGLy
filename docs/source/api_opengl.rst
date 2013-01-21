@@ -1,15 +1,9 @@
 .. _common:
 
-Common GL functions
+OpenGL functions
 *******************
 
 .. _gl:
 
 .. automodule:: pygly.gl
     :members:
-
-.. _window:
-
-.. automodule:: pygly.window
-    :members:
-

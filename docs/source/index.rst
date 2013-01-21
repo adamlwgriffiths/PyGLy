@@ -18,7 +18,7 @@ API:
 .. toctree::
     :maxdepth: 2
 
-    api_common
+    api_opengl
     api_viewports
     api_view_matrices
     api_monkey_patch
@@ -26,7 +26,6 @@ API:
     api_transform_systems
     api_tree
     api_scene_graph
-    api_debugging
     api_rendering
     api_weak_method_references
 
