@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# fail if anything goes wrong
+set -e
+
 # get the directory this file is stored in
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
