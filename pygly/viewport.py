@@ -41,13 +41,16 @@ def set_viewport( rect ):
     """Calls glViewport with the dimensions of
     the rectangle
 
-    This call can be undone by first calling
+    In the OpenGL Legacy profile (<=2.1),
+    this call can be undone by first calling
     glPushAttrib( GL_VIEWPORT_BIT )
     and later calling glPopAttrib().
-
-    Or using the attribute context:
+    Or: using the attribute context:
     with attributes( GL_VIEWPORT_BIT ):
         set_viewport( rect )
+
+    These functions are not available on the
+    OpenGL Core profile (>=3.0)
     """
     glViewport(
         int(rectangle.x_minimum(rect)),
@@ -190,19 +193,6 @@ class Viewport( EventDispatcher ):
         # update our viewport size
         set_viewport( self.rect )
 
-    def __enter__( self ):
-        # activate our viewport
-        # scissor to the viewport
-        # and set our gl state
-        glPushAttrib( GL_ALL_ATTRIB_BITS )
-        self.switch_to()
-        self.scissor_to_viewport()
-        self.setup_viewport()
-
-    def __exit__( self, type, value, traceback ):
-        # pop our gl state
-        glPopAttrib()
-
     @property
     def aspect_ratio( self ):
         """Returns the aspect ratio of the viewport.
@@ -228,42 +218,6 @@ class Viewport( EventDispatcher ):
             :py:func:`pygly.viewport.set_scissor` function.
         """
         set_scissor( self.rect )
-
-    def setup_viewport( self ):
-        """Sets the viewport rendering attributes.
-        
-        Over-ride this method to customise
-        the opengl settings for this viewport.
-
-        The default method sets the following:
-            #. glEnable( GL_DEPTH_TEST )
-            #. glShadeModel( GL_SMOOTH )
-            #. glEnable( GL_RESCALE_NORMAL )
-            #. glEnable( GL_SCISSOR_TEST )
-        """
-        # enable some default options
-        # use the z-buffer when drawing
-        glEnable( GL_DEPTH_TEST )
-
-        # enable smooth shading
-        glShadeModel( GL_SMOOTH )
-
-        # because we use glScale for scene graph
-        # scaling, normals will get affected too.
-        # GL_RESCALE_NORMAL applies the inverse
-        # value of the current matrice's scale
-        # this is new in OGL1.2 and SHOULD be
-        # faster than glEnable( GL_NORMALIZE )
-        # http://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
-        glEnable( GL_RESCALE_NORMAL )
-
-        # enable GL_SCISSOR_TEST so we can selectively
-        # clear areas of the window
-        glEnable( GL_SCISSOR_TEST )
-
-        # enable back face culling
-        glEnable( GL_CULL_FACE )
-        glCullFace( GL_BACK )
 
     @property
     def x( self ):
