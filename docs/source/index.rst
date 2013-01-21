@@ -6,7 +6,14 @@
 PyGLy index
 ===========
 
-Functionality:
+Concepts:
+
+.. toctree::
+    :maxdepth: 2
+
+    transforms
+
+API:
 
 .. toctree::
     :maxdepth: 2
@@ -15,7 +22,7 @@ Functionality:
     api_viewports
     api_view_matrices
     api_monkey_patch
-    api_transform_spaces
+    api_transforms
     api_tree
     api_scene_graph
     api_debugging
