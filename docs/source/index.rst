@@ -22,7 +22,8 @@ API:
     api_viewports
     api_view_matrices
     api_monkey_patch
-    api_transforms
+    api_transform_spaces
+    api_transform_systems
     api_tree
     api_scene_graph
     api_debugging

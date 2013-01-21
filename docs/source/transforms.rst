@@ -1,10 +1,16 @@
 .. _transforms:
 
-.. toctree::
-   :maxdepth: 2
 
 Transform Spaces
 ****************
+
+.. contents::
+   :maxdepth: 2
+
+.. seealso::
+
+    :ref:`api_transform_spaces`
+
 
 Co-ordinate Systems
 ===================
@@ -15,6 +21,10 @@ World Space
 The World Space co-ordinate system is the global co-ordinate system in which all objects are located.
 
 When using World Space, we are describing objects in terms of the global origin.
+
+.. seealso::
+
+    :ref:`api_inertial_space`
 
 
 Local Space
@@ -80,6 +90,22 @@ As the Object's orientation changes, the X,Y and Z axis presented by functions c
 When using Inertial Space, the X,Y and Z axis remain fixed regardless of the Object's orientation.
 
 
+Object Space
+------------
+
+The Object Space co-ordinate system's axis are fixed to the object's orientation.
+As the object is rotated, the Object Space axis will change with the object.
+
+.. figure:: _static/transform_object_space.png
+   :align:  center
+
+   *Object Transform Space.*
+
+.. seealso::
+
+    :ref:`api_object_space`
+
+
 Inertial Space
 --------------
 
@@ -93,15 +119,7 @@ The Inertial Space axis does not change when the object is rotated.
 
    *Inertial Transform Space*
 
+.. seealso::
 
-Object Space
-------------
-
-The Object Space co-ordinate system's axis are fixed to the object's orientation.
-As the object is rotated, the Object Space axis will change with the object.
-
-.. figure:: _static/transform_object_space.png
-   :align:  center
-
-   *Object Transform Space.*
+    :ref:`api_inertial_space`
 
