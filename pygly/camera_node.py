@@ -46,7 +46,7 @@ class CameraNode( SceneNode ):
             matrix.
         """
         # return the inverse of our world matrix
-        return matrix44.inverse(self.world_transform.matrix)
+        return matrix44.inverse( self.world_transform.matrix )
 
     def create_ray_from_ratio_point( self, point ):
         """Returns a ray cast from 2d camera co-ordinates
