@@ -35,29 +35,18 @@ class CameraNode( SceneNode ):
     def model_view( self ):
         """Property for the camera's model view matrix.
 
+        This is the inverse of the camera's world matrix
+        and is used as the initial matrix for the model view
+        matrix.
+
         This is an @property decorated method.
 
         Returns:
             A NumPy array set to the camera's model view
             matrix.
         """
-        # convert our quaternion to a matrix
-        matrix = matrix44.create_from_quaternion(
-            self.world_transform.orientation
-            )
-
-        # we need to apply the transpose of the matrix
-        matrix = matrix.T
-
-        # multiply by our inverse world transform
-        matrix = matrix44.multiply(
-            matrix44.create_from_translation(
-                -self.world_transform.translation
-                ),
-            matrix
-            )
-
-        return matrix
+        # return the inverse of our world matrix
+        return matrix44.inverse(self.world_transform.matrix)
 
     def create_ray_from_ratio_point( self, point ):
         """Returns a ray cast from 2d camera co-ordinates
