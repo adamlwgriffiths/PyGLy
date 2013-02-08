@@ -11,7 +11,7 @@ from pyglet.gl import *
 
 from pygly.scene_node import SceneNode
 import pygly.sorter
-from pygly.gl.legacy import utils as legacy_utils
+import pygly.gl_legacy
 
 from pygly.examples.legacy.simple.main import SimpleApplication
 from pygly.examples.legacy.application import LegacyApplication
@@ -145,7 +145,7 @@ class SortingApplication( SimpleApplication ):
             # multiply the existing model view matrix
             # by the model's world matrix
             # then render a cube
-            with legacy_utils.multiply_matrix( model_matrix ):
+            with pygly.gl_legacy.multiply_matrix( model_matrix ):
                 cube.draw( colour )
 
 
