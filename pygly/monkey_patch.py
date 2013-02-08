@@ -27,3 +27,18 @@ def patch_idle_loop():
         # over-ride the default event loop
         pyglet.app.EventLoop.idle = idle
 
+
+def patch_window_for_opengl_core():
+    import pyglet.window
+    
+    def on_resize( self, width, height ):
+        # don't do anything
+        pass
+
+    def draw_mouse_cursor( self ):
+        # don't do anything
+        pass
+    # patch out any pyglet functions using
+    # opengl legacy calls
+    pyglet.window.BaseWindow.on_resize = on_resize
+    pyglet.window.BaseWindow.draw_mouse_cursor = draw_mouse_cursor
