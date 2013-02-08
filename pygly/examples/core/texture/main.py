@@ -28,10 +28,6 @@ from pygly.texture import Texture2D
 import pygly.pil_texture
 from pyrr import matrix44
 
-# patch pyglet's OpenGL legacy code out
-import pygly.gl.core.monkey_patch
-pygly.gl.core.monkey_patch.patch_window()
-
 from pygly.examples.core.application import CoreApplication
 from pygly.examples.core.simple.main import SimpleApplication
 import pygly.examples.core.quad as quad

@@ -22,10 +22,6 @@ from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
 from pyrr import matrix44
 
-# patch pyglet's OpenGL legacy code out
-import pygly.gl.core.monkey_patch
-pygly.gl.core.monkey_patch.patch_window()
-
 from pygly.examples.core.application import CoreApplication
 import pygly.examples.core.cube as cube
 
