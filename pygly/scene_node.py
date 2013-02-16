@@ -12,7 +12,6 @@
 import weakref
 
 import numpy
-from pyglet.gl import *
 
 from pyrr import quaternion
 from pyrr import matrix33
