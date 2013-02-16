@@ -11,7 +11,7 @@ import pyglet
 
 import pygly.window
 import pygly.gl
-from pygly.gl.legacy import utils as legacy_utils
+import pygly.gl_legacy
 from pygly.projection_view_matrix import ProjectionViewMatrix
 from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
@@ -154,10 +154,10 @@ class SimpleApplication( LegacyApplication ):
         # if we nest these, it will first pop the projection
         # matrix mode, then try and pop the projection matrix
         # from the model view stack!
-        with legacy_utils.matrix_mode( GL_PROJECTION ):
-            with legacy_utils.load_matrix( projection ):
-                with legacy_utils.matrix_mode( GL_MODELVIEW ):
-                    with legacy_utils.load_matrix( model_view ):
+        with pygly.gl_legacy.matrix_mode( GL_PROJECTION ):
+            with pygly.gl_legacy.load_matrix( projection ):
+                with pygly.gl_legacy.matrix_mode( GL_MODELVIEW ):
+                    with pygly.gl_legacy.load_matrix( model_view ):
                         self.render_scene_graph( camera )
 
     def render_scene_graph( self, camera ):
@@ -176,7 +176,7 @@ class SimpleApplication( LegacyApplication ):
             # multiply the existing model view matrix
             # by the model's world matrix
             # then render a cube
-            with legacy_utils.multiply_matrix( model_matrix ):
+            with pygly.gl_legacy.multiply_matrix( model_matrix ):
                 cube.draw()
 
 

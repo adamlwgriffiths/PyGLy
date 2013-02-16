@@ -8,7 +8,7 @@ from pyglet.gl import *
 import pyglet
 
 import pygly.window
-from pygly.gl import legacy
+import pygly.gl
 
 # over-ride the default pyglet idle loop
 import pygly.monkey_patch

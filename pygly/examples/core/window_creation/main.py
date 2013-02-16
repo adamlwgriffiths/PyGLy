@@ -8,14 +8,14 @@ pyglet.options['shadow_window'] = False
 from pyglet.gl import *
 
 import pygly.window
+import pygly.gl
 
 # over-ride the default pyglet idle loop
 import pygly.monkey_patch
 pygly.monkey_patch.patch_idle_loop()
 
 # patch pyglet's OpenGL legacy code out
-import pygly.gl.core.monkey_patch
-pygly.gl.core.monkey_patch.patch_window()
+pygly.monkey_patch.patch_window_for_opengl_core()
 
 
 

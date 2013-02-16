@@ -124,6 +124,8 @@ class WorldTransform( TreeNode ):
                     self.parent.orientation,
                     self._transform.orientation
                     )
+                # ensure the quaternion is normalised
+                self._orientation = quaternion.normalise( self._orientation )
 
         return self._orientation
 

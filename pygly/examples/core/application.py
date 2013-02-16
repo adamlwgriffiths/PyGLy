@@ -4,6 +4,10 @@ labels use OpenGL Legacy code.
 """
 from time import time
 
+# patch pyglet's OpenGL legacy code out
+import pygly.monkey_patch
+pygly.monkey_patch.patch_window_for_opengl_core()
+
 from pygly.examples.application import Application
 
 
