@@ -4,8 +4,6 @@
 
 import math
 
-from pyglet.gl import *
-
 from pyrr import quaternion
 from pyrr import matrix44
 from pyrr import ray
