@@ -1,5 +1,4 @@
-import pyglet.graphics
-from pyglet.gl import *
+from OpenGL.GL import *
 import numpy
 
 from pygly.shader import Shader, ShaderProgram
@@ -13,17 +12,14 @@ shader_source = {
 
 in  vec3 in_position;
 in  vec2 in_uv;
-uniform mat4 model_view;
-uniform mat4 projection;
+uniform mat4 in_model_view;
+uniform mat4 in_projection;
 
 out vec2 ex_uv;
 
 void main(void) 
 {
-    gl_Position = projection * model_view * vec4(
-        in_position,
-        1.0
-        );
+    gl_Position = in_projection * in_model_view * vec4( in_position, 1.0 );
     ex_uv = in_uv;
 }
 """,
@@ -31,49 +27,33 @@ void main(void)
     'frag': """
 #version 150
 
-// Video card drivers require this next line to function properly
-precision highp float;
-
 in vec2 ex_uv;
 out vec4 fragColor;
 
-uniform sampler2D texture0;
+uniform sampler2D in_diffuse_texture;
 
 void main(void) 
 {
     //Set colour of each fragment
-    fragColor = texture( texture0, ex_uv );
-    //float alpha = texture( texture0, ex_uv ).a;
-    //fragColor = vec4( alpha, alpha, alpha, 1.0 );
+    fragColor = texture( in_diffuse_texture, ex_uv );
 }
 """
     }
 
+shader = None
 vao = None
 vbo = None
 
 vertices = numpy.array([
-     1.0, 1.0, 1.0,
-    -1.0, 1.0, 1.0,
-     1.0,-1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    -1.0,-1.0, 1.0,
-     1.0,-1.0, 1.0,
+     1.0, 1.0, 1.0,     1.0, 1.0,
+    -1.0, 1.0, 1.0,     0.0, 1.0,
+     1.0,-1.0, 1.0,     1.0, 0.0,
+    -1.0, 1.0, 1.0,     0.0, 1.0,
+    -1.0,-1.0, 1.0,     0.0, 0.0,
+     1.0,-1.0, 1.0,     1.0, 0.0,
      ],
      dtype = 'float32'
      )
-
-uvs = numpy.array([
-    1.0, 1.0,
-    0.0, 1.0,
-    1.0, 0.0,
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0,
-    ],
-    dtype = 'float32'
-    )
-
 
 def create():
     global vao
@@ -102,43 +82,34 @@ def create():
     # set our diffuse texture stage
     # do this now as the value doesn't change
     shader.bind()
-    shader.uniforms.texture0 = 0
+    shader.uniforms.in_diffuse_texture = 0
     shader.unbind()
 
-    vao = (GLuint)()
-    glGenVertexArrays( 1, vao )
-
-    vbo = (GLuint * 2)()
-    glGenBuffers( 2, vbo )
-
     # bind our vertex array
+    vao = glGenVertexArrays( 1 )
     glBindVertexArray( vao )
 
-    # load our vertex positions
-    # this will be attribute 0
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[ 0 ] )
+    vbo = glGenBuffers( 1 )
+    glBindBuffer( GL_ARRAY_BUFFER, vbo )
     glBufferData(
         GL_ARRAY_BUFFER,
         vertices.nbytes,
-        (GLfloat * vertices.size)(*vertices),
+        vertices,
         GL_STATIC_DRAW
         )
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0)
+
+    # load our vertex positions
+    # this will be attribute 0
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 5 * 4, None )
     glEnableVertexAttribArray( 0 )
 
     # load our texture coordinates
     # this will be attribute 1
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[ 1 ] )
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        uvs.nbytes,
-        (GLfloat * uvs.size)(*uvs),
-        GL_STATIC_DRAW
-        )
-    glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 0, 0)
+    glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 5 * 4, ctypes.c_void_p(3 * 4) )
     glEnableVertexAttribArray( 1 )
 
     # unbind our buffers
+    glBindBuffer( GL_ARRAY_BUFFER, 0 )
     glBindVertexArray( 0 )
 
     def print_shader_info():
@@ -157,8 +128,8 @@ def draw( projection, model_view ):
     global shader
 
     shader.bind()
-    shader.uniforms.model_view = model_view
-    shader.uniforms.projection = projection
+    shader.uniforms.in_model_view = model_view
+    shader.uniforms.in_projection = projection
 
     glBindVertexArray( vao )
 

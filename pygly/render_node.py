@@ -2,7 +2,7 @@
 .. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 """
 
-from pyglet.gl import *
+from OpenGL.GL import *
 
 from scene_node import SceneNode
 

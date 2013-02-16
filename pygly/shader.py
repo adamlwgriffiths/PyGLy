@@ -66,12 +66,10 @@ shader.uniforms.in_time = 1.0
 shader.unbind()
 """
 
-from ctypes import *
-import types
 import re
 
 import numpy
-from pyglet.gl import *
+from OpenGL.GL import *
 
 from pyrr.utils import parameters_as_numpy_arrays
 
@@ -125,6 +123,7 @@ def parse_shader_errors( errors ):
         except ValueError as e:
             pass
     return results
+
 
 def enum_to_string( glEnum ):
     return {
@@ -242,8 +241,13 @@ class Shader( object ):
         """Creates a Shader object using an existing shader handle
         """
         obj = cls( type, content, False )
-        obj.handle = handle
+        obj._handle = handle
         return obj
+
+    @classmethod
+    def create_from_file( cls, type, filename, compile_now = True ):
+        with open(filename) as f:
+            return cls( type, f.readlines(), compile_now )
 
     def __init__( self, type, content, compile_now = True ):
         super( Shader, self ).__init__()
@@ -255,30 +259,9 @@ class Shader( object ):
         if compile_now:
             self.compile()
 
-    def __del__( self ):
-        try:
-            # del can be called when our modules have been torn down
-            # we can try our best to get access to this method
-            # but it may still throw an exception
-            from pyglet.gl import glDeleteShader
-
-            # mark our shader for deletion
-            handle = getattr( self, '_handle', None )
-            if handle:
-                glDeleteShader( handle )
-        except ImportError:
-            pass
-
     @property
     def handle( self ):
         return self._handle
-
-    @handle.setter
-    def handle( self, handle ):
-        # free our existing handle
-        if self._handle:
-            glDeleteShader( self._handle )
-        self._handle = handle
 
     def compile( self ):
         """Compiles the shader using the current content
@@ -291,25 +274,22 @@ class Shader( object ):
         Shader is compiled prior to the ShaderProgram being
         linked.
         """
-        self.handle = glCreateShader( self.type )
+        self._handle = glCreateShader( self.type )
 
-        # convert to c-string
-        count = len( self.content )
-        src = (c_char_p * count)(*self.content)
-
-        glShaderSource(
-            self.handle,
-            count,
-            cast( pointer(src), POINTER(POINTER(c_char)) ),
-            None
-            )
+        glShaderSource( self.handle, self.content )
 
         # compile the shader
         glCompileShader( self.handle )
 
-        return self.errors()
+        # retrieve the compile status
+        if not glGetShaderiv( self.handle, GL_COMPILE_STATUS ):
+            self.print_shader_errors( glGetShaderInfoLog( self.handle ) )
+            return False
 
-    def print_errors( self, buffer ):
+        return True
+
+
+    def print_shader_errors( self, buffer ):
         """Parses the error buffer and prints it to the console.
 
         The buffer should be the exact contents of the GLSL
@@ -317,7 +297,7 @@ class Shader( object ):
         """
         # print the log to the console
         errors = parse_shader_errors( buffer )
-        content = self.content.split('\n')
+        lines = self.content.split('\n')
 
         for error in errors:
             line, desc = error
@@ -329,40 +309,8 @@ class Shader( object ):
             Shader.types[ self.type ],
             line,
             desc,
-            content[ line - 1 ]
+            lines[ line - 1 ]
             )
-
-    def errors( self ):
-        """Checks for any errors in the shader.
-
-        This is called automatically by the compile method.
-
-        Prints any errors to the console.
-        Returns False if an error is set, otherwise True.
-        """
-        # retrieve the compile status
-        value = c_int(0)
-        glGetShaderiv( self.handle, GL_COMPILE_STATUS, byref(value) )
-
-        # if compilation failed, print the log
-        if not value:
-            # retrieve the log length
-            glGetShaderiv( self.handle, GL_INFO_LOG_LENGTH, byref( value ) )
-
-            # retrieve the log text
-            buffer = create_string_buffer( value.value )
-            glGetShaderInfoLog( self.handle, value, None, buffer )
-
-            # print the errors
-            self.print_errors( buffer.value )
-
-            # free our shader
-            glDeleteShader( self.handle )
-            self.handle = None
-
-            return False
-
-        return True
 
 
 class ShaderProgram( object ):
@@ -399,29 +347,9 @@ class ShaderProgram( object ):
         if link_now:
             self.link()
 
-    def __del__( self ):
-        # del can be called when our modules have been torn down
-        # we can try our best to get access to this method
-        # but it may still throw an exception
-        try:
-            from pyglet.gl import glDeleteProgram
-
-            handle = getattr( self, '_handle', None )
-            if handle:
-                glDeleteProgram( handle )
-        except ImportError:
-            pass
-
     @property
     def handle( self ):
         return self._handle
-
-    @handle.setter
-    def handle( self, handle ):
-        # free our existing handle
-        if self._handle:
-            glDeleteProgram( self._handle )
-        self._handle = handle
 
     def attach_shader( self, shader ):
         """Attaches a Shader object for the specified GL_*_SHADER type.
@@ -444,7 +372,7 @@ class ShaderProgram( object ):
             # chain the exception
             raise
 
-    def print_errors( self, buffer ):
+    def print_shader_errors( self, buffer ):
         """Parses the error buffer and prints it to the console.
 
         The buffer should be the exact contents of the GLSL
@@ -453,34 +381,15 @@ class ShaderProgram( object ):
         print """Error linking shader:
 \tDescription: %s""" % ( buffer )
 
-    def errors( self ):
-        """Checks for any errors in the program.
+        # print the log to the console
+        errors = parse_shader_errors( buffer )
+        lines = self.content.split('\n')
 
-        This is called automatically by the link method.
+        for error in errors:
+            line, desc = error
 
-        Prints any errors to the console.
-        Returns False if an error is set, otherwise True.
-        """
-        # retrieve the link status
-        value = c_int(0)
-        glGetProgramiv( self.handle, GL_LINK_STATUS, byref(value) )
-
-        # if linking failed, print the log
-        if not value:
-            # retrieve the log length
-            glGetProgramiv( self.handle, GL_INFO_LOG_LENGTH, byref(value) )
-
-            # retrieve the log text
-            buffer = create_string_buffer( value.value )
-            glGetProgramInfoLog( self.handle, value, None, buffer )
-
-            # print the errors
-            self.print_errors( buffer.value )
-
-            return True
-
-        # no errors
-        return False
+            print """Error linking shader
+\tDescription: %s""" % ( desc )
 
     def frag_location( self, name, buffers = 0 ):
         """Sets the fragment output name used within the program.
@@ -505,8 +414,12 @@ class ShaderProgram( object ):
         """
         # link the program
         glLinkProgram( self.handle )
-        if self.errors():
+
+        # retrieve the compile status
+        if not glGetProgramiv( self.handle, GL_LINK_STATUS ):
+            self.print_shader_errors( glGetProgramInfoLog( self.handle ) )
             return False
+
         self.uniforms.program_linked()
         return True
 
@@ -514,9 +427,7 @@ class ShaderProgram( object ):
     def linked( self ):
         """Returns the link status of the shader.
         """
-        glValue = (GLint)()
-        glGetProgramiv( self.handle, GL_LINK_STATUS, glValue )
-        return glValue.value == GL_TRUE
+        return glGetProgramiv( self.handle, GL_LINK_STATUS ) == GL_TRUE
 
     def bind( self ):
         """Binds the shader program to be the active shader program.
@@ -546,9 +457,7 @@ class ShaderProgram( object ):
     def bound( self ):
         """Returns True if the program is the currently bound program
         """
-        glValue = (GLint)()
-        glGetIntegerv( GL_CURRENT_PROGRAM, glValue )
-        return glValue.value == self.handle
+        return glGetIntegerv( GL_CURRENT_PROGRAM ) == self.handle
 
 
 class Uniforms( object ):
@@ -579,8 +488,9 @@ class Uniforms( object ):
 
         # iterate through our auto-detected uniforms
         # and create objects for them
-        for name, glType in self._gl_all():
-            self.__dict__[ name ] = self.types[ glType ]()
+        for name, type in self._gl_all():
+            # instantiate the uniform object for the specified type
+            self.__dict__[ name ] = self.types[ type ]()
             self.__dict__[ name ]._set_data( name, self.program )
 
     def _gl_all( self ):
@@ -592,29 +502,12 @@ class Uniforms( object ):
         """
         # get number of active uniforms
         handle = self.__dict__[ 'program' ].handle
-        glValue = (GLint)()
-        glGetProgramiv( handle, GL_ACTIVE_UNIFORMS, glValue )
-
+        num_uniforms = glGetProgramiv( handle, GL_ACTIVE_UNIFORMS )
         uniforms = []
 
-        for index in range( glValue.value ):
-            name_length = 30
-            glNameSize = (GLsizei)()
-            glSize = (GLint)()
-            glType = (GLenum)()
-            glName = (GLchar * name_length)()
-
-            glGetActiveUniform(
-                handle,
-                index,
-                name_length,
-                glNameSize,
-                glSize,
-                glType,
-                glName
-                )
-
-            uniforms.append( (glName.value, glType.value) )
+        for index in range( num_uniforms ):
+            name, size, type = glGetActiveUniform( handle, index )
+            uniforms.append( (name, type) )
         return uniforms
 
     def all( self ):
@@ -696,28 +589,13 @@ class Uniform( object ):
         # uniform match by the name given
 
         # get number of active uniforms
-        glValue = (GLint)()
-        glGetProgramiv( program.handle, GL_ACTIVE_UNIFORMS, glValue )
+        num_uniforms = glGetProgramiv( program.handle, GL_ACTIVE_UNIFORMS )
 
-        for index in range( glValue.value ):
-            name_length = 30
-            glNameSize = (GLsizei)()
-            glSize = (GLint)()
-            glType = (GLenum)()
-            glName = (GLchar * name_length)()
+        for index in range( num_uniforms ):
+            _name, size, type = glGetActiveUniform( program.handle, index )
 
-            glGetActiveUniform(
-                program.handle,
-                index,
-                name_length,
-                glNameSize,
-                glSize,
-                glType,
-                glName
-                )
-
-            if glName.value == name:
-                return glType.value
+            if _name == name:
+                return type
 
         # no uniform found
         return None
@@ -1272,12 +1150,11 @@ class Attributes( object ):
         """
         # get number of active attributes
         handle = self.__dict__[ 'program' ].handle
-        glValue = (GLint)()
-        glGetProgramiv( handle, GL_ACTIVE_ATTRIBUTES, glValue )
+        num_attributes = glGetProgramiv( handle, GL_ACTIVE_ATTRIBUTES )
 
         attributes = {}
 
-        for index in range( glValue.value ):
+        for index in range( num_attributes ):
             name_length = 30
             glNameSize = (GLsizei)()
             glSize = (GLint)()

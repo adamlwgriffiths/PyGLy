@@ -129,7 +129,6 @@ class TextureApplication( SimpleApplication ):
                 self.textures.append( (filename, texture) )
             except IOError as e:
                 print 'Exception:', e
-            finally:
                 # ensure we unbound our textures
                 glBindTexture( GL_TEXTURE_2D, 0 )
 
@@ -232,6 +231,7 @@ class TextureApplication( SimpleApplication ):
             )
 
         # bind our texture
+        glActiveTexture( GL_TEXTURE0 )
         texture = self.textures[ self.current_texture ][ 1 ]
         texture.bind()
 

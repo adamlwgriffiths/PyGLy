@@ -1,19 +1,7 @@
-from ctypes import string_at
+from OpenGL.arrays.vbo import VBO
+from OpenGL.GL.ARB.vertex_array_object import *
+from OpenGL.GL import *
 
-from pyglet.gl import *
-
-profiles = [
-    'legacy',
-    'core'
-    ]
-
-profile = None
-version = None
-major_version = None
-minor_version = None
-glsl_version = None
-glsl_major_version = None
-glsl_minor_version = None
 
 def _extract_version(version):
     import re
@@ -23,36 +11,32 @@ def _extract_version(version):
     versions = re.split( r'[\.\s\-]', version )
     return versions[ 0 ], versions[ 1 ]
 
-
 def gl_version():
-    return gl_info.get_version()
+    return glGetString( GL_VERSION )
 
 def gl_version_tuple():
-    return extract_version(
-        gl_info.get_version()
-        )
+    return _extract_version( gl_version() )
 
 def gl_profile():
-    major, minor = version_tuple()
+    major, minor = gl_version_tuple()
     if major <= 2:
         return 'legacy'
     else:
         return 'core'
 
 def glsl_version():
-    return string_at(
-        glGetString( GL_SHADING_LANGUAGE_VERSION )
-        )
+    return glGetString( GL_SHADING_LANGUAGE_VERSION )
 
 def glsl_version_tuple():
-    return extract_version( glsl_version() )
+    return _extract_version( glsl_version() )
 
 def is_legacy():
-    return gl_info.have_version( major = 1 )
+    return gl_version_tuple()[ 0 ] <= 2
 
 def is_core():
-    return gl_info.have_version( major = 3 )
+    return gl_version_tuple()[ 0 ] >= 3
 
 def print_gl_info():
-    print "OpenGL version:", gl_version()
-    print "GLSL version:", glsl_version()
+    print "OpenGL Information:"
+    for prop in ["GL_VENDOR", "GL_RENDERER", "GL_VERSION", "GL_SHADING_LANGUAGE_VERSION"]:
+        print "\t%s = %s" % (prop, glGetString(globals()[prop]))

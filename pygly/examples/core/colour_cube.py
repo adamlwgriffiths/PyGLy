@@ -1,9 +1,10 @@
-import pyglet.graphics
-from pyglet.gl import *
+import numpy
+from OpenGL.GL import *
+from OpenGL.arrays.vbo import VBO
+from OpenGL.GL.ARB.vertex_array_object import *
 
 import pygly.gl
 from pygly.shader import Shader, ShaderProgram
-import cube
 
 from ctypes import *
 
@@ -43,15 +44,60 @@ void main(void)
 """
     }
 
+shader = None
 vao = None
 vbo = None
 
+vertices = numpy.array([
+     1.0, 1.0,-1.0,
+    -1.0, 1.0,-1.0,
+     1.0, 1.0, 1.0,
+    -1.0, 1.0,-1.0,
+    -1.0, 1.0, 1.0,
+     1.0, 1.0, 1.0,
+
+     1.0,-1.0, 1.0,
+    -1.0,-1.0, 1.0,
+     1.0,-1.0,-1.0,
+    -1.0,-1.0, 1.0,
+    -1.0,-1.0,-1.0,
+     1.0,-1.0,-1.0,
+
+     1.0, 1.0, 1.0,
+    -1.0, 1.0, 1.0,
+     1.0,-1.0, 1.0,
+    -1.0, 1.0, 1.0,
+    -1.0,-1.0, 1.0,
+     1.0,-1.0, 1.0,
+
+     1.0,-1.0,-1.0,
+    -1.0,-1.0,-1.0,
+     1.0, 1.0,-1.0,
+    -1.0,-1.0,-1.0,
+    -1.0, 1.0,-1.0,
+     1.0, 1.0,-1.0,
+
+    -1.0, 1.0, 1.0,
+    -1.0, 1.0,-1.0,
+    -1.0,-1.0, 1.0,
+    -1.0, 1.0,-1.0,
+    -1.0,-1.0,-1.0,
+    -1.0,-1.0, 1.0,
+
+     1.0, 1.0,-1.0,
+     1.0, 1.0, 1.0,
+     1.0,-1.0,-1.0,
+     1.0, 1.0, 1.0,
+     1.0,-1.0, 1.0,
+     1.0,-1.0,-1.0,
+     ],
+     dtype = 'float32'
+     )
 
 def create():
     global vao
     global vbo
     global vertices
-    global colours
     global shader
     global shader_source
 
@@ -69,28 +115,26 @@ def create():
     # link the shader now
     shader.link()
 
-    vao = (GLuint)()
-    glGenVertexArrays( 1, vao )
-
-    vbo = (GLuint * 1)()
-    glGenBuffers( 1, vbo )
-
     # bind our vertex array
+    vao = glGenVertexArrays( 1 )
     glBindVertexArray( vao )
+
+    vbo = glGenBuffers( 1 )
+    glBindBuffer( GL_ARRAY_BUFFER, vbo )
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vertices.nbytes,
+        vertices,
+        GL_STATIC_DRAW
+        )
 
     # load our vertex positions
     # this will be attribute 0
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[ 0 ] )
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        cube.vertices.nbytes,
-        (GLfloat * cube.vertices.size)(*cube.vertices),
-        GL_STATIC_DRAW
-        )
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0)
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, None )
     glEnableVertexAttribArray( 0 )
 
     # unbind our buffers
+    glBindBuffer( GL_ARRAY_BUFFER, 0 )
     glBindVertexArray( 0 )
 
     def print_shader_info():
@@ -116,7 +160,7 @@ def draw( projection, model_view, colour ):
 
     glBindVertexArray( vao )
 
-    glDrawArrays( GL_TRIANGLES, 0, cube.vertices.size / 3 )
+    glDrawArrays( GL_TRIANGLES, 0, vertices.size / 3 )
 
     glBindVertexArray( 0 )
     shader.unbind()

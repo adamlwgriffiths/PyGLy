@@ -8,17 +8,16 @@ http://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
 http://www.opengl.org/sdk/docs/man3/xhtml/glTexParameter.xml
 """
 import numpy
-from pygly.gl import *
-from ctypes import *
+from OpenGL.GL import *
+from OpenGL.GL.ARB.texture_rg import *
+from OpenGL.raw.GL.ARB.half_float_vertex import *
+from OpenGL.raw.GL.ARB.depth_buffer_float import *
+#from ctypes import *
+
+from pyrr.utils import parameters_as_numpy_arrays
 
 import pygly.utils
 
-
-def create_texture( target ):
-    texture = (GLuint)()
-    glGenTextures( 1, texture )
-
-    return texture
 
 def active_texture( unit ):
     glActiveTexture( GL_TEXTURE0 + unit )
@@ -39,35 +38,15 @@ def unbind_from_unit( unit, texture ):
 
 def set_swizzle( target, swizzle ):
     gl_swizzle = (GLint * 4)(*swizzle)
-    glTexParameteriv(
-        target,
-        GL_TEXTURE_SWIZZLE_RGBA,
-        gl_swizzle
-        )
+    glTexParameteriv( target, GL_TEXTURE_SWIZZLE_RGBA, gl_swizzle )
 
 def set_min_mag_filter( target, min, mag ):
-    glTexParameteri(
-        target,
-        GL_TEXTURE_MIN_FILTER,
-        min
-        )
-    glTexParameteri(
-        target,
-        GL_TEXTURE_MAG_FILTER,
-        mag
-        )
+    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, min )
+    glTexParameteri( target, GL_TEXTURE_MAG_FILTER, mag )
 
 def set_wrap_mode( target, wrap_s, wrap_t ):
-    glTexParameteri(
-        target,
-        GL_TEXTURE_WRAP_S,
-        wrap_s
-        )
-    glTexParameteri(
-        target,
-        GL_TEXTURE_WRAP_T,
-        wrap_t
-        )
+    glTexParameteri( target, GL_TEXTURE_WRAP_S, wrap_s )
+    glTexParameteri( target, GL_TEXTURE_WRAP_T, wrap_t )
 
 def texture_alignment( size ):
     """Determines a textures byte alignment.
@@ -249,7 +228,7 @@ class Texture( object ):
         self._sub_image_func = sub_image_func
 
         self.target = target
-        self.texture = create_texture( target )
+        self._handle = glGenTextures( 1 )
 
     def __del__( self ):
         # free our texture
@@ -257,8 +236,12 @@ class Texture( object ):
         if texture and texture.value != 0:
             glDeleteTextures( 1, texture )
 
+    @property
+    def handle( self ):
+        return self._handle
+
     def bind( self ):
-        glBindTexture( self.target, self.texture )
+        glBindTexture( self.target, self._handle )
 
     def unbind( self ):
         glBindTexture( self.target, 0 )
@@ -309,6 +292,7 @@ class Texture( object ):
             border
             )
 
+    @parameters_as_numpy_arrays( 'data' )
     def _texture_func(
         self,
         func,
@@ -331,11 +315,6 @@ class Texture( object ):
         if gl_swizzle:
             set_swizzle( self.target, gl_swizzle )
 
-        # convert our data 
-        # first perform a numpy type conversion
-        # then cast to a gl type
-        gl_data = (gl_type * len(data))(*data)
-
         # dynamically set our parameters
         # the only difference in glTex*Image*D
         # functions is the size and optional offsets
@@ -350,7 +329,7 @@ class Texture( object ):
             gl_border,
             gl_format,
             gl_enum,
-            gl_data
+            data
             ]
 
         # check the alignment of the texture

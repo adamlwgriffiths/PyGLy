@@ -7,14 +7,14 @@ wrappers and is entirely managed through events.
 import math
 from time import time
 
+import OpenGL
+from OpenGL.GL import *
 import pyglet
 
 # disable the shadow window
 # this uses a legacy profile and causes issues
 # on OS-X
 pyglet.options['shadow_window'] = False
-
-from pyglet.gl import *
 
 import pygly.window
 import pygly.gl

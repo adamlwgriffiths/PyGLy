@@ -5,8 +5,8 @@
 import sys
 
 import numpy
+from OpenGL.GL import *
 from pyglet.event import EventDispatcher
-from pyglet.gl import *
 
 from pyrr import rectangle
 from pyrr import geometric_tests

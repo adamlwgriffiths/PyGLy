@@ -6,8 +6,8 @@ wrappers and is entirely managed through events.
 """
 from time import time
 
+from OpenGL.GL import *
 import pyglet
-from pyglet.gl import *
 
 import pygly.window
 import pygly.gl

@@ -3,7 +3,7 @@
 
 from contextlib import contextmanager
 
-from pyglet.gl import *
+from OpenGL.GL import *
 import numpy
 
 

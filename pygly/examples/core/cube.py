@@ -1,10 +1,9 @@
-import pyglet.graphics
-from pyglet.gl import *
 import numpy
+from OpenGL.GL import *
+from OpenGL.arrays.vbo import VBO
+from OpenGL.GL.ARB.vertex_array_object import *
 
 from pygly.shader import Shader, ShaderProgram
-
-from ctypes import *
 
 
 shader_source = {
@@ -46,108 +45,62 @@ void main(void)
 """
     }
 
+shader = None
 vao = None
 vbo = None
 
 vertices = numpy.array([
-     1.0, 1.0,-1.0,
-    -1.0, 1.0,-1.0,
-     1.0, 1.0, 1.0,
-    -1.0, 1.0,-1.0,
-    -1.0, 1.0, 1.0,
-     1.0, 1.0, 1.0,
+     1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+     1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+    -1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+     1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
 
-     1.0,-1.0, 1.0,
-    -1.0,-1.0, 1.0,
-     1.0,-1.0,-1.0,
-    -1.0,-1.0, 1.0,
-    -1.0,-1.0,-1.0,
-     1.0,-1.0,-1.0,
+     1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+    -1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
 
-     1.0, 1.0, 1.0,
-    -1.0, 1.0, 1.0,
-     1.0,-1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    -1.0,-1.0, 1.0,
-     1.0,-1.0, 1.0,
+     1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+    -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+     1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+    -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+    -1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+     1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
 
-     1.0,-1.0,-1.0,
-    -1.0,-1.0,-1.0,
-     1.0, 1.0,-1.0,
-    -1.0,-1.0,-1.0,
-    -1.0, 1.0,-1.0,
-     1.0, 1.0,-1.0,
+     1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+    -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+     1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+    -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+    -1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+     1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
 
-    -1.0, 1.0, 1.0,
-    -1.0, 1.0,-1.0,
-    -1.0,-1.0, 1.0,
-    -1.0, 1.0,-1.0,
-    -1.0,-1.0,-1.0,
-    -1.0,-1.0, 1.0,
+    -1.0, 1.0, 1.0,     1.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
+    -1.0,-1.0,-1.0,     1.0, 1.0, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
 
-     1.0, 1.0,-1.0,
-     1.0, 1.0, 1.0,
-     1.0,-1.0,-1.0,
-     1.0, 1.0, 1.0,
-     1.0,-1.0, 1.0,
-     1.0,-1.0,-1.0,
+     1.0, 1.0,-1.0,     1.0, 0.0, 0.0,
+     1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
+     1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+     1.0,-1.0, 1.0,     1.0, 0.0, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
      ],
      dtype = 'float32'
      )
 
-colours = numpy.array([
-    # green
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    # orange
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    # blue
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    # violet
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    # yellow
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    # red
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    ],
-    dtype = 'float32'
-    )
 
 
 def create():
     global vao
     global vbo
     global vertices
-    global colours
     global shader
     global shader_source
 
@@ -166,40 +119,31 @@ def create():
     # link the shader now
     shader.link()
 
-    vao = (GLuint)()
-    glGenVertexArrays( 1, vao )
-
-    vbo = (GLuint * 2)()
-    glGenBuffers( 2, vbo )
-
     # bind our vertex array
+    vao = glGenVertexArrays( 1 )
     glBindVertexArray( vao )
 
-    # load our vertex positions
-    # this will be attribute 0
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[ 0 ] )
+    vbo = glGenBuffers( 1 )
+    glBindBuffer( GL_ARRAY_BUFFER, vbo )
     glBufferData(
         GL_ARRAY_BUFFER,
         vertices.nbytes,
-        (GLfloat * vertices.size)(*vertices),
+        vertices,
         GL_STATIC_DRAW
         )
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0)
+
+    # load our vertex positions
+    # this will be attribute 0
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * 4, None )
     glEnableVertexAttribArray( 0 )
 
     # load our vertex colours
     # this will be attribute 1
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[ 1 ] )
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        colours.nbytes,
-        (GLfloat * colours.size)(*colours),
-        GL_STATIC_DRAW
-        )
-    glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, 0)
+    glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * 4, ctypes.c_void_p(3 * 4) )
     glEnableVertexAttribArray( 1 )
 
     # unbind our buffers
+    glBindBuffer( GL_ARRAY_BUFFER, 0 )
     glBindVertexArray( 0 )
 
     def print_shader_info():
@@ -212,7 +156,6 @@ def create():
             print "%s\t%s" % (name, type)
     print_shader_info()
 
-
 def draw( projection, model_view ):
     global vao
     global vertices
@@ -223,9 +166,8 @@ def draw( projection, model_view ):
     shader.uniforms.projection = projection
 
     glBindVertexArray( vao )
-
     glDrawArrays( GL_TRIANGLES, 0, vertices.size / 3 )
-
     glBindVertexArray( 0 )
+
     shader.unbind()
 

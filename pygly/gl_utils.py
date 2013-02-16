@@ -4,16 +4,10 @@ to both Core and Legacy profiles.
 .. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 """
 
-from pyglet.gl import \
-    GLbyte,
-    GLubyte,
-    GLshort,
-    GLushort,
-    GLint,
-    GLuint,
-    GLfloat,
-    GLdouble
+from OpenGL.GL import *
 
+def string_to_type( type ):
+    return globals()[type]
 
 def type_to_string( glType ):
     return {

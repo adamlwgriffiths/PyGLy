@@ -1,82 +1,88 @@
-import pyglet.graphics
-from pyglet.gl import GL_QUADS
+import numpy
+from OpenGL.GL import *
+from OpenGL.arrays.vbo import VBO
+from OpenGL.GL.ARB.vertex_array_object import *
 
-vertex_list = None
+vbo = None
 
-vertices = [
-     1.0, 1.0,-1.0,
-    -1.0, 1.0,-1.0,
-    -1.0, 1.0, 1.0,
-     1.0, 1.0, 1.0,
+vertices = numpy.array([
+     1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+     1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+    -1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+     1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
 
-     1.0,-1.0, 1.0,
-    -1.0,-1.0, 1.0,
-    -1.0,-1.0,-1.0,
-     1.0,-1.0,-1.0,
+     1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+    -1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
 
-     1.0, 1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    -1.0,-1.0, 1.0,
-     1.0,-1.0, 1.0,
+     1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+    -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+     1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+    -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+    -1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+     1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
 
-     1.0,-1.0,-1.0,
-    -1.0,-1.0,-1.0,
-    -1.0, 1.0,-1.0,
-     1.0, 1.0,-1.0,
+     1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+    -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+     1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+    -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+    -1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+     1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
 
-    -1.0, 1.0, 1.0,
-    -1.0, 1.0,-1.0,
-    -1.0,-1.0,-1.0,
-    -1.0,-1.0, 1.0,
+    -1.0, 1.0, 1.0,     1.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
+    -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
+    -1.0,-1.0,-1.0,     1.0, 1.0, 0.0,
+    -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
 
-     1.0, 1.0,-1.0,
-     1.0, 1.0, 1.0,
-     1.0,-1.0, 1.0,
-     1.0,-1.0,-1.0,
-     ]
+     1.0, 1.0,-1.0,     1.0, 0.0, 0.0,
+     1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
+     1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+     1.0,-1.0, 1.0,     1.0, 0.0, 0.0,
+     1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
+     ],
+     dtype = 'float32'
+     )
 
-colours = [
-    # green
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    # orange
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    1.0, 0.5, 0.0,
-    # blue
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    # violet
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    # yellow
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    1.0, 1.0, 0.0,
-    # red
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0
-    ]
+
 
 def create():
-    global vertex_list
-    vertex_list = pyglet.graphics.vertex_list(
-        24,
-        ('v3f/static', (vertices) ),
-        ('c3f/static', (colours) ),
+    # TODO: convert this to a display list
+    global vbo
+    global vertices
+
+    vbo = glGenBuffers( 1 )
+    glBindBuffer( GL_ARRAY_BUFFER, vbo )
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vertices.nbytes,
+        vertices,
+        GL_STATIC_DRAW
         )
 
+    # unbind our buffers
+    glBindBuffer( GL_ARRAY_BUFFER, 0 )
+
 def draw():
-    global vertex_list
-    vertex_list.draw( GL_QUADS )
+    global vbo
+    global vertices
+
+    glBindBuffer( GL_ARRAY_BUFFER, vbo )
+    # vertices
+    glEnableClientState( GL_VERTEX_ARRAY )
+    glVertexPointer( 3, GL_FLOAT, 6 * 4, None )
+    # colours
+    glEnableClientState( GL_COLOR_ARRAY )
+    glColorPointer( 3, GL_FLOAT, 6 * 4, ctypes.c_void_p(3 * 4) )
+
+    glDrawArrays( GL_TRIANGLES, 0, vertices.size / 3 )
+
+    glBindBuffer( GL_ARRAY_BUFFER, 0 )
 
