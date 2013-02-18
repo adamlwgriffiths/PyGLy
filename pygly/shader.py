@@ -124,9 +124,41 @@ def parse_shader_errors( errors ):
             pass
     return results
 
+def uniforms( handle ):
+    """Returns an iterator for the uniforms of the specified program.
+
+    Each uniform returns a tuple with the following values:
+        name, size, type
+    Where:
+        size is the uniform size in types
+        type is the GL enumeration
+    """
+    # we can't get the uniform directly
+    # we have to iterate over the active uniforms and find our
+    # uniform match by the name given
+
+    # get number of active uniforms
+    num_uniforms = glGetProgramiv( handle, GL_ACTIVE_UNIFORMS )
+
+    for index in range( num_uniforms ):
+        name, size, type = glGetActiveUniform( handle, index )
+        yield name, size, type
+
+def uniform( handle, name ):
+    for uniform in uniforms( handle ):
+        _name, _size, _type = uniform
+
+        if _name == name:
+            return _name, _size, _type
+
+    # no uniform found
+    return None
 
 def enum_to_string( glEnum ):
     return {
+        GL_VERTEX_SHADER:       'GL_VERTEX_SHADER',
+        GL_FRAGMENT_SHADER:     'GL_FRAGMENT_SHADER',
+        GL_GEOMETRY_SHADER:     'GL_GEOMETRY_SHADER',
         GL_FLOAT:               "GL_FLOAT",
         GL_FLOAT_VEC2:          "GL_FLOAT_VEC2",
         GL_FLOAT_VEC3:          "GL_FLOAT_VEC3",
@@ -230,12 +262,6 @@ class Shader( object ):
     Shaders can be used by multiple ShaderPrograms.
     """
 
-    types = {
-        GL_VERTEX_SHADER:   'GL_VERTEX_SHADER',
-        GL_FRAGMENT_SHADER: 'GL_FRAGMENT_SHADER',
-        GL_GEOMETRY_SHADER: 'GL_GEOMETRY_SHADER',
-        }
-
     @classmethod
     def create_from_existing( cls, type, content, handle ):
         """Creates a Shader object using an existing shader handle
@@ -283,13 +309,12 @@ class Shader( object ):
 
         # retrieve the compile status
         if not glGetShaderiv( self.handle, GL_COMPILE_STATUS ):
-            self.print_shader_errors( glGetShaderInfoLog( self.handle ) )
+            self._print_shader_errors( glGetShaderInfoLog( self.handle ) )
             return False
 
         return True
 
-
-    def print_shader_errors( self, buffer ):
+    def _print_shader_errors( self, buffer ):
         """Parses the error buffer and prints it to the console.
 
         The buffer should be the exact contents of the GLSL
@@ -302,15 +327,10 @@ class Shader( object ):
         for error in errors:
             line, desc = error
 
-            print """Error compiling shader type: %s
-\tLine: %i
-\tDescription: %s
-\tCode: %s""" % (
-            Shader.types[ self.type ],
-            line,
-            desc,
-            lines[ line - 1 ]
-            )
+            print "Error compiling shader type: %s" % enum_to_string( self.type )
+            print "\tLine: %i" % line
+            print "\tDescription: %s" % desc
+            print "\tCode: %s" % lines[ line - 1 ]
 
 
 class ShaderProgram( object ):
@@ -340,8 +360,8 @@ class ShaderProgram( object ):
         for shader in args:
             self.attach_shader( shader )
 
-        self.raise_invalid_variables = False \
-            if 'raise_invalid_variables' not in kwargs \
+        self.raise_invalid_variables = \
+            False if 'raise_invalid_variables' not in kwargs \
             else kwargs['raise_invalid_variables']
 
         if link_now:
@@ -363,33 +383,11 @@ class ShaderProgram( object ):
             # attach the shader
             glAttachShader( self.handle, shader.handle )
         except Exception as e:
-            print """Error attaching shader type: %s
-\tException: %s
-""" % (
-                Shader.types[ shader.type ],
-                str(e)
-                )
+            print "Error attaching shader type: %s" % enum_to_string( shader.type )
+            print "\tException: %s" % str(e)
+
             # chain the exception
             raise
-
-    def print_shader_errors( self, buffer ):
-        """Parses the error buffer and prints it to the console.
-
-        The buffer should be the exact contents of the GLSL
-        error buffer converted to a Python String.
-        """
-        print """Error linking shader:
-\tDescription: %s""" % ( buffer )
-
-        # print the log to the console
-        errors = parse_shader_errors( buffer )
-        lines = self.content.split('\n')
-
-        for error in errors:
-            line, desc = error
-
-            print """Error linking shader
-\tDescription: %s""" % ( desc )
 
     def frag_location( self, name, buffers = 0 ):
         """Sets the fragment output name used within the program.
@@ -417,11 +415,30 @@ class ShaderProgram( object ):
 
         # retrieve the compile status
         if not glGetProgramiv( self.handle, GL_LINK_STATUS ):
-            self.print_shader_errors( glGetProgramInfoLog( self.handle ) )
+            self._print_shader_errors( glGetProgramInfoLog( self.handle ) )
             return False
 
-        self.uniforms.program_linked()
+        self.uniforms._on_program_linked()
+        self.attributes._on_program_linked()
         return True
+
+    def _print_shader_errors( self, buffer ):
+        """Parses the error buffer and prints it to the console.
+
+        The buffer should be the exact contents of the GLSL
+        error buffer converted to a Python String.
+        """
+        print "Error linking shader:"
+        print "\tDescription: %s" % ( buffer )
+
+        # print the log to the console
+        errors = parse_shader_errors( buffer )
+
+        for error in errors:
+            line, desc = error
+
+            print "Error linking shader"
+            print "\tDescription: %s" % ( desc )
 
     @property
     def linked( self ):
@@ -477,7 +494,7 @@ class Uniforms( object ):
 
         self.__dict__[ 'program' ] = program
 
-    def program_linked( self ):
+    def _on_program_linked( self ):
         """Called by a ShaderProgram when the program is linked
         successfully.
         """
@@ -502,13 +519,9 @@ class Uniforms( object ):
         """
         # get number of active uniforms
         handle = self.__dict__[ 'program' ].handle
-        num_uniforms = glGetProgramiv( handle, GL_ACTIVE_UNIFORMS )
-        uniforms = []
-
-        for index in range( num_uniforms ):
-            name, size, type = glGetActiveUniform( handle, index )
-            uniforms.append( (name, type) )
-        return uniforms
+        return [
+            (name, type) for name, size, type in uniforms( handle )
+            ]
 
     def all( self ):
         """Returns a dictionary of all uniform objects.
@@ -518,10 +531,10 @@ class Uniforms( object ):
         Any uniform automatically detected or accessed programmatically
         in python will appear in this list.
         """
-        uniforms = self.__dict__.copy()
-        del uniforms['program']
+        _uniforms = self.__dict__.copy()
+        del _uniforms['program']
         # convert to a list
-        return uniforms
+        return _uniforms
 
     def __getattr__( self, name ):
         """Simply calls __getitem__ with the same parameters.
@@ -582,43 +595,19 @@ class Uniform( object ):
         self.program = None
         self.location = None
 
-    @staticmethod
-    def variable_type( program, name ):
-        # we can't get the uniform directly
-        # we have to iterate over the active uniforms and find our
-        # uniform match by the name given
-
-        # get number of active uniforms
-        num_uniforms = glGetProgramiv( program.handle, GL_ACTIVE_UNIFORMS )
-
-        for index in range( num_uniforms ):
-            _name, size, type = glGetActiveUniform( program.handle, index )
-
-            if _name == name:
-                return type
-
-        # no uniform found
-        return None
-
     @property
     def gl_type( self ):
         """Extracts the values for the uniform.
-
-        Due to there not being an efficient way of doing this, we
-        manually iterate through the active uniforms and find the
-        uniform by its name.
         """
         # result may be None type
-        return Uniform.variable_type( self.program, self.name )
-
+        _uniform = uniform( self.program.handle, self.name )
+        if _uniform:
+            return _uniform[ 2 ]
+        return None
 
     @property
     def type( self ):
         """Extracts the values for the uniform.
-
-        Due to there not being an efficient way of doing this, we
-        manually iterate through the active uniforms and find the
-        uniform by its name.
         """
         # result may be None type
         return enum_to_string( self.gl_type )
@@ -1141,6 +1130,9 @@ class Attributes( object ):
         super( Attributes, self ).__init__()
 
         self.__dict__[ 'program' ] = program
+
+    def _on_program_linked( self ):
+        pass
 
     def all( self ):
         """Returns a dictionary of all the available attributes.
