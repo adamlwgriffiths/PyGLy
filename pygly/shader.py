@@ -487,6 +487,14 @@ class Uniforms( object ):
     shader.attributes[ 'in_position' ] = 0
     print shader.attributes[ 'in_position' ]
     """
+
+    """This dictionary holds a list of GL shader enum types.
+    Each type has a corresponding Uniform class.
+    When processing uniforms, the appropriate class is instantiated
+    for the specific time.
+
+    The values are populated later.
+    """
     types = {}
 
     def __init__( self, program ):
@@ -548,7 +556,7 @@ class Uniforms( object ):
 
         The ShaderProgram MUST be linked or a ValueError is raised.
         """
-        if not self.program.linked:
+        if not self.__dict__[ 'program' ].linked:
             raise ValueError( "ShaderProgram must be linked before attribute can be queried" )
 
         # check if a uniform already exists
@@ -593,7 +601,7 @@ class Uniform( object ):
         # location is the updated
         self.name = None
         self.program = None
-        self.location = None
+        self._location = None
 
     @property
     def gl_type( self ):
@@ -623,7 +631,11 @@ class Uniform( object ):
             raise ValueError( "ShaderProgram must be linked before uniform can be set" )
 
         # set our location
-        self.location = glGetUniformLocation( self.program.handle, self.name )
+        self._location = glGetUniformLocation( self.program.handle, self.name )
+
+    @property
+    def location( self ):
+        return self._location
 
     @property
     def value( self ):
@@ -745,8 +757,7 @@ class UniformFloat( Uniform ):
                 4:  glUniform4fv
                 }[ values.shape[ -1 ] ]
             count = values.size / values.shape[ -1 ]
-            glValues = (GLfloat * values.size)(*values.flat)
-            func( self.location, count, glValues )
+            func( self.location, count, values )
 
 
 class UniformInt( Uniform ):
@@ -840,8 +851,7 @@ class UniformInt( Uniform ):
                 4:  glUniform4iv
                 }[ values.shape[ -1 ] ]
             count = values.size / values.shape[ -1 ]
-            glValues = (GLint * values.size)(*values.flat)
-            func( self.location, count, glValues )
+            func( self.location, count, values )
 
 
 class UniformUint( Uniform ):
@@ -936,8 +946,7 @@ class UniformUint( Uniform ):
                 4:  glUniform4uiv
                 }[ values.shape[ -1 ] ]
             count = values.size / values.shape[ -1 ]
-            glValues = (GLuint * values.size)(*values.flat)
-            func( self.location, count, glValues )
+            func( self.location, count, gvalues )
 
 
 class UniformFloatMatrix( Uniform ):
@@ -1027,8 +1036,7 @@ class UniformFloatMatrix( Uniform ):
             }[ values.shape[ -2 ] ][ values.shape[ -1 ] ]
 
         count = values.size / (values.shape[ -2 ] * values.shape[ -1 ])
-        glValues = (GLfloat * values.size)(*values.flat)
-        func( self.location, count, False, glValues )
+        func( self.location, count, False, values )
 
 
 class UniformSampler( UniformInt ):
