@@ -733,31 +733,18 @@ class UniformFloat( Uniform ):
 
         values = numpy.array( args, dtype = 'float32' )
 
-        # check the number of dimensions
-        if values.ndim == 1:
-            # flat list of values
-            # assume passing through single values
-            # ie. float( 'in_value', 1.0, 2.0, 3.0 )
-            func = {
-                1:  glUniform1f,
-                2:  glUniform2f,
-                3:  glUniform3f,
-                4:  glUniform4f
-                }[ values.size ]
-            func( self.location, *values )
+        func, func_array, size = {
+            GL_FLOAT:             (glUniform1f, glUniform1fv, 1),
+            GL_FLOAT_VEC2:        (glUniform2f, glUniform2fv, 2),
+            GL_FLOAT_VEC3:        (glUniform3f, glUniform3fv, 3),
+            GL_FLOAT_VEC4:        (glUniform4f, glUniform4fv, 4),
+            }[ self.gl_type ]
+
+        if values.size == size:
+            func( self.location, values )
         else:
-            # values are sent as arrays
-            # assume arrays
-            # ie. float( 'in_value', [1.0, 1.0], [2.0, 2.0] )
-            # select based on number of values in last dimension
-            func = {
-                1:  glUniform1fv,
-                2:  glUniform2fv,
-                3:  glUniform3fv,
-                4:  glUniform4fv
-                }[ values.shape[ -1 ] ]
-            count = values.size / values.shape[ -1 ]
-            func( self.location, count, values )
+            count = values.size / size
+            func_array( self.location, count, values )
 
 
 class UniformInt( Uniform ):
@@ -827,31 +814,18 @@ class UniformInt( Uniform ):
 
         values = numpy.array( args, dtype = 'int32' )
 
-        # check the number of dimensions
-        if values.ndim == 1:
-            # flat list of values
-            # assume passing through single values
-            # ie. int( 'in_value', 1, 2, 3 )
-            func = {
-                1:  glUniform1i,
-                2:  glUniform2i,
-                3:  glUniform3i,
-                4:  glUniform4i
-                }[ values.size ]
+        func, func_array, size = {
+            GL_INT:             (glUniform1i, glUniform1iv, 1),
+            GL_INT_VEC2:        (glUniform2i, glUniform2iv, 2),
+            GL_INT_VEC3:        (glUniform3i, glUniform3iv, 3),
+            GL_INT_VEC4:        (glUniform4i, glUniform4iv, 4),
+            }[ self.gl_type ]
+
+        if values.size == size:
             func( self.location, values )
         else:
-            # values are sent as arrays
-            # assume arrays
-            # ie. int( 'in_value', [1, 1], [2, 2] )
-            # select based on number of values in last dimension
-            func = {
-                1:  glUniform1iv,
-                2:  glUniform2iv,
-                3:  glUniform3iv,
-                4:  glUniform4iv
-                }[ values.shape[ -1 ] ]
-            count = values.size / values.shape[ -1 ]
-            func( self.location, count, values )
+            count = values.size / size
+            func_array( self.location, count, values )
 
 
 class UniformUint( Uniform ):
@@ -922,31 +896,19 @@ class UniformUint( Uniform ):
 
         values = numpy.array( args, dtype = 'uint32' )
 
-        # check the number of dimensions
-        if values.ndim == 1:
-            # flat list of values
-            # assume passing through single values
-            # ie. uint( 'in_value', 1, 2, 3 )
-            func = {
-                1:  glUniform1ui,
-                2:  glUniform2ui,
-                3:  glUniform3ui,
-                4:  glUniform4ui
-                }[ values.size ]
+        func, func_array, size = {
+            GL_UNSIGNED_INT:                (glUniform1ui, glUniform1uiv, 1),
+            GL_UNSIGNED_INT_VEC2:           (glUniform2ui, glUniform2uiv, 2),
+            GL_UNSIGNED_INT_VEC3:           (glUniform3ui, glUniform3uiv, 3),
+            GL_UNSIGNED_INT_VEC4:           (glUniform4ui, glUniform4uiv, 4),
+            GL_UNSIGNED_INT_ATOMIC_COUNTER: (glUniform1ui, glUniform1uiv, 1),
+            }[ self.gl_type ]
+
+        if values.size == size:
             func( self.location, values )
         else:
-            # values are sent as arrays
-            # assume arrays
-            # ie. uint( 'in_value', [1, 1], [2, 2] )
-            # select based on number of values in last dimension
-            func = {
-                1:  glUniform1uiv,
-                2:  glUniform2uiv,
-                3:  glUniform3uiv,
-                4:  glUniform4uiv
-                }[ values.shape[ -1 ] ]
-            count = values.size / values.shape[ -1 ]
-            func( self.location, count, gvalues )
+            count = values.size / size
+            func_array( self.location, count, values )
 
 
 class UniformFloatMatrix( Uniform ):
@@ -1017,25 +979,19 @@ class UniformFloatMatrix( Uniform ):
 
         values = numpy.array( args, dtype = 'float32' )
 
-        func = {
-            2:  {
-                2:  glUniformMatrix2fv,
-                3:  glUniformMatrix2x3fv,
-                4:  glUniformMatrix2x4fv,
-                },
-            3:  {
-                2:  glUniformMatrix3x2fv,
-                3:  glUniformMatrix3fv,
-                4:  glUniformMatrix3x4fv
-                },
-            4:  {
-                2:  glUniformMatrix4x2fv,
-                3:  glUniformMatrix4x3fv,
-                4:  glUniformMatrix4fv,
-                }
-            }[ values.shape[ -2 ] ][ values.shape[ -1 ] ]
+        func, size = {
+            GL_FLOAT_MAT2:      (glUniformMatrix2fv,    4),
+            GL_FLOAT_MAT3:      (glUniformMatrix3fv,    9),
+            GL_FLOAT_MAT4:      (glUniformMatrix4fv,    16),
+            GL_FLOAT_MAT2x3:    (glUniformMatrix2x3fv,  6),
+            GL_FLOAT_MAT2x4:    (glUniformMatrix2x4fv,  8),
+            GL_FLOAT_MAT3x2:    (glUniformMatrix3x2fv,  6),
+            GL_FLOAT_MAT3x4:    (glUniformMatrix3x4fv,  12),
+            GL_FLOAT_MAT4x2:    (glUniformMatrix4x2fv,  8),
+            GL_FLOAT_MAT4x3:    (glUniformMatrix4x3fv,  12),
+            }[ self.gl_type ]
 
-        count = values.size / (values.shape[ -2 ] * values.shape[ -1 ])
+        count = values.size / size
         func( self.location, count, False, values )
 
 
