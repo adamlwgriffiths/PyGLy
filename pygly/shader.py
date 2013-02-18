@@ -733,18 +733,15 @@ class UniformFloat( Uniform ):
 
         values = numpy.array( args, dtype = 'float32' )
 
-        func, func_array, size = {
-            GL_FLOAT:             (glUniform1f, glUniform1fv, 1),
-            GL_FLOAT_VEC2:        (glUniform2f, glUniform2fv, 2),
-            GL_FLOAT_VEC3:        (glUniform3f, glUniform3fv, 3),
-            GL_FLOAT_VEC4:        (glUniform4f, glUniform4fv, 4),
+        func, size = {
+            GL_FLOAT:             (glUniform1fv, 1),
+            GL_FLOAT_VEC2:        (glUniform2fv, 2),
+            GL_FLOAT_VEC3:        (glUniform3fv, 3),
+            GL_FLOAT_VEC4:        (glUniform4fv, 4),
             }[ self.gl_type ]
 
-        if values.size == size:
-            func( self.location, values )
-        else:
-            count = values.size / size
-            func_array( self.location, count, values )
+        count = values.size / size
+        func( self.location, count, values )
 
 
 class UniformInt( Uniform ):
@@ -814,18 +811,15 @@ class UniformInt( Uniform ):
 
         values = numpy.array( args, dtype = 'int32' )
 
-        func, func_array, size = {
-            GL_INT:             (glUniform1i, glUniform1iv, 1),
-            GL_INT_VEC2:        (glUniform2i, glUniform2iv, 2),
-            GL_INT_VEC3:        (glUniform3i, glUniform3iv, 3),
-            GL_INT_VEC4:        (glUniform4i, glUniform4iv, 4),
+        func, size = {
+            GL_INT:             (glUniform1iv, 1),
+            GL_INT_VEC2:        (glUniform2iv, 2),
+            GL_INT_VEC3:        (glUniform3iv, 3),
+            GL_INT_VEC4:        (glUniform4iv, 4),
             }[ self.gl_type ]
 
-        if values.size == size:
-            func( self.location, values )
-        else:
-            count = values.size / size
-            func_array( self.location, count, values )
+        count = values.size / size
+        func( self.location, count, values )
 
 
 class UniformUint( Uniform ):
@@ -896,19 +890,16 @@ class UniformUint( Uniform ):
 
         values = numpy.array( args, dtype = 'uint32' )
 
-        func, func_array, size = {
-            GL_UNSIGNED_INT:                (glUniform1ui, glUniform1uiv, 1),
-            GL_UNSIGNED_INT_VEC2:           (glUniform2ui, glUniform2uiv, 2),
-            GL_UNSIGNED_INT_VEC3:           (glUniform3ui, glUniform3uiv, 3),
-            GL_UNSIGNED_INT_VEC4:           (glUniform4ui, glUniform4uiv, 4),
-            GL_UNSIGNED_INT_ATOMIC_COUNTER: (glUniform1ui, glUniform1uiv, 1),
+        func, size = {
+            GL_UNSIGNED_INT:                (glUniform1uiv, 1),
+            GL_UNSIGNED_INT_VEC2:           (glUniform2uiv, 2),
+            GL_UNSIGNED_INT_VEC3:           (glUniform3uiv, 3),
+            GL_UNSIGNED_INT_VEC4:           (glUniform4uiv, 4),
+            GL_UNSIGNED_INT_ATOMIC_COUNTER: (glUniform1uiv, 1),
             }[ self.gl_type ]
 
-        if values.size == size:
-            func( self.location, values )
-        else:
-            count = values.size / size
-            func_array( self.location, count, values )
+        count = values.size / size
+        func( self.location, count, values )
 
 
 class UniformFloatMatrix( Uniform ):
