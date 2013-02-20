@@ -130,29 +130,82 @@ def uniforms( handle ):
     Each uniform returns a tuple with the following values:
         name, size, type
     Where:
-        size is the uniform size in types
+        name is the variable name
+        size is the variable size in bytes
         type is the GL enumeration
     """
-    # we can't get the uniform directly
-    # we have to iterate over the active uniforms and find our
-    # uniform match by the name given
-
     # get number of active uniforms
     num_uniforms = glGetProgramiv( handle, GL_ACTIVE_UNIFORMS )
 
     for index in range( num_uniforms ):
-        name, size, type = glGetActiveUniform( handle, index )
-        yield name, size, type
+        yield uniform_for_index( handle, index )
 
-def uniform( handle, name ):
+def uniform_for_index( handle, index ):
+    name, size, type = glGetActiveUniform( handle, index )
+    return name, size, type
+
+def uniform_for_name( handle, name ):
+    # we can't get uniforms directly
+    # we have to iterate over the active uniforms and find our
+    # uniform match by the name given
     for uniform in uniforms( handle ):
         _name, _size, _type = uniform
 
         if _name == name:
             return _name, _size, _type
 
-    # no uniform found
+    # no match found
     return None
+
+def attributes( handle ):
+    """Returns an iterator for the attributes of the specified program.
+
+    Each attribute returns a tuple with the following values:
+        name, size, type
+    Where:
+        name is the variable name
+        size is the variable size in bytes
+        type is the GL enumeration
+    """
+    # get number of active uniforms
+    num_attributes = glGetProgramiv( handle, GL_ACTIVE_ATTRIBUTES )
+
+    for index in range( num_attributes ):
+        yield attribute_for_index( handle, index )
+
+def attribute_for_index( handle, index ):
+    name_length = 30
+    glNameSize = (GLsizei)()
+    glSize = (GLint)()
+    glType = (GLenum)()
+    glName = (GLchar * name_length)()
+
+    glGetActiveAttrib(
+        handle,
+        index,
+        name_length,
+        glNameSize,
+        glSize,
+        glType,
+        glName
+        )
+
+    name, size, type = glName.value, glSize.value, glType.value
+    return name, size, type
+
+def attribute_for_name( handle, name ):
+    # we can't get attributes directly
+    # we have to iterate over the active attributes and find our
+    # attribute match by the name given
+    for attribute in attributes( handle ):
+        _name, _size, _type = attribute
+
+        if _name == name:
+            return _name, _size, _type
+
+    # no match found
+    return None
+
 
 def enum_to_string( glEnum ):
     return {
@@ -511,25 +564,11 @@ class Uniforms( object ):
             if key != 'program':
                 del self.__dict__[ key ]
 
-        # iterate through our auto-detected uniforms
-        # and create objects for them
-        for name, type in self._gl_all():
-            # instantiate the uniform object for the specified type
+        # get our active uniforms
+        program = self.__dict__[ 'program' ]
+        for name, size, type in uniforms( program.handle ):
             self.__dict__[ name ] = self.types[ type ]()
-            self.__dict__[ name ]._set_data( name, self.program )
-
-    def _gl_all( self ):
-        """Returns a list of all the available uniforms.
-
-        The list is composed of tuples. Each tuple is
-        composed of the name and the GLtype (as a string)
-        of the uniform.
-        """
-        # get number of active uniforms
-        handle = self.__dict__[ 'program' ].handle
-        return [
-            (name, type) for name, size, type in uniforms( handle )
-            ]
+            self.__dict__[ name ]._set_data( name, program )
 
     def all( self ):
         """Returns a dictionary of all uniform objects.
@@ -608,7 +647,7 @@ class Uniform( object ):
         """Extracts the values for the uniform.
         """
         # result may be None type
-        _uniform = uniform( self.program.handle, self.name )
+        _uniform = uniform_for_name( self.program.handle, self.name )
         if _uniform:
             return _uniform[ 2 ]
         return None
@@ -1097,29 +1136,13 @@ class Attributes( object ):
         """
         # get number of active attributes
         handle = self.__dict__[ 'program' ].handle
-        num_attributes = glGetProgramiv( handle, GL_ACTIVE_ATTRIBUTES )
 
-        attributes = {}
+        _attributes = {}
+        for attribute in attributes( handle ):
+            name, size, type = attribute
+            _attributes[ name ] = enum_to_string( type )
 
-        for index in range( num_attributes ):
-            name_length = 30
-            glNameSize = (GLsizei)()
-            glSize = (GLint)()
-            glType = (GLenum)()
-            glName = (GLchar * name_length)()
-
-            glGetActiveAttrib(
-                handle,
-                index,
-                name_length,
-                glNameSize,
-                glSize,
-                glType,
-                glName
-                )
-
-            attributes[ glName.value ] = enum_to_string( glType.value )
-        return attributes
+        return _attributes
 
     def __getattr__( self, name ):
         """Simply calls __getitem__ with the same parameters.
