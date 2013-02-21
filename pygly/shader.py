@@ -206,7 +206,6 @@ def attribute_for_name( handle, name ):
     # no match found
     return None
 
-
 def enum_to_string( glEnum ):
     return {
         GL_VERTEX_SHADER:       'GL_VERTEX_SHADER',
@@ -316,10 +315,10 @@ class Shader( object ):
     """
 
     @classmethod
-    def create_from_existing( cls, type, content, handle ):
+    def create_from_existing( cls, type, source, handle ):
         """Creates a Shader object using an existing shader handle
         """
-        obj = cls( type, content, False )
+        obj = cls( type, source, False )
         obj._handle = handle
         return obj
 
@@ -328,12 +327,12 @@ class Shader( object ):
         with open(filename) as f:
             return cls( type, f.readlines(), compile_now )
 
-    def __init__( self, type, content, compile_now = True ):
+    def __init__( self, type, source, compile_now = True ):
         super( Shader, self ).__init__()
 
-        self.type = type
-        self.content = content
         self._handle = None
+        self._type = type
+        self._source = source
 
         if compile_now:
             self.compile()
@@ -341,6 +340,14 @@ class Shader( object ):
     @property
     def handle( self ):
         return self._handle
+
+    @property
+    def type( self ):
+        return self._type
+
+    @property
+    def source( self ):
+        return self._source
 
     def compile( self ):
         """Compiles the shader using the current content
@@ -355,14 +362,15 @@ class Shader( object ):
         """
         self._handle = glCreateShader( self.type )
 
-        glShaderSource( self.handle, self.content )
+        glShaderSource( self.handle, self.source )
 
         # compile the shader
         glCompileShader( self.handle )
 
         # retrieve the compile status
         if not glGetShaderiv( self.handle, GL_COMPILE_STATUS ):
-            self._print_shader_errors( glGetShaderInfoLog( self.handle ) )
+            errors = glGetShaderInfoLog( self.handle )
+            self._print_shader_errors( errors )
             return False
 
         return True
@@ -375,7 +383,7 @@ class Shader( object ):
         """
         # print the log to the console
         errors = parse_shader_errors( buffer )
-        lines = self.content.split('\n')
+        lines = self.source.split('\n')
 
         for error in errors:
             line, desc = error
@@ -384,6 +392,10 @@ class Shader( object ):
             print "\tLine: %i" % line
             print "\tDescription: %s" % desc
             print "\tCode: %s" % lines[ line - 1 ]
+
+    def __str__( self ):
+        string = "Shader:\t%s" % ( enum_to_string( self.type ) )
+        return string
 
 
 class ShaderProgram( object ):
@@ -397,12 +409,14 @@ class ShaderProgram( object ):
     This lets you combine multiple smaller shaders into a single larger one.
 
     kwargs supported arguments:
+        link_now: defaults to True. If set to True, the shader will be linked
+            during the constructor.
         raise_invalid_variables:    defaults to False. If set to True,
             accessing invalid Uniforms and Attributes will trigger a
             ValueError exception to be raised.
     """
     
-    def __init__( self, link_now = True, *args, **kwargs ):
+    def __init__( self, *args, **kwargs ):
         # create the program handle
         self._handle = glCreateProgram()
 
@@ -413,9 +427,15 @@ class ShaderProgram( object ):
         for shader in args:
             self.attach_shader( shader )
 
+        # default raise exception to False
         self.raise_invalid_variables = \
-            False if 'raise_invalid_variables' not in kwargs \
-            else kwargs['raise_invalid_variables']
+            kwargs['raise_invalid_variables'] if 'raise_invalid_variables' in kwargs \
+            else False
+
+        # default link now to True
+        link_now = \
+            kwargs['link_now'] if 'link_now' in kwargs \
+            else True
 
         if link_now:
             self.link()
@@ -468,7 +488,8 @@ class ShaderProgram( object ):
 
         # retrieve the compile status
         if not glGetProgramiv( self.handle, GL_LINK_STATUS ):
-            self._print_shader_errors( glGetProgramInfoLog( self.handle ) )
+            errors = glGetProgramInfoLog( self.handle )
+            self._print_shader_errors( errors )
             return False
 
         self.uniforms._on_program_linked()
@@ -529,16 +550,35 @@ class ShaderProgram( object ):
         """
         return glGetIntegerv( GL_CURRENT_PROGRAM ) == self.handle
 
+    def __str__( self ):
+        string = \
+            "ShaderProgram:\n" \
+            "Linked:\t%s\n" \
+            "%s\n" \
+            "%s" % (
+            str(self.linked),
+            str(self.attributes),
+            str(self.uniforms)
+            )
+        return string
+
 
 class Uniforms( object ):
     """Provides access to ShaderProgram uniform variables.
 
-    Usage:
-    shader.attributes.in_position = 0
-    print shader.attributes.in_position
+    Uniforms can be accessed as members:
+    shader.uniforms.model_view = 0
+    print shader.uniforms.model_view
+    >>> 0
 
-    shader.attributes[ 'in_position' ] = 0
-    print shader.attributes[ 'in_position' ]
+    Uniforms can also be accessed array style:
+    shader.uniforms[ 'model_view' ] = 0
+    print shader.uniforms[ 'model_view' ]
+    >>> 0
+
+    Uniforms provides a mechanism to iterate over the active Uniforms:
+    for uniform in shader.uniforms:
+        print uniform
     """
 
     """This dictionary holds a list of GL shader enum types.
@@ -546,14 +586,35 @@ class Uniforms( object ):
     When processing uniforms, the appropriate class is instantiated
     for the specific time.
 
-    The values are populated later.
+    The values are populated by calling 'register_uniform_class'.
     """
     types = {}
+
+    @staticmethod
+    def register_uniform_class( class_type, types ):
+        """Registers a Uniform class to be used for specific GLSL GL types.
+
+        class_type is a class type, such as UniformFloat.
+        types is a list of GL enumeration types that the class is to be used for.
+        Such as GL_FLOAT_VEC4, GL_SAMPLER_1D, etc.
+
+        There is no checking for duplicates, latter calls to this function can over-ride
+        existing class registrations.
+        """
+        for type in types:
+            Uniforms.types[ type ] = class_type
 
     def __init__( self, program ):
         super( Uniforms, self ).__init__()
 
         self.__dict__[ 'program' ] = program
+
+    def __iter__( self ):
+        return self.next()
+
+    def next( self ):
+        for uniform in self.all().values():
+            yield uniform
 
     def _on_program_linked( self ):
         """Called by a ShaderProgram when the program is linked
@@ -568,7 +629,7 @@ class Uniforms( object ):
         program = self.__dict__[ 'program' ]
         for name, size, type in uniforms( program.handle ):
             self.__dict__[ name ] = self.types[ type ]()
-            self.__dict__[ name ]._set_data( name, program )
+            self.__dict__[ name ]._set_data( program, name, type )
 
     def all( self ):
         """Returns a dictionary of all uniform objects.
@@ -603,11 +664,18 @@ class Uniforms( object ):
             # return the existing uniform
             return self.__dict__[ name ]
         else:
+            # the uniform doesn't exit
+            # check if we should raise an exception
+            # if not, create an InvalidUniform object and store it
+            # this means it will only print a log message this one time
             if self.__dict__[ 'program' ].raise_invalid_variables:
                 raise ValueError( "Uniform '%s' not specified in ShaderProgram" % name )
             else:
+                # we shouldn't raise an exception
+                # so create an invalid uniform object that will do nothing
+                program = self.__dict__[ 'program' ]
                 self.__dict__[ name ] = InvalidUniform()
-                self.__dict__[ name ]._set_data( name, self.program )
+                self.__dict__[ name ]._set_data( program, name, type = None )
                 return self.__dict__[ name ]
 
     def __setattr__( self, name, value ):
@@ -619,491 +687,346 @@ class Uniforms( object ):
         This lets us just call 'Uniforms.variable = value'
         """
         if isinstance( value, Uniform ):
-            # allow the manual assignment of uniforms
+            # the value is an instance of Uniform
+            # so it must be to do an assignment of the object itself
             if name in self.__dict__:
-                raise ValueError( "Uniform already set '%s'" % name )
+                raise ValueError( "Replacing Uniform: %s" % name )
             self.__dict__[ name ] = value
             value._set_data( name, self.program )
         else:
+            # the value isn't a Uniform class
+            # so pass it to the existing uniform
             self.__getitem__( name ).value = value
+
+    def __str__( self ):
+        string = "Uniforms:\n"
+        for uniform in self:
+            string += str(uniform) + "\n"
+        return string[:-1]
 
 
 class Uniform( object ):
     """Provides the base class for access to uniform variables.
     """
 
-    def __init__( self ):
+    def __init__( self, types, dtype ):
+        """Creates a new Uniform object.
+
+        This should only be called by inherited Uniform classes.
+
+        Types is a dictionary with the following format:
+        key: GL enumeration type, Eg. GL_FLOAT_VEC4.
+        value: (uniform setter function, number of values per variable)
+
+        The function is used when setting the uniform value.
+
+        The number of values per variable is used to determine the number of
+        variables passed to a uniform.
+        Ie. Numver of variables = number of values / values per variable
+        """
         super( Uniform, self ).__init__()
 
-        # name and program is set when this uniform is assigned to
-        # a member of the Uniforms class
-        # location is the updated
-        self.name = None
-        self.program = None
+        self._types = types
+        self._dtype = dtype
+
+        # these values are set in _set_data which is called by
+        # shader.uniforms when an assignment is made
+        # this allows users to create uniforms and assign them to
+        # a shader
+        self._program = None
+        self._name = None
+        self._type = None
+        self._func = None
+        self._num_values = None
         self._location = None
 
     @property
-    def gl_type( self ):
-        """Extracts the values for the uniform.
+    def name( self ):
+        """Returns the name of the uniform as specified in GLSL.
+
+        Eg. in_texture_diffuse
         """
-        # result may be None type
-        _uniform = uniform_for_name( self.program.handle, self.name )
-        if _uniform:
-            return _uniform[ 2 ]
-        return None
+        return self._name
+
+    @property
+    def program( self ):
+        """Returns the ShaderProgram that owns the Uniform.
+        """
+        return self._program
+
+    @property
+    def location( self ):
+        """Returns the location of the Uniform.
+        """
+        return self._location
 
     @property
     def type( self ):
-        """Extracts the values for the uniform.
-        """
-        # result may be None type
-        return enum_to_string( self.gl_type )
+        """Returns the GL enumeration type for the Uniform.
 
-    def _set_data( self, name, program ):
-        """Used by the Uniforms class to pass the uniform name
-        and ShaderProgram.
+        Eg. GL_FLOAT_VEC4.
         """
-        self.name = name
-        self.program = program
+        return self._type
+
+    def _set_data( self, program, name, type ):
+        """Used by the 'Uniforms' class to pass the data to the Uniform
+        object once it is assigned to a ShaderProgram.
+        """
+        self._program = program
+        self._name = name
+        self._type = type
 
         if not self.program.linked:
             raise ValueError( "ShaderProgram must be linked before uniform can be set" )
+
+        # ensure we have the right uniform type
+        if self.type not in self._types:
+            raise ValueError(
+                "Uniform '%s' has type '%s' and is not supporte by " % (
+                    self.name,
+                    enum_to_string( self.type ),
+                    self.__class__.__name__
+                    )
+                )
+
+        self._func, self._num_values = self._types[ self.type ]
 
         # set our location
         self._location = glGetUniformLocation( self.program.handle, self.name )
 
     @property
-    def location( self ):
-        return self._location
-
-    @property
     def value( self ):
+        """Retrieves the current value of the Uniform.
+        """
         raise NotImplementedError
 
     @value.setter
     def value( self, *args ):
-        raise NotImplementedError
+        """Assigns a value to the Uniform.
+        """
+        if not self.program.bound:
+            raise ValueError( "ShaderProgram must be bound before uniform can be set" )
 
+        values = numpy.array( args, dtype = self._dtype )
+        count = values.size / self._num_values
+        self._func( self.location, count, values )
+
+    def __str__( self ):
+        """Returns a human readable string representing the Uniform.
+        """
+        return "%s:\t%s\t%s\t%d" % (
+            self.__class__.__name__,
+            self.name,
+            enum_to_string( self.type ),
+            self.location
+            )
 
 class InvalidUniform( Uniform ):
+    """Represents an InvalidUniform.
+
+    These are used when exceptions are disabled for invalid uniforms
+    and the user attempts to access a uniform that doesn't exist or
+    isn't in use.
+
+    If a variable is declared in a GLSL shader but not used in any
+    of the code, GLSL will consider it to not exist.
+    """
 
     def __init__( self ):
-        super( InvalidUniform, self ).__init__()
+        super( InvalidUniform, self ).__init__(
+            {},
+            None
+            )
 
-    def _set_data( self, name, program ):
-        Uniform._set_data( self, name, program )
-
+    def _set_data( self, program, name, type ):
         # ensure we have the right uniform type
         print "Uniform '%s' not specified in ShaderProgram" % name
 
     @property
     def value( self ):
-        pass
+        """Always returns None
+        """
+        return None
 
     @value.setter
     def value( self, *args ):
+        """Stub function that does nothing.
+        """
         pass
 
 
 class UniformFloat( Uniform ):
-    types = [
-        GL_FLOAT,
-        GL_FLOAT_VEC2,
-        GL_FLOAT_VEC3,
-        GL_FLOAT_VEC4
-        ]
+    """Wraps GLSL Float Uniform types.
+    """
+
+    types = {
+        GL_FLOAT:       (glUniform1fv,  1),
+        GL_FLOAT_VEC2:  (glUniform2fv,  2),
+        GL_FLOAT_VEC3:  (glUniform3fv,  3),
+        GL_FLOAT_VEC4:  (glUniform4fv,  4),
+        }
 
     def __init__( self ):
-        super( UniformFloat, self ).__init__()
-
-    def _set_data( self, name, program ):
-        super( UniformFloat, self )._set_data( name, program )
-
-        # ensure we have the right uniform type
-        if self.gl_type not in self.types:
-            raise ValueError( "Uniform '%s' is not of type Float" % self.name )
-
-    @property
-    def value( self ):
-        """Returns the values stored in the uniform.
-
-        Not yet implemented.
-        """
-        raise NotImplementedError
-
-    @value.setter
-    def value( self, *args ):
-        """Sets the float values for the uniform.
-
-        The OpenGL function is chosen based on the number of dimensions
-        of arguments.
-        If a single dimension is provided (values are passed individually),
-        the values are passed using the glUniform[1,2,3,4]f functions.
-
-        If more than 1 dimension is present, then the final dimension
-        is used to select the OpenGL function to use.
-
-        The number of values is calculated as the total number
-        of values divided by uniform function size.
-
-        It is acceptable to set uniforms individually.
-        For example:
-        value = 1.0, 2.0, 3.0
-        This will use glUniform3f.
-
-        Passing a list of values will use the array functionality.
-        For example:
-        value = [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ],
-                [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ]
-        This will use the glUniform2fv function.
-        The count will be 6 (12 / 2).
-
-        It is acceptable to set uniforms as a single list.
-        For example:
-        value = [
-            [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ],
-            [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ]
-            ]
-        This will use the glUniform2fv function.
-        The count will be 6 (12 / 2).
-        """
-        if not self.program.bound:
-            raise ValueError( "ShaderProgram must be bound before uniform can be set" )
-
-        values = numpy.array( args, dtype = 'float32' )
-
-        func, size = {
-            GL_FLOAT:             (glUniform1fv, 1),
-            GL_FLOAT_VEC2:        (glUniform2fv, 2),
-            GL_FLOAT_VEC3:        (glUniform3fv, 3),
-            GL_FLOAT_VEC4:        (glUniform4fv, 4),
-            }[ self.gl_type ]
-
-        count = values.size / size
-        func( self.location, count, values )
+        super( UniformFloat, self ).__init__(
+            UniformFloat.types,
+            'float32'
+            )
 
 
 class UniformInt( Uniform ):
-    types = [
-        GL_INT,
-        GL_INT_VEC2,
-        GL_INT_VEC3,
-        GL_INT_VEC4
-        ]
+    """Wraps GLSL Int Uniform types.
+    """
+
+    types = {
+        GL_INT:         (glUniform1iv,  1),
+        GL_INT_VEC2:    (glUniform2iv,  2),
+        GL_INT_VEC3:    (glUniform3iv,  3),
+        GL_INT_VEC4:    (glUniform4iv,  4),
+        }
 
     def __init__( self ):
-        super( UniformInt, self ).__init__()
-
-    def _set_data( self, name, program ):
-        super( UniformInt, self )._set_data( name, program )
-
-        # ensure we have the right uniform type
-        if self.gl_type not in self.types:
-            raise ValueError( "Uniform '%s' is not of type Int" % self.name )
-
-    @property
-    def value( self ):
-        """Returns the values stored in the uniform.
-
-        Not yet implemented.
-        """
-        raise NotImplementedError
-
-    @value.setter
-    def value( self, *args ):
-        """Sets the integer values for the uniform.
-
-        The OpenGL function is chosen based on the number of dimensions
-        of arguments.
-        If a single dimension is provided (values are passed individually),
-        the values are passed using the glUniform[1,2,3,4]i functions.
-
-        If more than 1 dimension is present, then the final dimension
-        is used to select the OpenGL function to use.
-
-        The number of values is calculated as the total number
-        of values divided by uniform function size.
-
-        It is acceptable to set uniforms individually.
-        For example:
-        value = 1, 2, 3
-        This will use glUniform3i.
-
-        Passing a list of values will use the array functionality.
-        For example:
-        value = [ 255, -255 ], [ -255, 255 ], [ -255, 0 ],
-                [ 255, -255 ], [ -255, 255 ], [ -255, 0 ]
-        This will use the glUniform2iv function.
-        The count will be 6 (12 / 2).
-
-        It is acceptable to set uniforms as a single list.
-        For example:
-        value = [
-            [ 255, -255 ], [ -255, 255 ], [ -255, 0 ],
-            [ 255, -255 ], [ -255, 255 ], [ -255, 0 ]
-            ]
-        This will use the glUniform2iv function.
-        The count will be 6 (12 / 2).
-        """
-        if not self.program.bound:
-            raise ValueError( "ShaderProgram must be bound before uniform can be set" )
-
-        values = numpy.array( args, dtype = 'int32' )
-
-        func, size = {
-            GL_INT:             (glUniform1iv, 1),
-            GL_INT_VEC2:        (glUniform2iv, 2),
-            GL_INT_VEC3:        (glUniform3iv, 3),
-            GL_INT_VEC4:        (glUniform4iv, 4),
-            }[ self.gl_type ]
-
-        count = values.size / size
-        func( self.location, count, values )
+        super( UniformInt, self ).__init__(
+            UniformInt.types,
+            'int32'
+            )
 
 
 class UniformUint( Uniform ):
-    types =[
-        GL_UNSIGNED_INT,
-        GL_UNSIGNED_INT_VEC2,
-        GL_UNSIGNED_INT_VEC3,
-        GL_UNSIGNED_INT_VEC4,
-        GL_UNSIGNED_INT_ATOMIC_COUNTER,
-        ]
+    """Wraps GLSL Unsigned Int Uniform types.
+    """
+
+    types = {
+        GL_UNSIGNED_INT:        (glUniform1uiv,     1),
+        GL_UNSIGNED_INT_VEC2:   (glUniform2uiv,     2),
+        GL_UNSIGNED_INT_VEC3:   (glUniform3uiv,     3),
+        GL_UNSIGNED_INT_VEC4:   (glUniform4uiv,     4),
+        GL_UNSIGNED_INT_ATOMIC_COUNTER: (glUniform1uiv, 1),
+        }
 
     def __init__( self ):
-        super( UniformUint, self ).__init__()
-
-    def _set_data( self, name, program ):
-        super( UniformUint, self )._set_data( name, program )
-
-        # ensure we have the right uniform type
-        if self.gl_type not in self.types:
-            raise ValueError( "Uniform '%s' is not of type Uint" % self.name )
-
-    @property
-    def value( self ):
-        """Returns the values stored in the uniform.
-
-        Not yet implemented.
-        """
-        raise NotImplementedError
-
-    @value.setter
-    def value( self, *args ):
-        """Sets the unsigned integer values for the uniform.
-
-        The OpenGL function is chosen based on the number of dimensions
-        of arguments.
-        If a single dimension is provided (values are passed individually),
-        the values are passed using the glUniform[1,2,3,4]ui functions.
-
-        If more than 1 dimension is present, then the final dimension
-        is used to select the OpenGL function to use.
-
-        The number of values is calculated as the total number
-        of values divided by uniform function size.
-
-        It is acceptable to set uniforms individually.
-        For example:
-        value = 1, 2, 3
-        This will use glUniform3ui.
-
-        Passing a list of values will use the array functionality.
-        For example:
-        value = [ 255, 0 ], [ 0, 255 ], [ 0, 0 ],
-                [ 255, 0 ], [ 0, 255 ], [ 0, 0 ]
-        This will use the glUniform2uiv function.
-        The count will be 6 (12 / 2).
-
-        It is acceptable to set uniforms as a single list.
-        For example:
-        value = [
-            [ 255, 0 ], [ 0, 255 ], [ 0, 0 ],
-            [ 255, 0 ], [ 0, 255 ], [ 0, 0 ]
-            ]
-        This will use the glUniform2uiv function.
-        The count will be 6 (12 / 2).
-        """
-        if not self.program.bound:
-            raise ValueError( "ShaderProgram must be bound before uniform can be set" )
-
-        values = numpy.array( args, dtype = 'uint32' )
-
-        func, size = {
-            GL_UNSIGNED_INT:                (glUniform1uiv, 1),
-            GL_UNSIGNED_INT_VEC2:           (glUniform2uiv, 2),
-            GL_UNSIGNED_INT_VEC3:           (glUniform3uiv, 3),
-            GL_UNSIGNED_INT_VEC4:           (glUniform4uiv, 4),
-            GL_UNSIGNED_INT_ATOMIC_COUNTER: (glUniform1uiv, 1),
-            }[ self.gl_type ]
-
-        count = values.size / size
-        func( self.location, count, values )
+        super( UniformUint, self ).__init__(
+            UniformUint.types,
+            'uint32'
+            )
 
 
 class UniformFloatMatrix( Uniform ):
-    types = [
-        GL_FLOAT_MAT2,
-        GL_FLOAT_MAT3,
-        GL_FLOAT_MAT4,
-        GL_FLOAT_MAT2x3,
-        GL_FLOAT_MAT2x4,
-        GL_FLOAT_MAT3x2,
-        GL_FLOAT_MAT3x4,
-        GL_FLOAT_MAT4x2,
-        GL_FLOAT_MAT4x3
-        ]
+    """Wraps GLSL Float Matrix Uniform types.
+    """
+
+    types = {
+        GL_FLOAT_MAT2:      (glUniformMatrix2fv,    4),
+        GL_FLOAT_MAT3:      (glUniformMatrix3fv,    9),
+        GL_FLOAT_MAT4:      (glUniformMatrix4fv,    16),
+        GL_FLOAT_MAT2x3:    (glUniformMatrix2x3fv,  6),
+        GL_FLOAT_MAT2x4:    (glUniformMatrix2x4fv,  8),
+        GL_FLOAT_MAT3x2:    (glUniformMatrix3x2fv,  6),
+        GL_FLOAT_MAT3x4:    (glUniformMatrix3x4fv,  12),
+        GL_FLOAT_MAT4x2:    (glUniformMatrix4x2fv,  8),
+        GL_FLOAT_MAT4x3:    (glUniformMatrix4x3fv,  12),
+        }
 
     def __init__( self ):
-        super( UniformFloatMatrix, self ).__init__()
+        super( UniformFloatMatrix, self ).__init__(
+            UniformFloatMatrix.types,
+            'float32'
+            )
 
-    def _set_data( self, name, program ):
-        super( UniformFloatMatrix, self )._set_data( name, program )
-
-        # ensure we have the right uniform type
-        if self.gl_type not in self.types:
-            raise ValueError( "Uniform '%s' is not of type Uint" % self.name )
-
-    @property
-    def value( self ):
-        """Returns the values stored in the uniform.
-
-        Not yet implemented.
-        """
-        raise NotImplementedError
-
-    @value.setter
+    @Uniform.value.setter
     def value( self, *args ):
         """Sets the matrix values for the uniform.
 
-        The OpenGL function is chosen based on the last 2 dimensions
-        of the arguments.
-        The second last dimension is the number of rows.
-        The last dimension is the number of columns.
-        The matrix count is determined by using the total number of values
-        divided by the size of each matrix.
-
-        For example:
-        value = [ [1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ] ]
-        The matrix size is 2x3 and will use the function glUniformMatrix3x2fv.
-        The count will be 1.
-
-        It is acceptable to set matrices individually.
-        For example:
-        value = [ [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ] ],
-                [ [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ] ]
-        This will use the glUniformMatrix3x2fv function.
-        The count will be 2 (12 / 6).
-
-        It is acceptable to set matrices as a single list.
-        For example:
-        value = [
-            [ [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ] ],
-            [ [ 1.0, 0.0 ], [ 0.0, 1.0 ], [ 0.0, 0.0 ] ]
-            ]
-        This will use the glUniformMatrix3x2fv function.
-        The count will be 2 (12 / 6).
+        This over-ride is required as the matrix methods have an extra
+        parameter for transposing a matrix.
         """
         if not self.program.bound:
             raise ValueError( "ShaderProgram must be bound before uniform can be set" )
 
-        values = numpy.array( args, dtype = 'float32' )
-
-        func, size = {
-            GL_FLOAT_MAT2:      (glUniformMatrix2fv,    4),
-            GL_FLOAT_MAT3:      (glUniformMatrix3fv,    9),
-            GL_FLOAT_MAT4:      (glUniformMatrix4fv,    16),
-            GL_FLOAT_MAT2x3:    (glUniformMatrix2x3fv,  6),
-            GL_FLOAT_MAT2x4:    (glUniformMatrix2x4fv,  8),
-            GL_FLOAT_MAT3x2:    (glUniformMatrix3x2fv,  6),
-            GL_FLOAT_MAT3x4:    (glUniformMatrix3x4fv,  12),
-            GL_FLOAT_MAT4x2:    (glUniformMatrix4x2fv,  8),
-            GL_FLOAT_MAT4x3:    (glUniformMatrix4x3fv,  12),
-            }[ self.gl_type ]
-
-        count = values.size / size
-        func( self.location, count, False, values )
+        values = numpy.array( args, dtype = self._dtype )
+        count = values.size / self._num_values
+        self._func( self.location, count, False, values )
 
 
-class UniformSampler( UniformInt ):
-    types = [
-        GL_SAMPLER_1D,
-        GL_SAMPLER_2D,
-        GL_SAMPLER_3D,
-        GL_SAMPLER_CUBE,
-        GL_SAMPLER_1D_SHADOW,
-        GL_SAMPLER_2D_SHADOW,
-        GL_SAMPLER_1D_ARRAY,
-        GL_SAMPLER_2D_ARRAY,
-        GL_SAMPLER_1D_ARRAY_SHADOW,
-        GL_SAMPLER_2D_ARRAY_SHADOW,
-        GL_SAMPLER_2D_MULTISAMPLE,
-        GL_SAMPLER_2D_MULTISAMPLE_ARRAY,
-        GL_SAMPLER_CUBE_SHADOW,
-        GL_SAMPLER_BUFFER,
-        GL_SAMPLER_2D_RECT,
-        GL_SAMPLER_2D_RECT_SHADOW,
-        GL_INT_SAMPLER_1D,
-        GL_INT_SAMPLER_2D,
-        GL_INT_SAMPLER_3D,
-        GL_INT_SAMPLER_CUBE,
-        GL_INT_SAMPLER_1D_ARRAY,
-        GL_INT_SAMPLER_2D_ARRAY,
-        GL_INT_SAMPLER_2D_MULTISAMPLE,
-        GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY,
-        GL_INT_SAMPLER_BUFFER,
-        GL_INT_SAMPLER_2D_RECT,
-        GL_UNSIGNED_INT_SAMPLER_1D,
-        GL_UNSIGNED_INT_SAMPLER_2D,
-        GL_UNSIGNED_INT_SAMPLER_3D,
-        GL_UNSIGNED_INT_SAMPLER_CUBE,
-        GL_UNSIGNED_INT_SAMPLER_1D_ARRAY,
-        GL_UNSIGNED_INT_SAMPLER_2D_ARRAY,
-        GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE,
-        GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY,
-        GL_UNSIGNED_INT_SAMPLER_BUFFER,
-        GL_UNSIGNED_INT_SAMPLER_2D_RECT,
-        GL_IMAGE_1D,
-        GL_IMAGE_2D,
-        GL_IMAGE_3D,
-        GL_IMAGE_2D_RECT,
-        GL_IMAGE_CUBE,
-        GL_IMAGE_BUFFER,
-        GL_IMAGE_1D_ARRAY,
-        GL_IMAGE_2D_ARRAY,
-        GL_IMAGE_2D_MULTISAMPLE,
-        GL_IMAGE_2D_MULTISAMPLE_ARRAY,
-        GL_INT_IMAGE_1D,
-        GL_INT_IMAGE_2D,
-        GL_INT_IMAGE_3D,
-        GL_INT_IMAGE_2D_RECT,
-        GL_INT_IMAGE_CUBE,
-        GL_INT_IMAGE_BUFFER,
-        GL_INT_IMAGE_1D_ARRAY,
-        GL_INT_IMAGE_2D_ARRAY,
-        GL_INT_IMAGE_2D_MULTISAMPLE,
-        GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY,
-        GL_UNSIGNED_INT_IMAGE_1D,
-        GL_UNSIGNED_INT_IMAGE_2D,
-        GL_UNSIGNED_INT_IMAGE_3D,
-        GL_UNSIGNED_INT_IMAGE_2D_RECT,
-        GL_UNSIGNED_INT_IMAGE_CUBE,
-        GL_UNSIGNED_INT_IMAGE_BUFFER,
-        GL_UNSIGNED_INT_IMAGE_1D_ARRAY,
-        GL_UNSIGNED_INT_IMAGE_2D_ARRAY,
-        GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE,
-        GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY,
-        ]
+class UniformSampler( Uniform ):
+    """Wraps GLSL Sampler Uniform types.
+
+    These are the same as UniformInt, but are seperated for convenience.
+    """
+
+    types = {
+        GL_SAMPLER_1D:          (glUniform1iv,  1),
+        GL_SAMPLER_2D:          (glUniform1iv,  1),
+        GL_SAMPLER_3D:          (glUniform1iv,  1),
+        GL_SAMPLER_CUBE:        (glUniform1iv,  1),
+        GL_SAMPLER_1D_SHADOW:   (glUniform1iv,  1),
+        GL_SAMPLER_2D_SHADOW:   (glUniform1iv,  1),
+        GL_SAMPLER_1D_ARRAY:    (glUniform1iv,  1),
+        GL_SAMPLER_2D_ARRAY:    (glUniform1iv,  1),
+        GL_SAMPLER_1D_ARRAY_SHADOW: (glUniform1iv,  1),
+        GL_SAMPLER_2D_ARRAY_SHADOW: (glUniform1iv,  1),
+        GL_SAMPLER_2D_MULTISAMPLE:  (glUniform1iv,  1),
+        GL_SAMPLER_2D_MULTISAMPLE_ARRAY:    (glUniform1iv,  1),
+        GL_SAMPLER_CUBE_SHADOW: (glUniform1iv,  1),
+        GL_SAMPLER_BUFFER:      (glUniform1iv,  1),
+        GL_SAMPLER_2D_RECT:     (glUniform1iv,  1),
+        GL_SAMPLER_2D_RECT_SHADOW:  (glUniform1iv,  1),
+        GL_INT_SAMPLER_1D:      (glUniform1iv,  1),
+        GL_INT_SAMPLER_2D:      (glUniform1iv,  1),
+        GL_INT_SAMPLER_3D:      (glUniform1iv,  1),
+        GL_INT_SAMPLER_CUBE:    (glUniform1iv,  1),
+        GL_INT_SAMPLER_1D_ARRAY:    (glUniform1iv,  1),
+        GL_INT_SAMPLER_2D_ARRAY:    (glUniform1iv,  1),
+        GL_INT_SAMPLER_2D_MULTISAMPLE:  (glUniform1iv,  1),
+        GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:    (glUniform1iv,  1),
+        GL_INT_SAMPLER_BUFFER:  (glUniform1iv,  1),
+        GL_INT_SAMPLER_2D_RECT: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_1D: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_2D: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_3D: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_CUBE:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_BUFFER: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_SAMPLER_2D_RECT:    (glUniform1iv,  1),
+        GL_IMAGE_1D:            (glUniform1iv,  1),
+        GL_IMAGE_2D:            (glUniform1iv,  1),
+        GL_IMAGE_3D:            (glUniform1iv,  1),
+        GL_IMAGE_2D_RECT:       (glUniform1iv,  1),
+        GL_IMAGE_CUBE:          (glUniform1iv,  1),
+        GL_IMAGE_BUFFER:        (glUniform1iv,  1),
+        GL_IMAGE_1D_ARRAY:      (glUniform1iv,  1),
+        GL_IMAGE_2D_ARRAY:      (glUniform1iv,  1),
+        GL_IMAGE_2D_MULTISAMPLE:        (glUniform1iv,  1),
+        GL_IMAGE_2D_MULTISAMPLE_ARRAY:  (glUniform1iv,  1),
+        GL_INT_IMAGE_1D:        (glUniform1iv,  1),
+        GL_INT_IMAGE_2D:        (glUniform1iv,  1),
+        GL_INT_IMAGE_3D:        (glUniform1iv,  1),
+        GL_INT_IMAGE_2D_RECT:   (glUniform1iv,  1),
+        GL_INT_IMAGE_CUBE:      (glUniform1iv,  1),
+        GL_INT_IMAGE_BUFFER:    (glUniform1iv,  1),
+        GL_INT_IMAGE_1D_ARRAY:  (glUniform1iv,  1),
+        GL_INT_IMAGE_2D_ARRAY:  (glUniform1iv,  1),
+        GL_INT_IMAGE_2D_MULTISAMPLE:        (glUniform1iv,  1),
+        GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY:  (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_1D:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_2D:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_3D:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_2D_RECT:  (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_CUBE: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_BUFFER:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_1D_ARRAY: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_2D_ARRAY: (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE:   (glUniform1iv,  1),
+        GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY: (glUniform1iv,  1),
+        }
 
     def __init__( self ):
-        super( UniformSampler, self ).__init__()
-
-    def _set_data( self, name, program ):
-        Uniform._set_data( self, name, program )
-
-        # ensure we have the right uniform type
-        if self.gl_type not in self.types:
-            raise ValueError( "Uniform '%s' is not of type Sampler" % self.name )
+        super( UniformSampler, self ).__init__(
+            UniformSampler.types,
+            'int32'
+            )
 
 
 class Attributes( object ):
@@ -1112,12 +1035,19 @@ class Attributes( object ):
     Because Attributes must be updated before the shader is linked,
     we cannot do the same validation as we can with Uniforms.
 
-    Usage:
+    Attributes can be accessed as members:
     shader.attributes.in_position = 0
     print shader.attributes.in_position
+    >>> 0
 
+    Attributes can also be accessed array style:
     shader.attributes[ 'in_position' ] = 0
     print shader.attributes[ 'in_position' ]
+    >>> 0
+
+    Attributes provides a mechanism to iterate over the active Attributes:
+    for attribute in shader.attributes:
+        print attribute
     """
 
     def __init__( self, program ):
@@ -1128,19 +1058,27 @@ class Attributes( object ):
     def _on_program_linked( self ):
         pass
 
+    def __iter__( self ):
+        return self.next()
+
+    def next( self ):
+        for attribute in self.all().values():
+            yield attribute
+
     def all( self ):
         """Returns a dictionary of all the available attributes.
 
         The key is the attribute name.
-        The value is the attribute type as a string.
+        The value is an Attribute object.
         """
         # get number of active attributes
-        handle = self.__dict__[ 'program' ].handle
+        program = self.__dict__[ 'program' ]
 
         _attributes = {}
-        for attribute in attributes( handle ):
+
+        for attribute in attributes( program.handle ):
             name, size, type = attribute
-            _attributes[ name ] = enum_to_string( type )
+            _attributes[ name ] = Attribute( program, name )
 
         return _attributes
 
@@ -1158,15 +1096,10 @@ class Attributes( object ):
         An invalid attribute is signified as OpenGL's glGetAttribLocation
         function returning -1.
         """
-        if not self.program.linked:
-            raise ValueError( "ShaderProgram must be linked before attribute can be queried" )
+        if name in self.__dict__:
+            return self.__dict__[ name ]
 
-        location = glGetAttribLocation( self.program.handle, name )
-
-        # return None if the location is invalid
-        if location < 0:
-            return None
-        return location
+        return Attribute( self.__dict__[ 'program' ], name )
 
     def __setattr__( self, name, value ):
         """Simply calls __setitem__ with the same parameters
@@ -1181,6 +1114,73 @@ class Attributes( object ):
         """
         glBindAttribLocation( self.program.handle, value, name )
 
+    def __str__( self ):
+        string = "Attributes:\n"
+        for attribute in self:
+            string += str(attribute) + "\n"
+        return string[:-1]
+
+
+class Attribute( object ):
+    """Wraps a GLSL Vertex Attribute.
+    """
+
+    def __init__( self, program, name ):
+        super( Attribute, self ).__init__()
+
+        self._program = program
+        self._name = name
+
+    @property
+    def name( self ):
+        """Returns the name of the uniform as specified in GLSL.
+
+        Eg. in_position
+        """
+        return self._name
+
+    @property
+    def program( self ):
+        """Returns the ShaderProgram that owns the Uniform.
+        """
+        return self._program
+
+    @property
+    def type( self ):
+        """Returns the GL enumeration type for the Attribute.
+
+        Eg. GL_FLOAT_VEC4.
+        """
+        name, size, type = attribute_for_name( self.program.handle, self.name )
+        return type
+
+    @property
+    def location( self ):
+        """Returns the location of the Attribute.
+        """
+        return glGetAttribLocation( self.program.handle, self.name )
+
+    @location.setter
+    def location( self, location ):
+        """Sets the attributes location.
+
+        Locations can be set two ways:
+        shader.attributes.in_position = 0
+        or:
+        shader.attributes.in_position.location = 0
+        """
+        glBindAttribLocation( self.program.handle, location, self.name )
+
+    def __str__( self ):
+        """Returns a human readable string representing the Attribute.
+        """
+        return "%s:\t%s\t%s\t%d" % (
+            self.__class__.__name__,
+            self.name,
+            enum_to_string( self.type ),
+            self.location
+            )
+
 
 # register our uniform types
 def register_uniforms():
@@ -1191,15 +1191,11 @@ def register_uniforms():
     to be called manually.
     Calling this multiple times will not do any harm.
     """
-    for type in UniformFloat.types:
-        Uniforms.types[ type ] = UniformFloat
-    for type in UniformInt.types:
-        Uniforms.types[ type ] = UniformInt
-    for type in UniformUint.types:
-        Uniforms.types[ type ] = UniformUint
-    for type in UniformFloatMatrix.types:
-        Uniforms.types[ type ] = UniformFloatMatrix
-    for type in UniformSampler.types:
-        Uniforms.types[ type ] = UniformSampler
+    Uniforms.register_uniform_class( UniformFloat, UniformFloat.types.keys() )
+    Uniforms.register_uniform_class( UniformInt, UniformInt.types.keys() )
+    Uniforms.register_uniform_class( UniformUint, UniformUint.types.keys() )
+    Uniforms.register_uniform_class( UniformFloatMatrix, UniformFloatMatrix.types.keys() )
+    Uniforms.register_uniform_class( UniformSampler, UniformSampler.types.keys() )
+
 register_uniforms()
 
