@@ -103,9 +103,9 @@ def create():
 
     # create our shader but don't link it yet
     shader = ShaderProgram(
-        False,
         Shader( GL_VERTEX_SHADER, shader_source['vert'] ),
-        Shader( GL_FRAGMENT_SHADER, shader_source['frag'] )
+        Shader( GL_FRAGMENT_SHADER, shader_source['frag'] ),
+        link_now = False
         )
     # set our shader data
     # we MUST do this before we link the shader
@@ -137,16 +137,7 @@ def create():
     glBindBuffer( GL_ARRAY_BUFFER, 0 )
     glBindVertexArray( 0 )
 
-    def print_shader_info():
-        # print the shader variables we've found via GL calls
-        print "Uniforms:"
-        for uniform in shader.uniforms.all().values():
-            print "%s\t%s" % (uniform.name, uniform.type)
-        print "Attributes:"
-        for name, type in shader.attributes.all().items():
-            print "%s\t%s" % (name, type)
-    print_shader_info()
-
+    print shader
 
 def draw( projection, model_view, colour ):
     global vao
