@@ -428,14 +428,13 @@ class ShaderProgram( object ):
             self.attach_shader( shader )
 
         # default raise exception to False
-        self.raise_invalid_variables = \
-            kwargs['raise_invalid_variables'] if 'raise_invalid_variables' in kwargs \
-            else False
+        self.raise_invalid_variables = kwargs.get(
+                'raise_invalid_variables',
+                False
+                )
 
         # default link now to True
-        link_now = \
-            kwargs['link_now'] if 'link_now' in kwargs \
-            else True
+        link_now = kwargs.get( 'link_now', True )
 
         if link_now:
             self.link()
