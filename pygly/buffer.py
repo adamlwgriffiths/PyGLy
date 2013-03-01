@@ -75,6 +75,13 @@ class Buffer( object ):
         GL.glUnmapBuffer( self.target )
     """
 
+    def __str__( self ):
+        string = \
+            "BufferRegion:\n" \
+            "nbytes:\t%s" % (
+                self.nbytes,
+                )
+        return string
 
 class TypedBuffer( object ):
     """Simple wrapper around the glGenBuffers related functions.
@@ -96,17 +103,6 @@ class TypedBuffer( object ):
     the Buffer.
     """
 
-    usage_string = {
-        GL.GL_STATIC_DRAW:      "GL_STATIC_DRAW",
-        GL.GL_STATIC_READ:      "GL_STATIC_READ",
-        GL.GL_STATIC_COPY:      "GL_STATIC_COPY",
-        GL.GL_STREAM_DRAW:      "GL_STREAM_DRAW",
-        GL.GL_STREAM_READ:      "GL_STREAM_READ",
-        GL.GL_STREAM_COPY:      "GL_STREAM_COPY",
-        GL.GL_DYNAMIC_DRAW:     "GL_DYNAMIC_DRAW",
-        GL.GL_DYNAMIC_READ:     "GL_DYNAMIC_READ",
-        GL.GL_DYNAMIC_COPY:     "GL_DYNAMIC_COPY",
-        }
 
     def __init__( self, target = GL.GL_ARRAY_BUFFER, usage = GL.GL_STATIC_DRAW, *args ):
         super( TypedBuffer, self ).__init__()
@@ -178,10 +174,8 @@ class TypedBuffer( object ):
     def __str__( self ):
         string = \
             "BufferRegion:\n" \
-            "nbytes:\t%s\n" \
-            "usage:\t%s\n"  % (
-                self.nbytes,
-                TypedBuffer.usage_string[ self._usage ]
+            "nbytes:\t%s\n"  % (
+                self.nbytes
                 )
         for region in self._regions:
             string += str(region) + "\n"
