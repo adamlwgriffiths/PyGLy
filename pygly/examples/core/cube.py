@@ -3,7 +3,7 @@ from OpenGL.GL import *
 
 import pygly.shader
 from pygly.shader import Shader, ShaderProgram
-from pygly.buffer import Buffer
+from pygly.buffer import TypedBuffer, BufferRegion
 from pygly.vertex_array import VertexArray
 
 
@@ -20,10 +20,8 @@ out vec3 ex_colour;
 
 void main(void) 
 {
-    gl_Position = projection * model_view * vec4(
-        in_position,
-        1.0
-        );
+    // apply projection and model view matrix to vertex
+    gl_Position = projection * model_view * vec4( in_position, 1.0 );
 
     ex_colour = in_colour;
 }
@@ -40,7 +38,7 @@ out vec4 fragColor;
 
 void main(void) 
 {
-    //Set colour of each fragment
+    // set colour of each fragment
     fragColor = vec4( ex_colour, 1.0 );
 }
 """
@@ -50,52 +48,69 @@ shader = None
 vao = None
 vbo = None
 
-vertices = numpy.array([
-     1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
-    -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
-     1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
-    -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
-    -1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
-     1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+# we're going to use the PyGLy VertexArray / Buffer for this code
+# we could create the data in the appropriate format to begin with
+# but we'll demonstrate how to convert from a flat set of values
+# to a more complex dtype
 
-     1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
-    -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
-     1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
-    -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
-    -1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
-     1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+# if we didn't do this, the values would need to be in tuples
+# Ie. [ ( (1., 1., 1.), (0., 0., 0.) ), ... ]
 
-     1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
-    -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
-     1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
-    -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
-    -1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
-     1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+# lay out our data as 'position', 'colour'
+vertices_simple = numpy.array(
+    [
+         1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+        -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+         1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+        -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
+        -1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
+         1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
 
-     1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
-    -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
-     1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
-    -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
-    -1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
-     1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+         1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+        -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+         1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+        -1.0,-1.0, 1.0,     1.0, 0.5, 0.0,
+        -1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
+         1.0,-1.0,-1.0,     1.0, 0.5, 0.0,
 
-    -1.0, 1.0, 1.0,     1.0, 1.0, 0.0,
-    -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
-    -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
-    -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
-    -1.0,-1.0,-1.0,     1.0, 1.0, 0.0,
-    -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
+         1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+        -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+         1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+        -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
+        -1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
+         1.0,-1.0, 1.0,     0.0, 0.0, 1.0,
 
-     1.0, 1.0,-1.0,     1.0, 0.0, 0.0,
-     1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
-     1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
-     1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
-     1.0,-1.0, 1.0,     1.0, 0.0, 0.0,
-     1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
-     ],
-     dtype = 'float32'
+         1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+        -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+         1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+        -1.0,-1.0,-1.0,     1.0, 0.0, 1.0,
+        -1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+         1.0, 1.0,-1.0,     1.0, 0.0, 1.0,
+
+        -1.0, 1.0, 1.0,     1.0, 1.0, 0.0,
+        -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
+        -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
+        -1.0, 1.0,-1.0,     1.0, 1.0, 0.0,
+        -1.0,-1.0,-1.0,     1.0, 1.0, 0.0,
+        -1.0,-1.0, 1.0,     1.0, 1.0, 0.0,
+
+         1.0, 1.0,-1.0,     1.0, 0.0, 0.0,
+         1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+         1.0,-1.0,-1.0,     1.0, 0.0, 0.0,
+         1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+         1.0,-1.0, 1.0,     1.0, 0.0, 0.0,
+         1.0,-1.0,-1.0,     1.0, 0.0, 0.0
+        ],
+    dtype = 'f4'
      )
 
+# convert to our named view
+vertices = vertices_simple.view(
+    dtype = [
+        ('position',    'float32',  (3,)),
+        ('colour',      'float32',  (3,))
+        ]
+    )
 
 
 def create():
@@ -110,51 +125,41 @@ def create():
     fs = Shader( GL_FRAGMENT_SHADER, shader_source['frag'] )
     print vs
     print fs
-    shader = ShaderProgram( vs, fs, link_now = False )
-
-    # set our shader data
-    # we MUST do this before we link the shader
-    shader.frag_location( 'fragColor' )
-    shader.link()
-
-    # bind our vertex array
-    vao = VertexArray()
-    vao.bind()
-
-    vbo = Buffer( GL_ARRAY_BUFFER, GL_STATIC_DRAW )
-    vbo.bind()
-    vbo.set_data( vertices )
-
-    # load our vertex positions
-    # this will be attribute 0
-    vao.set_attribute(
-        shader.attributes.in_position.location,
-        3,
-        GL_FLOAT,
-        stride = 6 * 4,
-        offset = 0,
-        normalise = False
-        )
-    vao.enable_attribute( shader.attributes.in_position.location )
-
-    # load our vertex colours
-    # this will be attribute 1
-    vao.set_attribute(
-        shader.attributes.in_colour.location,
-        3,
-        GL_FLOAT,
-        stride = 6 * 4,
-        offset = 3 * 4,
-        normalise = False
-        )
-    vao.enable_attribute( shader.attributes.in_colour.location )
-
-    # unbind our buffers
-    vbo.unbind()
-    vao.unbind()
-
+    shader = ShaderProgram( vs, fs )
     # print out our shader description
     print shader
+
+    # create a vertex buffer
+    # we pass in a list of regions we want to define
+    # we only have 1 region here
+    # for each region, we pass in how many rows, and the dtype
+    vbo = TypedBuffer(
+        GL_ARRAY_BUFFER,
+        GL_STATIC_DRAW,
+        (vertices.size, vertices.dtype)
+        )
+    print vbo
+
+    # get the created region object
+    # this is the first, and only, region was passed in
+    vertices_buffer = vbo[ 0 ]
+
+    # pass the data to the region
+    vbo.bind()
+    vertices_buffer.set_data( vertices )
+
+    # pass the shader and region to our VAO
+    # and bind each of the attributes to a VAO index
+    # the shader name is the variable name used in the shader
+    # the buffer name is the name of the property in our vertex dtype
+    # create our vertex array
+    vao = VertexArray()
+    vao.bind()
+    vao.set_buffer_attribute( shader, 'in_position', vertices_buffer, 'position' )
+    vao.set_buffer_attribute( shader, 'in_colour', vertices_buffer, 'colour' )
+    vao.unbind()
+
+    vbo.unbind()
 
 def draw( projection, model_view ):
     global vao
@@ -166,7 +171,7 @@ def draw( projection, model_view ):
     shader.uniforms.projection = projection
 
     vao.bind()
-    glDrawArrays( GL_TRIANGLES, 0, vertices.size / 3 )
+    glDrawArrays( GL_TRIANGLES, 0, vertices.size )
     vao.unbind()
 
     shader.unbind()
