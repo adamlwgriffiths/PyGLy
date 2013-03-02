@@ -15,6 +15,13 @@ from pygly import \
     gl_utils
 
 class Buffer( object ):
+    """A simple wrapper around OpenGL buffers (VBO, TBO, etc).
+
+    This wraps the existing functions and adds some automatic conversions
+    to avoid PyOpenGL exceptions.
+    Also provides convenient properties for buffer size, target and usage
+    flags.
+    """
 
     def __init__( self, target = GL.GL_ARRAY_BUFFER, usage = GL.GL_STATIC_DRAW ):
         super( Buffer, self ).__init__()
