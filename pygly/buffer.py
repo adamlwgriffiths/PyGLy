@@ -60,6 +60,8 @@ class Buffer( object ):
         return self._usage
 
     def bind( self ):
+        assert currently_bound_buffer() != self._handle
+
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
@@ -262,6 +264,8 @@ class TypedBuffer( object ):
             yield region
 
     def bind( self ):
+        assert currently_bound_buffer() != self._handle
+
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
@@ -448,7 +452,7 @@ class BufferRegion( object ):
         called for Core profile applications (>=3.0).
         """
         assert currently_bound_buffer() == self.buffer.handle
-        
+
         glType = self.type( name )
         stride = self.stride
         offset = self.offset( name )
