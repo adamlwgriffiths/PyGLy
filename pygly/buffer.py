@@ -15,8 +15,15 @@ from pygly import \
     gl_utils
 
 
-def currently_bound_buffer():
-    return GL.glGetInteger( GL.GL_ARRAY_BUFFER_BINDING )
+def currently_bound_buffer( type ):
+    if type == GL.GL_TEXTURE_BUFFER:
+        enum = GL.GL_TEXTURE_BUFFER_BINDING
+    elif type == GL.GL_ELEMENT_ARRAY_BUFFER:
+        enum = GL.GL_ELEMENT_ARRAY_BUFFER_BINDING
+    else:
+        enum = GL.GL_ARRAY_BUFFER_BINDING
+
+    return GL.glGetInteger( enum )
 
 
 class Buffer( object ):
@@ -60,12 +67,12 @@ class Buffer( object ):
         return self._usage
 
     def bind( self ):
-        assert currently_bound_buffer() != self._handle
+        assert currently_bound_buffer( self._target ) != self._handle
 
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         GL.glBindBuffer( self.target, 0 )
 
@@ -77,7 +84,7 @@ class Buffer( object ):
 
         The buffer must be bound for this to succeed.
         """
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         self._usage = usage
         self._nbytes = nbytes
@@ -85,7 +92,7 @@ class Buffer( object ):
 
     @parameters_as_numpy_arrays( 'data' )
     def set_data( self, data, usage = None ):
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         if usage:
             self._usage = usage
@@ -94,7 +101,7 @@ class Buffer( object ):
 
     @parameters_as_numpy_arrays( 'data' )
     def set_sub_data( self, data, offset = 0 ):
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         GL.glBufferSubData( self.target, offset, data.nbytes, data )
 
@@ -117,7 +124,7 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
@@ -132,7 +139,7 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
@@ -147,7 +154,7 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
@@ -162,7 +169,7 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
@@ -177,7 +184,7 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
@@ -264,18 +271,18 @@ class TypedBuffer( object ):
             yield region
 
     def bind( self ):
-        assert currently_bound_buffer() != self._handle
+        assert currently_bound_buffer( self._target ) != self._handle
 
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         GL.glBindBuffer( self.target, 0 )
 
     @parameters_as_numpy_arrays( 'data' )
     def set_data( self, data ):
-        assert currently_bound_buffer() == self._handle
+        assert currently_bound_buffer( self._target ) == self._handle
 
         GL.glBufferSubData( self.buffer.target, 0, data.nbytes, data )
 
@@ -354,7 +361,7 @@ class BufferRegion( object ):
 
     @parameters_as_numpy_arrays( 'data' )
     def set_data( self, data ):
-        assert currently_bound_buffer() == self.buffer.handle
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
         GL.glBufferSubData( self.buffer.target, self._offset, data.nbytes, data )
 
@@ -368,7 +375,7 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self.buffer.handle
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
@@ -389,7 +396,7 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self.buffer.handle
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
@@ -410,7 +417,7 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self.buffer.handle
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
@@ -431,7 +438,7 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self.buffer.handle
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
         glType = self.type( name )
         stride = self.stride
@@ -451,7 +458,7 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
-        assert currently_bound_buffer() == self.buffer.handle
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
         glType = self.type( name )
         stride = self.stride
