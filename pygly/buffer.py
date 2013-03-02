@@ -63,15 +63,28 @@ class Buffer( object ):
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
+        assert currently_bound_buffer() == self._handle
+
         GL.glBindBuffer( self.target, 0 )
 
     def reset( self, nbytes, usage = GL.GL_STATIC_DRAW ):
+        """Calls glBufferData with the existing target type,
+        specified size and usage.
+
+        This is used to set the buffer size without yet sending any data.
+
+        The buffer must be bound for this to succeed.
+        """
+        assert currently_bound_buffer() == self._handle
+
         self._usage = usage
         self._nbytes = nbytes
         GL.glBufferData( self.target, self.nbytes, None, self.usage )
 
     @parameters_as_numpy_arrays( 'data' )
     def set_data( self, data, usage = None ):
+        assert currently_bound_buffer() == self._handle
+
         if usage:
             self._usage = usage
         self._nbytes = data.nbytes
@@ -79,6 +92,8 @@ class Buffer( object ):
 
     @parameters_as_numpy_arrays( 'data' )
     def set_sub_data( self, data, offset = 0 ):
+        assert currently_bound_buffer() == self._handle
+
         GL.glBufferSubData( self.target, offset, data.nbytes, data )
 
     """
@@ -100,6 +115,8 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self._handle
+
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -113,6 +130,8 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self._handle
+
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -126,6 +145,8 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self._handle
+
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -139,6 +160,8 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self._handle
+
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -152,6 +175,8 @@ class Buffer( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self._handle
+
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -240,10 +265,14 @@ class TypedBuffer( object ):
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
+        assert currently_bound_buffer() == self._handle
+
         GL.glBindBuffer( self.target, 0 )
 
     @parameters_as_numpy_arrays( 'data' )
     def set_data( self, data ):
+        assert currently_bound_buffer() == self._handle
+
         GL.glBufferSubData( self.buffer.target, 0, data.nbytes, data )
 
     """
@@ -321,6 +350,8 @@ class BufferRegion( object ):
 
     @parameters_as_numpy_arrays( 'data' )
     def set_data( self, data ):
+        assert currently_bound_buffer() == self.buffer.handle
+
         GL.glBufferSubData( self.buffer.target, self._offset, data.nbytes, data )
 
     def get_data( self ):
@@ -333,6 +364,8 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self.buffer.handle
+
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
         stride = self.stride
@@ -352,6 +385,8 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self.buffer.handle
+
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
         stride = self.stride
@@ -371,6 +406,8 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self.buffer.handle
+
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
         stride = self.stride
@@ -390,6 +427,8 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self.buffer.handle
+
         glType = self.type( name )
         stride = self.stride
         offset = self.offset( name )
@@ -408,6 +447,8 @@ class BufferRegion( object ):
         This is an OpenGL Legacy function (<=2.1) and should not be
         called for Core profile applications (>=3.0).
         """
+        assert currently_bound_buffer() == self.buffer.handle
+        
         glType = self.type( name )
         stride = self.stride
         offset = self.offset( name )
