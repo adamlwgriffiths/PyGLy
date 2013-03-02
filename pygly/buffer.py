@@ -130,6 +130,7 @@ class Buffer( object ):
                 )
         return string
 
+
 class TypedBuffer( object ):
     """Simple wrapper around the glGenBuffers related functions.
 
