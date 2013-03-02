@@ -83,6 +83,11 @@ class Buffer( object ):
     """
 
     def vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+        """Sets the glVertexPointer.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -91,6 +96,11 @@ class Buffer( object ):
         GL.glVertexPointer( values_per_vertex, glType, stride, offset )
 
     def color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+        """Sets the glColorPointer.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -99,6 +109,11 @@ class Buffer( object ):
         GL.glColorPointer( values_per_vertex, glType, stride, offset )
 
     def texture_coord_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+        """Sets the glTexCoordPointer.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -107,6 +122,11 @@ class Buffer( object ):
         glTexCoordPointer( values_per_vertex, glType, stride, offset )
 
     def normal_pointer( self, glType, stride, offset, enable = True ):
+        """Sets the glNormalPointer.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -115,6 +135,11 @@ class Buffer( object ):
         GL.glNormalPointer( glType, stride, offset )
 
     def index_pointer( self, glType, stride, offset, enable = True ):
+        """Sets the glIndexPointer.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
@@ -290,6 +315,12 @@ class BufferRegion( object ):
         pass
 
     def vertex_pointer( self, name = None, enable = True ):
+        """Calculates and sets the glVertexPointer to the specified
+        dtype attribute.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
         stride = self.stride
@@ -303,6 +334,12 @@ class BufferRegion( object ):
         GL.glVertexPointer( values_per_vertex, glType, stride, offset )
 
     def color_pointer( self, name = None, enable = True ):
+        """Calculates and sets the glColorPointer to the specified
+        dtype attribute.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
         stride = self.stride
@@ -316,6 +353,12 @@ class BufferRegion( object ):
         GL.glColorPointer( values_per_vertex, glType, stride, offset )
 
     def texture_coord_pointer( self, name = None, enable = True ):
+        """Calculates and sets the glTexCoordPointer to the specified
+        dtype attribute.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         values_per_vertex = self.element_count( name )
         glType = self.type( name )
         stride = self.stride
@@ -329,6 +372,12 @@ class BufferRegion( object ):
         glTexCoordPointer( values_per_vertex, glType, stride, offset )
 
     def normal_pointer( self, name = None, enable = True ):
+        """Calculates and sets the glNormalPointer to the specified
+        dtype attribute.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         glType = self.type( name )
         stride = self.stride
         offset = self.offset( name )
@@ -341,6 +390,12 @@ class BufferRegion( object ):
         GL.glNormalPointer( glType, stride, offset )
 
     def index_pointer( self, name = None, enable = True ):
+        """Calculates and sets the glIndexPointer to the specified
+        dtype attribute.
+
+        This is an OpenGL Legacy function (<=2.1) and should not be
+        called for Core profile applications (>=3.0).
+        """
         glType = self.type( name )
         stride = self.stride
         offset = self.offset( name )
