@@ -14,6 +14,7 @@ from pygly import \
     numpy_utils, \
     gl_utils
 
+
 class Buffer( object ):
     """A simple wrapper around OpenGL buffers (VBO, TBO, etc).
 
@@ -23,11 +24,18 @@ class Buffer( object ):
     flags.
     """
 
-    def __init__( self, target = GL.GL_ARRAY_BUFFER, usage = GL.GL_STATIC_DRAW ):
+    def __init__( self, target = GL.GL_ARRAY_BUFFER, usage = GL.GL_STATIC_DRAW, handle = None ):
+        """Creates the Buffer and initialises the OpenGL buffer handle.
+
+        This simply calls glGenBuffers (if an existing handle isn't passed).
+        As with the normal GL buffer, the buffer is NOT ready to use
+        at the end of this function.
+        For the buffer to be ready for use, reset or set_data must be called first.
+        """
         super( Buffer, self ).__init__()
 
         self._target = target
-        self._handle = GL.glGenBuffers( 1 )
+        self._handle = GL.glGenBuffers( 1 ) if not handle else handle
         self._nbytes = 0
         self._usage = usage
 
