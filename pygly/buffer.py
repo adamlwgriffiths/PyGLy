@@ -15,6 +15,10 @@ from pygly import \
     gl_utils
 
 
+def currently_bound_buffer():
+    return GL.glGetInteger( GL.GL_ARRAY_BUFFER_BINDING )
+
+
 class Buffer( object ):
     """A simple wrapper around OpenGL buffers (VBO, TBO, etc).
 
