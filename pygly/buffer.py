@@ -75,6 +75,39 @@ class Buffer( object ):
         GL.glUnmapBuffer( self.target )
     """
 
+    def vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
+
+        GL.glVertexPointer( values_per_vertex, glType, stride, offset )
+
+    def color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableClientState( GL.GL_COLOR_ARRAY )
+
+        GL.glColorPointer( values_per_vertex, glType, stride, offset )
+
+    def normal_pointer( self, glType, stride, offset, enable = True ):
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
+
+        GL.glNormalPointer( glType, stride, offset )
+
     def __str__( self ):
         string = \
             "BufferRegion:\n" \
@@ -240,6 +273,54 @@ class BufferRegion( object ):
 
     def get_data( self ):
         pass
+
+    def vertex_pointer( self, name = None, enable = True ):
+        values_per_vertex = self.element_count( name )
+        glType = self.type( name )
+        stride = self.stride
+        offset = self.offset( name )
+
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
+
+        GL.glVertexPointer( values_per_vertex, glType, stride, offset )
+
+    def color_pointer( self, name = None, enable = True ):
+        values_per_vertex = self.element_count( name )
+        glType = self.type( name )
+        stride = self.stride
+        offset = self.offset( name )
+
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableClientState( GL.GL_COLOR_ARRAY )
+
+        GL.glColorPointer( values_per_vertex, glType, stride, offset )
+
+    def normal_pointer( self, name = None, enable = True ):
+        glType = self.type( name )
+        stride = self.stride
+        offset = self.offset( name )
+
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
+
+        GL.glNormalPointer( glType, stride, offset )
+
 
     def __str__( self ):
         string = \
