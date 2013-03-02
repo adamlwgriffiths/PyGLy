@@ -7,6 +7,9 @@ from pygly import gl_utils
 class VertexArray( object ):
     """Wraps OpenGL Vertex Array Objects.
 
+    This is an OpenGL Core function (>=3.0) and should not be
+    called for Legacy profile applications (<=2.1).
+
     Provides wrappers around standard functions and higher level
     wrappers with PyGLy.BufferRegion interfaces.
 
