@@ -76,10 +76,7 @@ class Buffer( object ):
     """
 
     def vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
@@ -87,10 +84,7 @@ class Buffer( object ):
         GL.glVertexPointer( values_per_vertex, glType, stride, offset )
 
     def color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_COLOR_ARRAY )
@@ -98,10 +92,7 @@ class Buffer( object ):
         GL.glColorPointer( values_per_vertex, glType, stride, offset )
 
     def texture_coord_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
@@ -109,10 +100,7 @@ class Buffer( object ):
         glTexCoordPointer( values_per_vertex, glType, stride, offset )
 
     def normal_pointer( self, glType, stride, offset, enable = True ):
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
@@ -120,10 +108,7 @@ class Buffer( object ):
         GL.glNormalPointer( glType, stride, offset )
 
     def index_pointer( self, glType, stride, offset, enable = True ):
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_INDEX_ARRAY )
@@ -302,10 +287,7 @@ class BufferRegion( object ):
         stride = self.stride
         offset = self.offset( name )
 
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
@@ -318,10 +300,7 @@ class BufferRegion( object ):
         stride = self.stride
         offset = self.offset( name )
 
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_COLOR_ARRAY )
@@ -334,10 +313,7 @@ class BufferRegion( object ):
         stride = self.stride
         offset = self.offset( name )
 
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
@@ -349,10 +325,7 @@ class BufferRegion( object ):
         stride = self.stride
         offset = self.offset( name )
 
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
@@ -364,10 +337,7 @@ class BufferRegion( object ):
         stride = self.stride
         offset = self.offset( name )
 
-        if offset == 0:
-            offset = None
-        else:
-            offset = ctypes.c_void_p( offset )
+        offset = None if offset == 0 else ctypes.c_void_p( offset )
 
         if enable:
             GL.glEnableClientState( GL.GL_INDEX_ARRAY )
