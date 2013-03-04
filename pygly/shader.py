@@ -891,6 +891,11 @@ class UniformFloat( Uniform ):
     """Wraps GLSL Float Uniform types.
     """
 
+    """Defines the accepted Uniform types this object supports.
+
+    The values for each key represent the uniform set function to use
+    and the number of expected elements per value.
+    """
     types = {
         GL_FLOAT:       (glUniform1fv,  1),
         GL_FLOAT_VEC2:  (glUniform2fv,  2),
@@ -909,6 +914,11 @@ class UniformInt( Uniform ):
     """Wraps GLSL Int Uniform types.
     """
 
+    """Defines the accepted Uniform types this object supports.
+
+    The values for each key represent the uniform set function to use
+    and the number of expected elements per value.
+    """
     types = {
         GL_INT:         (glUniform1iv,  1),
         GL_INT_VEC2:    (glUniform2iv,  2),
@@ -927,6 +937,11 @@ class UniformUint( Uniform ):
     """Wraps GLSL Unsigned Int Uniform types.
     """
 
+    """Defines the accepted Uniform types this object supports.
+
+    The values for each key represent the uniform set function to use
+    and the number of expected elements per value.
+    """
     types = {
         GL_UNSIGNED_INT:        (glUniform1uiv,     1),
         GL_UNSIGNED_INT_VEC2:   (glUniform2uiv,     2),
@@ -946,6 +961,11 @@ class UniformFloatMatrix( Uniform ):
     """Wraps GLSL Float Matrix Uniform types.
     """
 
+    """Defines the accepted Uniform types this object supports.
+
+    The values for each key represent the uniform set function to use
+    and the number of expected elements per value.
+    """
     types = {
         GL_FLOAT_MAT2:      (glUniformMatrix2fv,    4),
         GL_FLOAT_MAT3:      (glUniformMatrix3fv,    9),
@@ -995,6 +1015,11 @@ class UniformSampler( Uniform ):
     These are the same as UniformInt, but are seperated for convenience.
     """
 
+    """Defines the accepted Uniform types this object supports.
+
+    The values for each key represent the uniform set function to use
+    and the number of expected elements per value.
+    """
     types = {
         GL_SAMPLER_1D:          (glUniform1iv,  1),
         GL_SAMPLER_2D:          (glUniform1iv,  1),
