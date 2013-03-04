@@ -365,15 +365,17 @@ class Shader( object ):
         glShaderSource( self.handle, self.source )
 
         # compile the shader
-        glCompileShader( self.handle )
+        try:
+            glCompileShader( self.handle )
 
-        # retrieve the compile status
-        if not glGetShaderiv( self.handle, GL_COMPILE_STATUS ):
-            errors = glGetShaderInfoLog( self.handle )
-            self._print_shader_errors( errors )
-            return False
-
-        return True
+            # retrieve the compile status
+            if not glGetShaderiv( self.handle, GL_COMPILE_STATUS ):
+                errors = glGetShaderInfoLog( self.handle )
+                self._print_shader_errors( errors )
+                raise OpenGL.error.GLError( errors )
+        except OpenGL.error.GLError as e:
+            self._print_shader_errors( e.description )
+            raise
 
     def _print_shader_errors( self, buffer ):
         """Parses the error buffer and prints it to the console.
@@ -483,17 +485,20 @@ class ShaderProgram( object ):
         will not take effect.
         """
         # link the program
-        glLinkProgram( self.handle )
+        try:
+            glLinkProgram( self.handle )
 
-        # retrieve the compile status
-        if not glGetProgramiv( self.handle, GL_LINK_STATUS ):
-            errors = glGetProgramInfoLog( self.handle )
-            self._print_shader_errors( errors )
-            return False
+            # retrieve the compile status
+            if not glGetProgramiv( self.handle, GL_LINK_STATUS ):
+                errors = glGetProgramInfoLog( self.handle )
+                self._print_shader_errors( errors )
+                raise OpenGL.error.GLError( errors )
+        except OpenGL.error.GLError as e:
+            self._print_shader_errors( e.description )
+            raise
 
         self.uniforms._on_program_linked()
         self.attributes._on_program_linked()
-        return True
 
     def _print_shader_errors( self, buffer ):
         """Parses the error buffer and prints it to the console.
