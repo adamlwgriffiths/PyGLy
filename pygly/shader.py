@@ -73,6 +73,8 @@ from OpenGL.GL import *
 
 from pyrr.utils import parameters_as_numpy_arrays
 
+from pygly import gl_utils
+
 
 def parse_shader_error( error ):
     """Parses a single GLSL error and extracts the line number
@@ -772,6 +774,22 @@ class Uniform( object ):
         """
         return self._type
 
+    @property
+    def dtype( self ):
+        """Returns the numpy dtype string that represents this Uniform type.
+
+        Eg. "float32"
+        """
+        return self._dtype
+
+    @property
+    def data_size( self ):
+        """Returns the number of values that make up a single Uniform.
+
+        Eg, for vec4, this would be 4.
+        """
+        return self._num_values
+
     def _set_data( self, program, name, type ):
         """Used by the 'Uniforms' class to pass the data to the Uniform
         object once it is assigned to a ShaderProgram.
@@ -812,6 +830,16 @@ class Uniform( object ):
             raise ValueError( "ShaderProgram must be bound before uniform can be set" )
 
         values = numpy.array( args, dtype = self._dtype )
+
+        # check we received the correct number of values
+        if 0 != (values.size % self._num_values):
+            raise ValueError(
+                "Invalid number of values for Uniform, expected multiple of: %d, received: %d" % (
+                    self._num_values,
+                    values.size
+                    )
+                )
+
         count = values.size / self._num_values
         self._func( self.location, count, values )
 
@@ -947,6 +975,16 @@ class UniformFloatMatrix( Uniform ):
             raise ValueError( "ShaderProgram must be bound before uniform can be set" )
 
         values = numpy.array( args, dtype = self._dtype )
+
+        # check we received the correct number of values
+        if 0 != (values.size % self._num_values):
+            raise ValueError(
+                "Invalid number of values for Uniform, expected multiple of: %d, received: %d" % (
+                    self._num_values,
+                    values.size
+                    )
+                )
+
         count = values.size / self._num_values
         self._func( self.location, count, False, values )
 
