@@ -1,7 +1,6 @@
 import numpy
 from OpenGL.GL import *
 
-import pygly.shader
 from pygly.shader import Shader, ShaderProgram
 from pygly.buffer import TypedBuffer, BufferRegion
 from pygly.vertex_array import VertexArray
@@ -11,8 +10,8 @@ shader_source = {
     'vert': """
 #version 150
 
-in  vec3 in_position;
-in  vec3 in_colour;
+in vec3 in_position;
+in vec3 in_colour;
 uniform mat4 model_view;
 uniform mat4 projection;
 
@@ -30,9 +29,6 @@ void main(void)
     'frag': """
 #version 150
 
-// Video card drivers require this next line to function properly
-precision highp float;
-
 in vec3 ex_colour;
 out vec4 fragColor;
 
@@ -48,7 +44,7 @@ shader = None
 vao = None
 vbo = None
 
-# we're going to use the PyGLy VertexArray / Buffer for this code
+# we're going to use the PyGLy VertexArray / TypedBuffer for this code
 # we could create the data in the appropriate format to begin with
 # but we'll demonstrate how to convert from a flat set of values
 # to a more complex dtype
@@ -59,6 +55,7 @@ vbo = None
 # lay out our data as 'position', 'colour'
 vertices_simple = numpy.array(
     [
+        #  X,   Y,   Z,       R,   G,   B,
          1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
         -1.0, 1.0,-1.0,     0.0, 1.0, 0.0,
          1.0, 1.0, 1.0,     0.0, 1.0, 0.0,
@@ -144,22 +141,22 @@ def create():
     # this is the first, and only, region was passed in
     vertices_buffer = vbo[ 0 ]
 
-    # pass the data to the region
-    vbo.bind()
-    vertices_buffer.set_data( vertices )
+    vao = VertexArray()
+    vao.bind()
 
     # pass the shader and region to our VAO
     # and bind each of the attributes to a VAO index
     # the shader name is the variable name used in the shader
     # the buffer name is the name of the property in our vertex dtype
     # create our vertex array
-    vao = VertexArray()
-    vao.bind()
-    vao.set_buffer_attribute( shader, 'in_position', vertices_buffer, 'position' )
-    vao.set_buffer_attribute( shader, 'in_colour', vertices_buffer, 'colour' )
-    vao.unbind()
+    vbo.bind()
+    vertices_buffer.set_data( vertices )
+    vertices_buffer.attribute_pointer( shader, 'in_position', 'position' )
+    vertices_buffer.attribute_pointer( shader, 'in_colour', 'colour' )
 
     vbo.unbind()
+    vao.unbind()
+
 
 def draw( projection, model_view ):
     global vao

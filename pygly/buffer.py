@@ -118,6 +118,12 @@ class Buffer( object ):
         GL.glUnmapBuffer( self.target )
     """
 
+    def enable_vertex_pointer( self ):
+        GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
+
+    def disable_vertex_pointer( self ):
+        GL.glDisableClientState( GL.GL_VERTEX_ARRAY )
+
     def vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
         """Sets the glVertexPointer.
 
@@ -132,6 +138,12 @@ class Buffer( object ):
             GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
 
         GL.glVertexPointer( values_per_vertex, glType, stride, offset )
+
+    def enable_color_pointer( self ):
+        GL.glEnableClientState( GL.GL_COLOR_ARRAY )
+
+    def disable_color_pointer( self ):
+        GL.glDisableClientState( GL.GL_COLOR_ARRAY )
 
     def color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
         """Sets the glColorPointer.
@@ -148,6 +160,12 @@ class Buffer( object ):
 
         GL.glColorPointer( values_per_vertex, glType, stride, offset )
 
+    def enable_texture_coord_pointer( self ):
+        GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
+
+    def disable_texture_coord_pointer( self ):
+        GL.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY )
+
     def texture_coord_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
         """Sets the glTexCoordPointer.
 
@@ -162,6 +180,12 @@ class Buffer( object ):
             GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
         glTexCoordPointer( values_per_vertex, glType, stride, offset )
+
+    def enable_normal_pointer( self ):
+        GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
+
+    def disable_normal_pointer( self ):
+        GL.glDisableClientState( GL.GL_NORMAL_ARRAY )
 
     def normal_pointer( self, glType, stride, offset, enable = True ):
         """Sets the glNormalPointer.
@@ -178,6 +202,12 @@ class Buffer( object ):
 
         GL.glNormalPointer( glType, stride, offset )
 
+    def enable_index_pointer( self ):
+        GL.glEnableClientState( GL.GL_INDEX_ARRAY )
+
+    def disable_index_pointer( self ):
+        GL.glDisableClientState( GL.GL_INDEX_ARRAY )
+
     def index_pointer( self, glType, stride, offset, enable = True ):
         """Sets the glIndexPointer.
 
@@ -192,6 +222,49 @@ class Buffer( object ):
             GL.glEnableClientState( GL.GL_INDEX_ARRAY )
 
         GL.glIndexPointer( glType, stride, offset )
+
+    def enable_shader_attribute( self, shader, attribute ):
+        location = shader.attributes[ attribute ]
+        GL.glEnableVertexAttribArray( location )
+
+    def disable_shader_attribute( self, shader, attribute ):
+        location = shader.attributes[ attribute ]
+        GL.glDisableVertexAttribArray( location )
+
+    def enable_attribute( self, index ):
+        GL.glEnableVertexAttribArray( index )
+
+    def disable_attribute( self, index ):
+        GL.glDisableVertexAttribArray( index )
+
+    def attribute_pointer(
+        self,
+        location,
+        values_per_vertex,
+        glType,
+        stride,
+        offset,
+        normalise = False,
+        enable = True
+        ):
+        assert currently_bound_buffer( self._target ) == self._handle
+
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableVertexAttribArray( location )
+
+        GL.glVertexAttribPointer(
+            location,
+            values_per_vertex,
+            glType,
+            GL.GL_TRUE if normalise else GL.GL_FALSE,
+            stride,
+            offset
+            )
 
     def __str__( self ):
         string = \
@@ -337,7 +410,7 @@ class BufferRegion( object ):
 
     @property
     def nbytes( self ):
-        return self.rows * self._dtype.itemsize
+        return self._rows * self._dtype.itemsize
 
     @property
     def stride( self ):
@@ -368,6 +441,12 @@ class BufferRegion( object ):
     def get_data( self ):
         pass
 
+    def enable_vertex_pointer( self ):
+        GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
+
+    def disable_vertex_pointer( self ):
+        GL.glDisableClientState( GL.GL_VERTEX_ARRAY )
+
     def vertex_pointer( self, name = None, enable = True ):
         """Calculates and sets the glVertexPointer to the specified
         dtype attribute.
@@ -388,6 +467,12 @@ class BufferRegion( object ):
             GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
 
         GL.glVertexPointer( values_per_vertex, glType, stride, offset )
+
+    def enable_color_pointer( self ):
+        GL.glEnableClientState( GL.GL_COLOR_ARRAY )
+
+    def disable_color_pointer( self ):
+        GL.glDisableClientState( GL.GL_COLOR_ARRAY )
 
     def color_pointer( self, name = None, enable = True ):
         """Calculates and sets the glColorPointer to the specified
@@ -410,6 +495,12 @@ class BufferRegion( object ):
 
         GL.glColorPointer( values_per_vertex, glType, stride, offset )
 
+    def enable_texture_coord_pointer( self ):
+        GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
+
+    def disable_texture_coord_pointer( self ):
+        GL.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY )
+
     def texture_coord_pointer( self, name = None, enable = True ):
         """Calculates and sets the glTexCoordPointer to the specified
         dtype attribute.
@@ -431,6 +522,12 @@ class BufferRegion( object ):
 
         glTexCoordPointer( values_per_vertex, glType, stride, offset )
 
+    def enable_normal_pointer( self ):
+        GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
+
+    def disable_normal_pointer( self ):
+        GL.glDisableClientState( GL.GL_NORMAL_ARRAY )
+
     def normal_pointer( self, name = None, enable = True ):
         """Calculates and sets the glNormalPointer to the specified
         dtype attribute.
@@ -451,6 +548,12 @@ class BufferRegion( object ):
 
         GL.glNormalPointer( glType, stride, offset )
 
+    def enable_index_pointer( self ):
+        GL.glEnableClientState( GL.GL_INDEX_ARRAY )
+
+    def disable_index_pointer( self ):
+        GL.glDisableClientState( GL.GL_INDEX_ARRAY )
+
     def index_pointer( self, name = None, enable = True ):
         """Calculates and sets the glIndexPointer to the specified
         dtype attribute.
@@ -470,6 +573,70 @@ class BufferRegion( object ):
             GL.glEnableClientState( GL.GL_INDEX_ARRAY )
 
         GL.glIndexPointer( glType, stride, offset )
+
+    def enable_shader_attribute( self, shader, attribute ):
+        location = shader.attributes[ attribute ]
+        GL.glEnableVertexAttribArray( location )
+
+    def disable_shader_attribute( self, shader, attribute ):
+        location = shader.attributes[ attribute ]
+        GL.glDisableVertexAttribArray( location )
+
+    def enable_attribute( self, index ):
+        GL.glEnableVertexAttribArray( index )
+
+    def disable_attribute( self, index ):
+        GL.glDisableVertexAttribArray( index )
+
+    def attribute_pointer(
+        self,
+        shader,
+        attribute,
+        name = None,
+        normalise = False,
+        enable = True
+        ):
+        """Binds the attribute to the currently bound buffer.
+
+        This method wraps the glVertexAttribPointer call using
+        information provided by the shader object and the BufferRegion
+        object.
+
+        shader is a PyGLy ShaderProgram object.
+        attribute is the name of a shader attribute variable.
+        buffer_region is a PyGLy BufferRegion object created from a
+        PyGLy Buffer.
+        name is the column name in the BufferRegion dtype.
+
+        For example:
+        vao.set_buffer_attribute( shader, 'in_position', vertices_buffer, 'position' )
+        """
+        assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
+
+        # get the attribute location
+        location = shader.attributes[ attribute ].location
+
+        values_per_vertex = self.element_count( name )
+        glType = self.type( name )
+        stride = self.stride
+        offset = self.offset( name )
+
+        if offset == 0:
+            offset = None
+        else:
+            offset = ctypes.c_void_p( offset )
+
+        if enable:
+            GL.glEnableVertexAttribArray( location )
+
+        GL.glVertexAttribPointer(
+            location,
+            values_per_vertex,
+            glType,
+            GL.GL_TRUE if normalise else GL.GL_FALSE,
+            stride,
+            offset
+            )
 
     def __str__( self ):
         string = \
