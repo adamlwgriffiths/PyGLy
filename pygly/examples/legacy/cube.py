@@ -2,7 +2,7 @@ import numpy
 from OpenGL.GL import *
 
 from pygly.shader import Shader, ShaderProgram
-from pygly.buffer import TypedBuffer, BufferRegion
+from pygly.buffer import Buffer, BufferRegion
 
 
 shader_source = {
@@ -40,7 +40,7 @@ void main(void)
 shader = None
 vbo = None
 
-# we're going to use the PyGLy TypedBuffer for this code
+# we're going to use the PyGLy Buffer for this code
 # we could create the data in the appropriate format to begin with
 # but we'll demonstrate how to convert from a flat set of values
 # to a more complex dtype
@@ -121,7 +121,7 @@ def create():
     # print out our shader description
     print shader
 
-    vbo = TypedBuffer(
+    vbo = Buffer(
         GL_ARRAY_BUFFER,
         GL_STATIC_DRAW,
         (vertices.size, vertices.dtype)

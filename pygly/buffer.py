@@ -94,28 +94,74 @@ def set_attribute_pointer(
 
 
 class Buffer( object ):
-    """A simple wrapper around OpenGL buffers (VBO, TBO, etc).
+    """Wrapper around the glGenBuffers related functions.
 
-    This wraps the existing functions and adds some automatic conversions
-    to avoid PyOpenGL exceptions.
-    Also provides convenient properties for buffer size, target and usage
-    flags.
+    A Buffer is composed of an OpenGL buffer and a list of BufferRegions.
+    Each BufferRegion defines the a contiguous region of the buffer
+    and the format of data provided in that region.
+
+    For example, a Buffer composed of 2 regions.
+    [ Interleaved Vertex Data ][ Animation weights ]
+    The first region is composed of interleaved vertex data, such as
+    position, colour, normal.
+    The second region is composed of animation data, such as weights and
+    indices.
+
+    This enables a single buffer to provide data for many attributes.
+
+    Each BufferRegion has an associated Numpy dtype.
+    The dtype is used to calculate data offsets which provide enough
+    information to enable OpenGL to index into the data.
     """
 
-    def __init__( self, target = GL.GL_ARRAY_BUFFER, usage = GL.GL_STATIC_DRAW, handle = None ):
-        """Creates the Buffer and initialises the OpenGL buffer handle.
+    def __init__(
+        self,
+        target = GL.GL_ARRAY_BUFFER,
+        usage = GL.GL_STATIC_DRAW,
+        *args,
+        **kwargs
+        ):
+        """Creates a Buffer object.
 
-        This simply calls glGenBuffers (if an existing handle isn't passed).
-        As with the normal GL buffer, the buffer is NOT ready to use
-        at the end of this function.
-        For the buffer to be ready for use, reset or set_data must be called first.
+        The 'target' parameter matches that of the OpenGL 'target'
+        parameter in the glBufferData and related functions.
+
+        The 'usage' parameter matches that of the OpenGL 'usage'
+        parameter in the glBufferData and related functions.
+
+        The *args parameters is a list of regions.
+        Each value is a tuple and consists of the following values:
+            (count, dtype)
+        Where count is the number of rows of data in the format specified
+        by 'dtype'.
+        And 'dtype' is a numpy dtype string or numpy.dtype object.
+
+        A Buffer object cannot be resized once created.
+        To change a Buffer's size, create a new Buffer object
+        and pass the existing Buffer's handle in as the 'handle'
+        parameter.
         """
         super( Buffer, self ).__init__()
 
         self._target = target
-        self._handle = GL.glGenBuffers( 1 ) if not handle else handle
-        self._nbytes = 0
         self._usage = usage
+        self._nbytes = 0
+
+        handle = kwargs.get( 'handle', None )
+        self._handle = GL.glGenBuffers( 1 ) if not handle else handle
+
+        self._regions = []
+        # iterate through our formats and create our region objects
+        for (row_count, dtype) in args:
+            region = BufferRegion( self, row_count, dtype, self._nbytes )
+
+            self._regions.append( region )
+            self._nbytes += region.nbytes
+
+        # set the buffer size
+        self.bind()
+        GL.glBufferData( self.target, self.nbytes, None, self.usage )
+        self.unbind()
 
     @property
     def target( self ):
@@ -133,6 +179,16 @@ class Buffer( object ):
     def usage( self ):
         return self._usage
 
+    def __getitem__( self, index ):
+        return self._regions[ index ]
+
+    def __iter__( self ):
+        return self.next()
+
+    def next( self ):
+        for region in self._regions:
+            yield region
+
     def bind( self ):
         assert currently_bound_buffer( self._target ) != self._handle
 
@@ -143,42 +199,16 @@ class Buffer( object ):
 
         GL.glBindBuffer( self.target, 0 )
 
-    def reset( self, nbytes, usage = GL.GL_STATIC_DRAW ):
-        """Calls glBufferData with the existing target type,
-        specified size and usage.
-
-        This is used to set the buffer size without yet sending any data.
-
-        The buffer must be bound for this to succeed.
-        """
-        assert currently_bound_buffer( self._target ) == self._handle
-
-        self._usage = usage
-        self._nbytes = nbytes
-        GL.glBufferData( self.target, self.nbytes, None, self.usage )
-
     @parameters_as_numpy_arrays( 'data' )
-    def set_data( self, data, usage = None ):
+    def set_data( self, data ):
         assert currently_bound_buffer( self._target ) == self._handle
 
-        if usage:
-            self._usage = usage
-        self._nbytes = data.nbytes
-        GL.glBufferData( self.target, self.nbytes, data, self.usage )
-
-    @parameters_as_numpy_arrays( 'data' )
-    def set_sub_data( self, data, offset = 0 ):
-        assert currently_bound_buffer( self._target ) == self._handle
-
-        GL.glBufferSubData( self.target, offset, data.nbytes, data )
+        GL.glBufferSubData( self.buffer.target, 0, data.nbytes, data )
 
     """
     # see following link for possible issue that needs testing
     # http://www.mail-archive.com/numpy-discussion@lists.sourceforge.net/msg01161.html
     def map( self, access = GL.GL_READ_WRITE ):
-        if access not in valid_access:
-            raise ValueError( "Not a valid buffer access type" )
-
         return GL.glMapBuffer( self.target, access )
 
     def unmap( self ):
@@ -317,109 +347,6 @@ class Buffer( object ):
             offset,
             normalise
             )
-
-    def __str__( self ):
-        string = \
-            "BufferRegion:\n" \
-            "nbytes:\t%s" % (
-                self.nbytes,
-                )
-        return string
-
-
-class TypedBuffer( object ):
-    """Simple wrapper around the glGenBuffers related functions.
-
-    A TypedBuffer is composed of an OpenGL buffer and a list of BufferRegions.
-    Each BufferRegion defines the format of data provided in that region of
-    the bufferion.
-
-    For example, a TypedBuffer composed of 2 regions.
-    [ Interleaved Vertex Data ][ Animation weights ]
-    The first region is composed of interleaved vertex data, such as
-    position, colour, normal.
-    The second region is composed of animation data, such as weights and
-    indices.
-
-    This enables a single buffer to provide data for many attributes.
-
-    BufferRegions provide enough information to allow OpenGL to index into
-    the Buffer.
-    """
-
-
-    def __init__( self, target = GL.GL_ARRAY_BUFFER, usage = GL.GL_STATIC_DRAW, *args ):
-        super( TypedBuffer, self ).__init__()
-
-        self._target = target
-        self._usage = usage
-        self._handle = GL.glGenBuffers( 1 )
-        self._nbytes = 0
-
-        self._regions = []
-        # iterate through our formats and create our region objects
-        for (row_count, dtype) in args:
-            region = BufferRegion( self, row_count, dtype, self._nbytes )
-
-            self._regions.append( region )
-            self._nbytes += region.nbytes
-
-        # set the buffer size
-        self.bind()
-        GL.glBufferData( self.target, self.nbytes, None, self.usage )
-        self.unbind()
-
-    @property
-    def target( self ):
-        return self._target
-
-    @property
-    def handle( self ):
-        return self._handle
-
-    @property
-    def nbytes( self ):
-        return self._nbytes
-
-    @property
-    def usage( self ):
-        return self._usage
-
-    def __getitem__( self, index ):
-        return self._regions[ index ]
-
-    def __iter__( self ):
-        return self.next()
-
-    def next( self ):
-        for region in self._regions:
-            yield region
-
-    def bind( self ):
-        assert currently_bound_buffer( self._target ) != self._handle
-
-        GL.glBindBuffer( self.target, self.handle )
-
-    def unbind( self ):
-        assert currently_bound_buffer( self._target ) == self._handle
-
-        GL.glBindBuffer( self.target, 0 )
-
-    @parameters_as_numpy_arrays( 'data' )
-    def set_data( self, data ):
-        assert currently_bound_buffer( self._target ) == self._handle
-
-        GL.glBufferSubData( self.buffer.target, 0, data.nbytes, data )
-
-    """
-    # see following link for possible issue that needs testing
-    # http://www.mail-archive.com/numpy-discussion@lists.sourceforge.net/msg01161.html
-    def map( self, access = GL.GL_READ_WRITE ):
-        return GL.glMapBuffer( self.target, access )
-
-    def unmap( self ):
-        GL.glUnmapBuffer( self.target )
-    """
 
     def __str__( self ):
         string = \

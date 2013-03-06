@@ -2,7 +2,7 @@ import numpy
 from OpenGL.GL import *
 
 from pygly.shader import Shader, ShaderProgram
-from pygly.buffer import TypedBuffer, BufferRegion
+from pygly.buffer import Buffer, BufferRegion
 from pygly.vertex_array import VertexArray
 
 
@@ -44,7 +44,7 @@ shader = None
 vao = None
 vbo = None
 
-# we're going to use the PyGLy VertexArray / TypedBuffer for this code
+# we're going to use the PyGLy VertexArray / Buffer for this code
 # we could create the data in the appropriate format to begin with
 # but we'll demonstrate how to convert from a flat set of values
 # to a more complex dtype
@@ -130,7 +130,7 @@ def create():
     # we pass in a list of regions we want to define
     # we only have 1 region here
     # for each region, we pass in how many rows, and the dtype
-    vbo = TypedBuffer(
+    vbo = Buffer(
         GL_ARRAY_BUFFER,
         GL_STATIC_DRAW,
         (vertices.size, vertices.dtype)
