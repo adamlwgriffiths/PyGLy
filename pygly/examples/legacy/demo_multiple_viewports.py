@@ -1,6 +1,6 @@
-from pygly.examples.core.simple.main import SimpleApplication
-
 from pygly.ratio_viewport import RatioViewport
+
+from demo_simple import SimpleApplication
 
 
 class MultipleViewportApplication( SimpleApplication ):

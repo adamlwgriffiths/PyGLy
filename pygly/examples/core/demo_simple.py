@@ -22,11 +22,11 @@ from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
 from pyrr import matrix44
 
-from pygly.examples.core.application import CoreApplication
-import pygly.examples.core.cube as cube
+from application import Application
+import cube
 
 
-class SimpleApplication( CoreApplication ):
+class SimpleApplication( Application ):
     
     def __init__( self ):
         """Sets up the core functionality we need

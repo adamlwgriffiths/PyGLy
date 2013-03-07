@@ -4,28 +4,31 @@ a viewport.
 Viewport is provided without any high level
 wrappers and is entirely managed through events.
 """
+# import this first
+from demo_simple import SimpleApplication
+
 import math
 
 import numpy
+import pyglet
 from pyglet.gl import *
 
 from pygly.scene_node import SceneNode
-import pygly.sorter
-import pygly.gl_legacy
+import pygly.sort
+from pyrr import matrix44
 
-from pygly.examples.legacy.simple.main import SimpleApplication
-from pygly.examples.legacy.application import LegacyApplication
-import pygly.examples.legacy.colour_cube as cube
+from application import Application
+import colour_cube as cube
 
 
 class SortingApplication( SimpleApplication ):
-    
+
     def setup_scene( self ):
         """Creates the scene to be rendered.
         Creates our camera, scene graph, 
         """
         # don't call 'SimpleApplication's setup_scene
-        LegacyApplication.setup_scene( self )
+        Application.setup_scene( self )
 
         # setup our GL state
         # disable z buffer
@@ -84,8 +87,7 @@ class SortingApplication( SimpleApplication ):
         self.cube_colours[:,3] = 0.5
 
     def setup_cameras( self ):
-        # over-ride SimpleApplication's camera
-        LegacyApplication.setup_cameras( self )
+        Application.setup_cameras( self )
 
         # move the camera so we're not inside
         # the root scene node's debug cube
@@ -106,21 +108,22 @@ class SortingApplication( SimpleApplication ):
         Because we called 'on_draw', we also need to
         perform the buffer flip at the end.
         """
-        # rotate the grid root node
-        # we can't rotate the root scene node because
-        # that will rotate the camera too
+        # setup the scene
+        # rotate the scene nodes about their vertical axis
         self.grid_root.transform.object.rotate_y( dt * 0.2 )
 
         # this will trigger the draw event and buffer flip
         super( SimpleApplication, self ).step( dt )
 
-    def render_scene_graph( self, camera ):
-        # begin iterating through our scene graph
-        # as we iterate over each node, we will set
-        # our model view matrix as the node's world
-        # matrix and render a cube at that location.
-        # we can iterate using any method, but we'll
-        # use depth first here
+    def render_scene( self, camera ):
+        """Renders each renderable in the scene
+        using the current projection and model
+        view matrix.
+        The original GL state will be restored
+        upon leaving this function.
+        """
+        projection = camera.view_matrix.matrix
+        model_view = camera.model_view
 
         # sort our scene
         # extract the positions of all our renderables
@@ -132,22 +135,31 @@ class SortingApplication( SimpleApplication ):
         # from the camera
         # sort based on the -Z axis (the direction the
         # camera faces)
-        sorted = pygly.sorter.sort_radius_back_to_front(
+        sorted = pygly.sort.sort_radius_back_to_front(
             camera.world_transform.translation,
             -(camera.transform.object.z),
             self.renderables,
             positions
             )
 
+        # begin iterating through our scene graph
+        # as we iterate over each node, we will set
+        # our model view matrix as the node's world
+        # matrix and render a cube at that location.
+        # we can iterate using any method, but we'll
+        # use depth first here
         for node, colour in zip(sorted, self.cube_colours):
-            model_matrix = node.world_transform.matrix
+            # bind our model view matrix to the shader
+            world_matrix = node.world_transform.matrix
+            # calculate a new model view
+            current_mv = matrix44.multiply(
+                world_matrix,
+                model_view
+                )
 
-            # multiply the existing model view matrix
-            # by the model's world matrix
-            # then render a cube
-            with pygly.gl_legacy.multiply_matrix( model_matrix ):
-                cube.draw( colour )
-
+            # render the cube
+            cube.draw( projection, current_mv, colour )
+    
 
 def main():
     """Main function entry point.

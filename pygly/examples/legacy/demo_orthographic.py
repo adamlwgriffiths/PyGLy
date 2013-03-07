@@ -4,10 +4,10 @@ a viewport.
 Viewport is provided without any high level
 wrappers and is entirely managed through events.
 """
-from pygly.examples.legacy.simple.main import SimpleApplication
 import pygly.viewport
 from pygly.orthogonal_view_matrix import OrthogonalViewMatrix
 
+from demo_simple import SimpleApplication
 
 class OrthographicApplication( SimpleApplication ):
 

@@ -6,7 +6,7 @@ wrappers and is entirely managed through events.
 """
 import math
 
-from pyglet.gl import *
+from OpenGL.GL import *
 import pyglet
 
 import pygly.window
@@ -16,11 +16,11 @@ from pygly.projection_view_matrix import ProjectionViewMatrix
 from pygly.scene_node import SceneNode
 from pygly.camera_node import CameraNode
 
-from pygly.examples.legacy.application import LegacyApplication
-import pygly.examples.legacy.cube as cube
+from application import Application
+import cube
 
 
-class SimpleApplication( LegacyApplication ):
+class SimpleApplication( Application ):
     
     def __init__( self ):
         """Sets up the core functionality we need

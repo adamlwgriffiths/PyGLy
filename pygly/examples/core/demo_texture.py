@@ -28,8 +28,8 @@ from pygly.texture import Texture2D
 import pygly.pil_texture
 from pyrr import matrix44
 
-from pygly.examples.core.application import CoreApplication
-from pygly.examples.core.simple.main import SimpleApplication
+from application import Application
+from demo_simple import SimpleApplication
 import pygly.examples.core.quad as quad
 
 
@@ -45,7 +45,7 @@ class TextureApplication( SimpleApplication ):
         """Creates the scene to be rendered.
         Creates our camera, scene graph, 
         """
-        CoreApplication.setup_scene( self )
+        Application.setup_scene( self )
 
         # register our key press listener
         self.window.push_handlers(
@@ -87,7 +87,7 @@ class TextureApplication( SimpleApplication ):
         # find the textures relative to our module directory
         path = os.path.join(
             os.path.dirname( __file__ ),
-            '../../data/textures'
+            '../data/textures'
             )
         self.load_texture_directory( path )
         self.load_array_textures()
@@ -169,7 +169,7 @@ class TextureApplication( SimpleApplication ):
 
     def setup_cameras( self ):
         # over-ride SimpleApplication's camera
-        CoreApplication.setup_cameras( self )
+        Application.setup_cameras( self )
 
         # change our view matrix to an orthogonal one
         self.cameras[ 0 ].view_matrix = OrthogonalViewMatrix(
@@ -195,7 +195,7 @@ class TextureApplication( SimpleApplication ):
         Because we called 'on_draw', we also need to
         perform the buffer flip at the end.
         """
-        CoreApplication.step( self, dt )
+        Application.step( self, dt )
 
     def on_key_press( self, symbol, modifiers ):
         # change textures
