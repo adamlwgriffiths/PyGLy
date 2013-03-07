@@ -10,7 +10,7 @@ import numpy
 from pyglet.gl import *
 
 from pygly.scene_node import SceneNode
-import pygly.sorter
+import pygly.sort
 import pygly.gl_legacy
 
 from demo_simple import SimpleApplication
@@ -132,7 +132,7 @@ class SortingApplication( SimpleApplication ):
         # from the camera
         # sort based on the -Z axis (the direction the
         # camera faces)
-        sorted = pygly.sorter.sort_radius_back_to_front(
+        sorted = pygly.sort.sort_radius_back_to_front(
             camera.world_transform.translation,
             -(camera.transform.object.z),
             self.renderables,

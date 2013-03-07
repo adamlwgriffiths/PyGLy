@@ -30,7 +30,7 @@ from pyrr import matrix44
 
 from application import Application
 from demo_simple import SimpleApplication
-import pygly.examples.core.quad as quad
+import quad
 
 
 class TextureApplication( SimpleApplication ):
