@@ -7,10 +7,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # and move to this file's directory
 pushd $DIR
 
-# move up to the parent
-cd ../contrib/pyrr
+# Pyrr
+cd $DIR/../contrib/pyrr
+git pull origin master
 
-git pull github master
+# Pyrr
+cd $DIR/../contrib/pyglet
+git pull origin master
 
 # return our path to its original state
 popd
