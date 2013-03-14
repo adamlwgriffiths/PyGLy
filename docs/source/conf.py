@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyGLy'
-copyright = u'2012, Adam Griffiths'
+copyright = u'Adam Griffiths'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -228,7 +228,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'PyGLy', u'PyGLy Documentation',
-   u'Adam Griffiths', 'PyGLy', 'One line description of project.',
+   u'Adam Griffiths', 'PyGLy', 'Pure Python OpenGL framework.',
    'Miscellaneous'),
 ]
 
