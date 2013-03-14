@@ -5,31 +5,43 @@ Scene Graph
 
 .. _scene_node:
 
+Scene Node
+==========
+
 .. automodule:: pygly.scene_node
-.. autoclass:: SceneNode
     :members:
     :undoc-members:
+
 
 .. _camera_node:
 
+Camera Node
+===========
+
 .. automodule:: pygly.camera_node
-.. autoclass:: CameraNode
     :members:
     :undoc-members:
+
 
 .. _render_node:
 
+Render Node
+===========
+
 .. automodule:: pygly.render_node
-.. autoclass:: RenderNode
     :members:
     :undoc-members:
+
 
 .. _render_callback_node:
 
+Render Callback Node
+====================
+
 .. automodule:: pygly.render_callback_node
-.. autoclass:: RenderCallbackNode
     :members:
     :undoc-members:
+
 
 .. seealso::
     Class :py:class:`pygly.render_node.RenderNode`

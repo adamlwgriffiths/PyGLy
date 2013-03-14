@@ -5,4 +5,4 @@ Monkey Patch
 
 .. automodule:: pygly.monkey_patch
     :members:
-
+    :undoc-members:

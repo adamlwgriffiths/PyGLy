@@ -5,16 +5,20 @@ Viewport
 
 .. _viewport:
 
+Viewport
+========
+
 .. automodule:: pygly.viewport
-.. autoclass:: Viewport
     :members:
     :undoc-members:
 
 
 .. _ratio_viewport:
 
+Ratio Viewport
+==============
+
 .. automodule:: pygly.ratio_viewport
-.. autoclass:: RatioViewport
     :members:
     :undoc-members:
 

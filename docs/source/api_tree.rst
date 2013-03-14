@@ -5,15 +5,20 @@ Tree
 
 .. _tree_node:
 
+Tree Node
+=========
+
 .. automodule:: pygly.tree_node
-.. autoclass:: TreeNode
     :members:
     :undoc-members:
 
+
 .. _tree_leaf:
 
+Tree Leaf
+=========
+
 .. automodule:: pygly.tree_leaf
-.. autoclass:: TreeLeaf
     :members:
     :undoc-members:
 

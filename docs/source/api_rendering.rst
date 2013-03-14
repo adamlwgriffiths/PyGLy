@@ -5,8 +5,12 @@ Rendering
 
 .. _sorter:
 
+Sorting
+=======
+
 .. automodule:: pygly.sorter
     :members:
+    :undoc-members:
 
 
 .. seealso::

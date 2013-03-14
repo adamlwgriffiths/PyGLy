@@ -19,7 +19,6 @@ Transform
 =========
 
 .. automodule:: pygly.transform
-.. autoclass:: Transform
     :members:
     :undoc-members:
 
@@ -29,6 +28,5 @@ World Transform
 ===============
 
 .. automodule:: pygly.world_transform
-.. autoclass:: WorldTransform
     :members:
     :undoc-members:

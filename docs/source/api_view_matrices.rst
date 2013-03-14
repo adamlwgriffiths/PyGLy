@@ -5,22 +5,30 @@ View Matrices
 
 .. _view_matrix:
 
+View Matrix
+===========
+
 .. automodule:: pygly.view_matrix
-.. autoclass:: ViewMatrix
     :members:
     :undoc-members:
+
 
 .. _perspective_view_matrix:
 
+Perspective View Matrix
+=======================
+
 .. automodule:: pygly.projection_view_matrix
-.. autoclass:: ProjectionViewMatrix
     :members:
     :undoc-members:
 
+
 .. _orthogonal_view_matrix:
 
+Orthogonal View Matrix
+======================
+
 .. automodule:: pygly.orthogonal_view_matrix
-.. autoclass:: OrthogonalViewMatrix
     :members:
     :undoc-members:
 

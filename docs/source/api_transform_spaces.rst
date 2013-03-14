@@ -17,7 +17,6 @@ Object Space
 ============
 
 .. automodule:: pygly.object_space
-.. autoclass:: ObjectSpace
     :members:
     :undoc-members:
 
@@ -27,7 +26,6 @@ Inertial Space
 ==============
 
 .. automodule:: pygly.inertial_space
-.. autoclass:: InertialSpace
     :members:
     :undoc-members:
 
