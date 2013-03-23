@@ -5,7 +5,6 @@
 import sys
 
 import numpy
-from pyglet.event import EventDispatcher
 
 from pyrr import vector3
 from pyrr import quaternion

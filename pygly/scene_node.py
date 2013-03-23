@@ -12,6 +12,7 @@
 import weakref
 
 import numpy
+from pydispatch import dispatcher
 
 from pyrr import quaternion
 from pyrr import matrix33
@@ -39,8 +40,10 @@ class SceneNode( TreeNode ):
         self.world_transform = WorldTransform( self.transform )
 
         # listen for new parents and children
-        self.push_handlers(
-            on_parent_changed = self._on_parent_changed
+        dispatcher.connect(
+            self._on_parent_changed,
+            TreeNode.on_parent_changed,
+            self
             )
 
     def _on_parent_changed( self, old_parent, new_parent ):

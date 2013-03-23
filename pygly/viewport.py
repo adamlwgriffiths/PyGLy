@@ -5,8 +5,8 @@
 import sys
 
 import numpy
-from OpenGL.GL import *
-from pyglet.event import EventDispatcher
+from OpenGL import GL
+from pydispatch import dispatcher
 
 from pyrr import rectangle
 from pyrr import geometric_tests
@@ -28,8 +28,8 @@ def aspect_ratio( rect ):
     return width / height
 
 def get_viewport():
-    rect = (GLint * 4)()
-    glGetIntegerv( GL_VIEWPORT, rect )
+    rect = (GL.GLint * 4)()
+    GL.glGetIntegerv( GL.GL_VIEWPORT, rect )
     return rectangle.create_from_position(
         x = rect[ 0 ],
         y = rect[ 1 ],
@@ -52,16 +52,16 @@ def set_viewport( rect ):
     These functions are not available on the
     OpenGL Core profile (>=3.0)
     """
-    glViewport(
-        int(rectangle.x_minimum(rect)),
-        int(rectangle.y_minimum(rect)),
+    GL.glViewport(
+        int(rectangle.left(rect)),
+        int(rectangle.bottom(rect)),
         int(rectangle.abs_width(rect)),
         int(rectangle.abs_height(rect))
         )
 
 def get_scissor():
-    rect = (GLint * 4)()
-    glGetIntegerv( GL_SCISSOR_BOX, rect )
+    rect = (GL.GLint * 4)()
+    GL.glGetIntegerv( GL.GL_SCISSOR_BOX, rect )
     return rectangle.create_from_position(
         x = rect[ 0 ],
         y = rect[ 1 ],
@@ -88,27 +88,28 @@ def set_scissor( rect ):
     with attributes( GL_SCISSOR_BIT ):
         set_scissor( rect )
     """
-    glScissor(
-        int(rectangle.x_minimum(rect)),
-        int(rectangle.y_minimum(rect)),
+    GL.glScissor(
+        int(rectangle.left(rect)),
+        int(rectangle.bottom(rect)),
         int(rectangle.abs_width(rect)),
         int(rectangle.abs_height(rect))
         )
 
 
-class Viewport( EventDispatcher ):
+class Viewport( object ):
     """A wrapper around the basic viewport functionality.
     """
     
+    on_viewport_resized = "on_viewport_resized"
+
     
-    def __init__( self, window, rect ):
+    def __init__( self, rect ):
         """Creates a viewport with the size of rect.
 
         Automatically hooks into the window's 'on_resize'
         event.
 
         Args:
-            window: The window the viewport belongs to.
             rect: An array with the shape (2,2).
             Values are in pixels
             Values may exceed the window size but will be
@@ -120,7 +121,6 @@ class Viewport( EventDispatcher ):
         """
         super( Viewport, self ).__init__()
 
-        self.window = window
         self._rect = numpy.array(
             rect,
             dtype = numpy.int
@@ -130,11 +130,6 @@ class Viewport( EventDispatcher ):
             raise ValueError(
                 "Viewport rect must be an array with shape (2,2)"
                 )
-
-        # listen for resize events
-        window.push_handlers(
-            on_resize = self.on_resize
-            )
 
     @property
     def rect( self ):
@@ -160,14 +155,7 @@ class Viewport( EventDispatcher ):
         self._rect[:] = rect
 
         # dispatch our events
-        self.dispatch_event(
-            'on_viewport_resize',
-            self.rect
-            )
-        self.dispatch_event(
-            'on_change_aspect_ratio',
-            self.aspect_ratio
-            )
+        dispatcher.send( Viewport.on_viewport_resized, self, self.rect )
 
     def on_resize( self, width, height ):
         """Event handler for pyglet window's on_resize
@@ -290,21 +278,4 @@ class Viewport( EventDispatcher ):
         it is an array
         """
         return self.rect[ key ]
-
-    # document our events
-    if hasattr( sys, 'is_epydoc' ):
-        def on_viewport_resize( rect ):
-            '''The viewport size was changed.
-
-            :event:
-            '''
-        def on_change_aspect_ratio( aspect_ratio ):
-            '''The viewport size was changed.
-
-            :event:
-            '''
-
-# register our custom events
-Viewport.register_event_type( 'on_viewport_resize' )
-Viewport.register_event_type( 'on_change_aspect_ratio' )
 

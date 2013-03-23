@@ -6,6 +6,7 @@ import numpy
 
 import pyrr
 
+
 def sort_plane_front_to_back(
     render_position,
     render_direction,

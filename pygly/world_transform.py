@@ -7,7 +7,7 @@ Created on 11/06/2012
 import sys
 
 import numpy
-from pyglet.event import EventDispatcher
+from pydispatch import dispatcher
 
 from pyrr import quaternion
 from pyrr import matrix33
@@ -16,6 +16,7 @@ from pyrr import matrix44
 from object_space import ObjectSpace
 from inertial_space import InertialSpace
 from tree_node import TreeNode
+from transform import Transform
 
 
 class WorldTransform( TreeNode ):
@@ -31,13 +32,17 @@ class WorldTransform( TreeNode ):
 
         # register our event handlers
         # listen for transform changes from local transform
-        self._transform.push_handlers(
-            on_transform_changed = self._on_transform_changed
+        dispatcher.connect(
+            self._on_transform_changed,
+            Transform.on_transform_changed,
+            self._transform
             )
 
         # listen for new parents and children
-        self.push_handlers(
-            on_parent_changed = self._on_parent_changed
+        dispatcher.connect(
+            self._on_parent_changed,
+            TreeNode.on_parent_changed,
+            self
             )
 
     def set_dirty( self ):
@@ -52,15 +57,20 @@ class WorldTransform( TreeNode ):
 
         # unregister from our old parent's events
         if old_parent != None:
-            old_parent.remove_handler(
-                'on_transform_changed',
-                self._on_transform_changed
+            dispatcher.disconnect(
+                self._on_transform_changed,
+                Transform.on_transform_changed,
+                old_parent
                 )
+
         # register to our new parent's events
         if new_parent != None:
-            new_parent.push_handlers(
-                on_transform_changed = self._on_transform_changed
+            dispatcher.connect(
+                self._on_transform_changed,
+                Transform.on_transform_changed,
+                new_parent
                 )
+
 
     def _on_transform_changed( self ):
         """
@@ -72,9 +82,7 @@ class WorldTransform( TreeNode ):
         self.set_dirty()
 
         # notify others of our change
-        self.dispatch_event(
-            'on_transform_changed'
-            )
+        dispatcher.send( Transform.on_transform_changed, self )
 
     @property
     def object( self ):
@@ -180,14 +188,4 @@ class WorldTransform( TreeNode ):
                     )
 
         return self._matrix
-
-    # document our events
-    if hasattr( sys, 'is_epydoc' ):
-        def on_transform_changed():
-            '''The transform values were changed.
-
-            :event:
-            '''
-
-WorldTransform.register_event_type( 'on_transform_changed' )
 

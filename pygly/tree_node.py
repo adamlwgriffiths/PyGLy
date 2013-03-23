@@ -6,16 +6,21 @@ import sys
 import weakref
 from collections import deque
 
-from pyglet.event import EventDispatcher
+from pydispatch import dispatcher
 
     
-class TreeNode( EventDispatcher ):
+class TreeNode( object ):
     """Base class for Tree branch objects.
 
     Supports a single parent.
     Can have 0-N children.
     """
-    
+
+    on_parent_changed = "on_parent_changed"
+    on_child_added = "on_child_added"
+    on_child_removed = "on_child_removed"
+
+
     def __init__( self ):
         """Creates a tree node object.
         """
@@ -43,10 +48,7 @@ class TreeNode( EventDispatcher ):
         node.parent = self
 
         # notify others of our change
-        self.dispatch_event(
-            'on_child_added',
-            node
-            )
+        dispatcher.send( TreeNode.on_child_added, self, node )
     
     def remove_child( self, node ):
         """Removes a child from the node.
@@ -64,10 +66,7 @@ class TreeNode( EventDispatcher ):
         node.parent = None
 
         # notify others of our change
-        self.dispatch_event(
-            'on_child_removed',
-            node
-            )
+        dispatcher.send( TreeNode.on_child_removed, self, node )
 
     @property
     def children( self ):
@@ -122,11 +121,7 @@ class TreeNode( EventDispatcher ):
         self._parent = new_parent
 
         # notify others of our change
-        self.dispatch_event(
-            'on_parent_changed',
-            old_parent,
-            self.parent
-            )
+        dispatcher.send( TreeNode.on_parent_changed, self, old_parent, parent )
 
     def dfs( self ):
         # begin with ourself
@@ -159,28 +154,3 @@ class TreeNode( EventDispatcher ):
         while parent != None:
             yield parent
             parent = parent.parent
-
-    # document our events
-    if hasattr( sys, 'is_epydoc' ):
-        def on_parent_changed( old_parent, new_parent ):
-            '''A parent was set.
-
-            :event:
-            '''
-
-        def on_child_added( child ):
-            '''A child was added
-
-            :event:
-            '''
-
-        def on_child_removed( child ):
-            '''A child was removed
-
-            :event:
-            '''
-
-TreeNode.register_event_type( 'on_parent_changed' )
-TreeNode.register_event_type( 'on_child_added' )
-TreeNode.register_event_type( 'on_child_removed' )
-

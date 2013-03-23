@@ -2,7 +2,6 @@ import unittest
 import math
 
 import numpy
-import pyglet
 
 from pygly.tree_node import TreeNode
 

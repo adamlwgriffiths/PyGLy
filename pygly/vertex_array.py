@@ -1,7 +1,6 @@
-from OpenGL import GL
 import ctypes
 
-from pygly import gl_utils
+from OpenGL import GL
 
 
 class VertexArray( object ):

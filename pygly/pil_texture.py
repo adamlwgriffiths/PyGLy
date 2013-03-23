@@ -9,7 +9,6 @@ http://www.opengl.org/sdk/docs/man3/xhtml/glTexParameter.xml
 """
 
 import numpy
-from OpenGL.GL import *
 from PIL import Image
 from ctypes import *
 

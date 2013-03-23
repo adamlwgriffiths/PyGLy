@@ -6,13 +6,9 @@ import ctypes
 
 from OpenGL import GL
 
-from pyrr.utils import \
-    all_parameters_as_numpy_arrays, \
-    parameters_as_numpy_arrays
+from pyrr.utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays
 
-from pygly import \
-    numpy_utils, \
-    gl_utils
+from pygly import numpy_utils
 
 
 def currently_bound_buffer( type ):
@@ -50,7 +46,7 @@ def set_texture_coord_pointer( values_per_vertex, glType, stride, offset ):
     called for Core profile applications (>=3.0).
     """
     offset = None if offset == 0 else ctypes.c_void_p( offset )
-    glTexCoordPointer( values_per_vertex, glType, stride, offset )
+    GL.glTexCoordPointer( values_per_vertex, glType, stride, offset )
 
 def set_normal_pointer( glType, stride, offset ):
     """Sets the glNormalPointer.
@@ -215,13 +211,29 @@ class Buffer( object ):
         GL.glUnmapBuffer( self.target )
     """
 
+    def push_attributes( self ):
+        """Pushes the enable and pointer state of vertex arrays.
+
+        .. warning:: This function is removed from the OpenGL Core profile and **only**
+        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+        """
+        GL.glPushClientAttrib( GL.GL_CLIENT_VERTEX_ARRAY_BIT )
+
+    def pop_attributes( self ):
+        """Pops the enable and pointer state of vertex arrays.
+
+        .. warning:: This function is removed from the OpenGL Core profile and **only**
+        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+        """
+        GL.glPopClientAttrib()
+
     def enable_vertex_pointer( self ):
         GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
 
     def disable_vertex_pointer( self ):
         GL.glDisableClientState( GL.GL_VERTEX_ARRAY )
 
-    def vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+    def set_vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
         """Sets the glVertexPointer.
 
         This is an OpenGL Legacy function (<=2.1) and should not be
@@ -240,7 +252,7 @@ class Buffer( object ):
     def disable_color_pointer( self ):
         GL.glDisableClientState( GL.GL_COLOR_ARRAY )
 
-    def color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+    def set_color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
         """Sets the glColorPointer.
 
         This is an OpenGL Legacy function (<=2.1) and should not be
@@ -259,7 +271,7 @@ class Buffer( object ):
     def disable_texture_coord_pointer( self ):
         GL.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
-    def texture_coord_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
+    def set_texture_coord_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
         """Sets the glTexCoordPointer.
 
         This is an OpenGL Legacy function (<=2.1) and should not be
@@ -278,7 +290,7 @@ class Buffer( object ):
     def disable_normal_pointer( self ):
         GL.glDisableClientState( GL.GL_NORMAL_ARRAY )
 
-    def normal_pointer( self, glType, stride, offset, enable = True ):
+    def set_normal_pointer( self, glType, stride, offset, enable = True ):
         """Sets the glNormalPointer.
 
         This is an OpenGL Legacy function (<=2.1) and should not be
@@ -297,7 +309,7 @@ class Buffer( object ):
     def disable_index_pointer( self ):
         GL.glDisableClientState( GL.GL_INDEX_ARRAY )
 
-    def index_pointer( self, glType, stride, offset, enable = True ):
+    def set_index_pointer( self, glType, stride, offset, enable = True ):
         """Sets the glIndexPointer.
 
         This is an OpenGL Legacy function (<=2.1) and should not be
@@ -324,7 +336,7 @@ class Buffer( object ):
     def disable_attribute( self, index ):
         GL.glDisableVertexAttribArray( index )
 
-    def attribute_pointer(
+    def set_attribute_pointer(
         self,
         location,
         values_per_vertex,
@@ -420,13 +432,29 @@ class BufferRegion( object ):
     def get_data( self ):
         pass
 
+    def push_attributes( self ):
+        """Pushes the enable and pointer state of vertex arrays.
+
+        .. warning:: This function is removed from the OpenGL Core profile and **only**
+        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+        """
+        GL.glPushClientAttrib( GL.GL_CLIENT_VERTEX_ARRAY_BIT )
+
+    def pop_attributes( self ):
+        """Pops the enable and pointer state of vertex arrays.
+        
+        .. warning:: This function is removed from the OpenGL Core profile and **only**
+        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+        """
+        GL.glPopClientAttrib()
+
     def enable_vertex_pointer( self ):
         GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
 
     def disable_vertex_pointer( self ):
         GL.glDisableClientState( GL.GL_VERTEX_ARRAY )
 
-    def vertex_pointer( self, name = None, enable = True ):
+    def set_vertex_pointer( self, name = None, enable = True ):
         """Calculates and sets the glVertexPointer to the specified
         dtype attribute.
 
@@ -451,7 +479,7 @@ class BufferRegion( object ):
     def disable_color_pointer( self ):
         GL.glDisableClientState( GL.GL_COLOR_ARRAY )
 
-    def color_pointer( self, name = None, enable = True ):
+    def set_color_pointer( self, name = None, enable = True ):
         """Calculates and sets the glColorPointer to the specified
         dtype attribute.
 
@@ -476,7 +504,7 @@ class BufferRegion( object ):
     def disable_texture_coord_pointer( self ):
         GL.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
-    def texture_coord_pointer( self, name = None, enable = True ):
+    def set_texture_coord_pointer( self, name = None, enable = True ):
         """Calculates and sets the glTexCoordPointer to the specified
         dtype attribute.
 
@@ -501,7 +529,7 @@ class BufferRegion( object ):
     def disable_normal_pointer( self ):
         GL.glDisableClientState( GL.GL_NORMAL_ARRAY )
 
-    def normal_pointer( self, name = None, enable = True ):
+    def set_normal_pointer( self, name = None, enable = True ):
         """Calculates and sets the glNormalPointer to the specified
         dtype attribute.
 
@@ -525,7 +553,7 @@ class BufferRegion( object ):
     def disable_index_pointer( self ):
         GL.glDisableClientState( GL.GL_INDEX_ARRAY )
 
-    def index_pointer( self, name = None, enable = True ):
+    def set_index_pointer( self, name = None, enable = True ):
         """Calculates and sets the glIndexPointer to the specified
         dtype attribute.
 
@@ -557,7 +585,7 @@ class BufferRegion( object ):
     def disable_attribute( self, index ):
         GL.glDisableVertexAttribArray( index )
 
-    def attribute_pointer(
+    def set_attribute_pointer(
         self,
         shader,
         attribute,

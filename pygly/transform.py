@@ -5,7 +5,7 @@
 import sys
 
 import numpy
-from pyglet.event import EventDispatcher
+from pydispatch import dispatcher
 
 from pyrr import quaternion
 from pyrr import matrix33
@@ -15,7 +15,7 @@ from object_space import ObjectSpace
 from inertial_space import InertialSpace
 
 
-class Transform( EventDispatcher ):
+class Transform( object ):
     """Provides translation and orientation information and
     methods for manipulating them.
 
@@ -31,13 +31,15 @@ class Transform( EventDispatcher ):
         class.
     """
 
+    on_transform_changed = "on_transform_changed"
+
 
     def __init__( self ):
         """Constructs a transform object.
         """
         super( Transform, self ).__init__()
 
-        self._orientation = quaternion.identity()        
+        self._orientation = quaternion.create_identity()        
         self._translation = numpy.zeros( 3, dtype = numpy.float )
         self._scale = numpy.ones( 3, dtype = numpy.float )
         self._matrix = None
@@ -93,9 +95,7 @@ class Transform( EventDispatcher ):
         self._matrix = None
 
         # notify others of our change
-        self.dispatch_event(
-            'on_transform_changed'
-            )
+        dispatcher.send( Transform.on_transform_changed, self )
 
     @property
     def orientation( self ):
@@ -122,9 +122,7 @@ class Transform( EventDispatcher ):
         self._matrix = None
 
         # notify others of our change
-        self.dispatch_event(
-            'on_transform_changed'
-            )
+        dispatcher.send( Transform.on_transform_changed, self )
 
     @property
     def translation( self ):
@@ -153,9 +151,7 @@ class Transform( EventDispatcher ):
         self._matrix = None
 
         # notify others of our change
-        self.dispatch_event(
-            'on_transform_changed'
-            )
+        dispatcher.send( Transform.on_transform_changed, self )
 
     @property
     def matrix( self ):
@@ -188,14 +184,4 @@ class Transform( EventDispatcher ):
                 )
 
         return self._matrix
-
-    # document our events
-    if hasattr( sys, 'is_epydoc' ):
-        def on_transform_changed():
-            '''The transform values were changed.
-
-            :event:
-            '''
-
-Transform.register_event_type( 'on_transform_changed' )
 

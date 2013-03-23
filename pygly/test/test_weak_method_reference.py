@@ -3,7 +3,6 @@ import math
 import weakref
 
 import numpy
-import pyglet
 
 from pygly.weak_method_reference import WeakMethodReference
 
