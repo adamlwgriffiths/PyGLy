@@ -2,7 +2,7 @@ from time import time
 
 import pygly.gl
 import glfw
-import OpenGL.GL as gl
+import OpenGL.GL as GL
 
 from application import BaseApplication
 
@@ -31,7 +31,7 @@ class Application( BaseApplication ):
         if self.scene.core_profile:
             glfw.OpenWindowHint( glfw.OPENGL_VERSION_MAJOR, 3 )
             glfw.OpenWindowHint( glfw.OPENGL_VERSION_MINOR, 2 )
-            glfw.OpenWindowHint( glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE )
+            glfw.OpenWindowHint( glfw.OPENGL_FORWARD_COMPAT, GL.GL_TRUE )
             glfw.OpenWindowHint( glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE )
 
         # create our window
