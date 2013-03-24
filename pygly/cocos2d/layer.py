@@ -16,8 +16,6 @@ from cocos.layer.base_layers import Layer as Layer
 from cocos.director import director
 from pyglet.gl import *
 
-import pygly.window
-
 
 class PyGLyLayer( Layer ):
     """
