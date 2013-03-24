@@ -8,6 +8,7 @@ profiles = {
 applications = {
     "pyglet":   "application_pyglet",
     "pyglfw":   "application_pyglfw",
+    "glut":     "application_glut",
     }
 demos = {
     "basic":        "scene_basic",
