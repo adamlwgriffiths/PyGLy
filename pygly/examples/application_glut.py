@@ -55,7 +55,7 @@ class Application( BaseApplication ):
         # set the function to draw
         GLUT.glutReshapeFunc( self.on_window_resized )
         GLUT.glutIdleFunc( self.idle )
-        GLUT.glutDisplayFunc( self.on_draw )
+        GLUT.glutDisplayFunc( self.render )
         GLUT.glutKeyboardFunc( self.on_key_pressed )
         GLUT.glutKeyboardUpFunc( self.on_key_released )
         GLUT.glutSpecialFunc( self.on_special_key_pressed )
@@ -104,6 +104,8 @@ class Application( BaseApplication ):
 
         self.step( delta )
 
-    def on_draw( self ):
-        self.render()
+        GLUT.glutPostRedisplay()
+
+    def render( self ):
+        super( Application, self ).render()
         GLUT.glutSwapBuffers()
