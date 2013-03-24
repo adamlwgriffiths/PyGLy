@@ -16,6 +16,7 @@ Arguments
 Platform options includes:
    * pyglet
    * pyglfw
+   * glut
 
 Profile options include:
    * core
