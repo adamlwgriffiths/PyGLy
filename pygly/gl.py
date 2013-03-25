@@ -94,6 +94,7 @@ def type_to_string( glType ):
 
     :param glType: The primitive type.
         Supports the following values::
+
             GLbyte
             GLubyte
             GLshort
@@ -123,9 +124,10 @@ def attributes( attribs ):
     in a context manager, providing the 'with'
     keyword.
 
-    For example:
-    with attributes( GL_VIEWPORT_BIT ):
-        glViewport( 0, 0, 100, 100 )
+    For example::
+
+        with attributes( GL_VIEWPORT_BIT ):
+            glViewport( 0, 0, 100, 100 )
 
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
@@ -142,11 +144,12 @@ def begin( mode ):
     context manager, providing the 'with'
     keyword.
 
-    For example:
-    with begin( GL_TRIANGLES ):
-        glVertex2f( 0.0, 0.0 )
-        glVertex2f( 0.5, 1.0 )
-        glVertex2f( 1.0, 0.0 )
+    For example::
+
+        with begin( GL_TRIANGLES ):
+            glVertex2f( 0.0, 0.0 )
+            glVertex2f( 0.5, 1.0 )
+            glVertex2f( 1.0, 0.0 )
 
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
@@ -164,9 +167,10 @@ def matrix_mode( mode ):
     Automatically restores the existing matrix
     mode on exit.
 
-    For example:
-    with matrix_mode( GL_MODELVIEW ):
-        pass
+    For example::
+
+        with matrix_mode( GL_MODELVIEW ):
+            pass
 
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
@@ -187,9 +191,10 @@ def load_matrix( mat ):
 
     Arrays will be loaded as 32-bit floats.
 
-    For example:
-    with load_matrix( world_matrix ):
-        pass
+    For example::
+
+        with load_matrix( world_matrix ):
+            pass
 
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
@@ -211,9 +216,10 @@ def multiply_matrix( mat ):
 
     Arrays will be loaded as 32-bit floats.
 
-    For example:
-    with multiply_matrix( world_matrix ):
-        pass
+    For example::
+
+        with multiply_matrix( world_matrix ):
+            pass
 
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
@@ -229,6 +235,17 @@ def multiply_matrix( mat ):
 @contextmanager
 @parameters_as_numpy_arrays( 'mat' )
 def mode_and_matrix( mode, mat ):
+    """Sets the matrix mode and pushes a matrix into that mode's stack.
+
+    This is the equivalent to::
+
+        with matrix_mode( mode ):
+            with load_matrix( mat ):
+                pass
+
+    .. warning:: This function is removed from the OpenGL Core profile and **only**
+        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+    """
     GL.glPushAttrib( GL.GL_TRANSFORM_BIT )
     GL.glMatrixMode( mode )
     GL.glPushMatrix()
