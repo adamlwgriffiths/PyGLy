@@ -12,33 +12,34 @@ class VertexArray( object ):
     Provides wrappers around standard functions and higher level
     wrappers with PyGLy.BufferRegion interfaces.
 
-    Example:
-    vs = Shader( GL_VERTEX_SHADER, shader_source['vert'] )
-    fs = Shader( GL_FRAGMENT_SHADER, shader_source['frag'] )
-    shader = ShaderProgram( vs, fs )
+    Example::
+    
+        vs = Shader( GL_VERTEX_SHADER, shader_source['vert'] )
+        fs = Shader( GL_FRAGMENT_SHADER, shader_source['frag'] )
+        shader = ShaderProgram( vs, fs )
 
-    vertices = numpy.array(
-        [ ... ],
-        dtype = [
-            ('position','float32',(3,)),
-            ('normal','float32',(3,))
-            ]
-        )
-    vbo = Buffer(
-        GL_ARRAY_BUFFER,
-        GL_STATIC_DRAW,
-        (vertices.size, vertices.dtype)
-        )
-    vbo.bind()
-    vertices_buffer.set_data( vertices )
+        vertices = numpy.array(
+            [ ... ],
+            dtype = [
+                ('position','float32',(3,)),
+                ('normal','float32',(3,))
+                ]
+            )
+        vbo = Buffer(
+            GL_ARRAY_BUFFER,
+            GL_STATIC_DRAW,
+            (vertices.size, vertices.dtype)
+            )
+        vbo.bind()
+        vertices_buffer.set_data( vertices )
 
-    vao = VertexArray()
-    vao.bind()
-    vao.set_attribute( shader, 'in_position', vertices_buffer, 'position' )
-    vao.set_attribute( shader, 'in_normal', vertices_buffer, 'normal' )
-    vao.unbind()
+        vao = VertexArray()
+        vao.bind()
+        vao.set_attribute( shader, 'in_position', vertices_buffer, 'position' )
+        vao.set_attribute( shader, 'in_normal', vertices_buffer, 'normal' )
+        vao.unbind()
 
-    vbo.unbind()
+        vbo.unbind()
     """
 
     def __init__(

@@ -1,69 +1,69 @@
 """Provides Shader and ShaderProgram classes.
 
-Example usage:
+Example usage::
 
-shaders = {
-    'vert': '''
-    VERTEX SHADER TEXT GOES HERE
-    ''',
+    shaders = {
+        'vert': '''
+        VERTEX SHADER TEXT GOES HERE
+        ''',
 
-    'frag': '''
-    FRAGMENT SHADER TEXT GOES HERE
-    ''',
-    }
+        'frag': '''
+        FRAGMENT SHADER TEXT GOES HERE
+        ''',
+        }
 
-# compile and attach our shaders but don't link
-# the program just yet
-shader = ShaderProgram(
-    False,
-    Shader( GL_VERTEX_SHADER, shaders['vert'] ),
-    Shader( GL_FRAGMENT_SHADER, shaders['frag'] )
-    )
+    # compile and attach our shaders but don't link
+    # the program just yet
+    shader = ShaderProgram(
+        False,
+        Shader( GL_VERTEX_SHADER, shaders['vert'] ),
+        Shader( GL_FRAGMENT_SHADER, shaders['frag'] )
+        )
 
-# bind our vertex attributes
-shader.attributes.in_position = 0
-shader.attributes.in_normal = 1
-shader.attributes.in_colour = 2
+    # bind our vertex attributes
+    shader.attributes.in_position = 0
+    shader.attributes.in_normal = 1
+    shader.attributes.in_colour = 2
 
-# bind our fragment output
-shader.frag_location( 'out_frag_colour' )
+    # bind our fragment output
+    shader.frag_location( 'out_frag_colour' )
 
-# link the shader
-shader.link()
+    # link the shader
+    shader.link()
 
-# set any uniform values that don't change each frame
-shader.bind()
+    # set any uniform values that don't change each frame
+    shader.bind()
 
-# uniforms can be accessed directly and a uniform
-# object of the correct type will automatically be
-# created.
-# It is still possible to manually assign them.
-# Although there is no advantage to this as the
-# verification code performs the same steps.
-# here, in_texture_0 will be detected as a sampler
-# variable and an object of type UniformSampler
-# will be created and assigned to it.
-# this allows us to do validation on data passed to the
-# shader's uniforms.
-shader.uniforms.in_texture_0 = 0
+    # uniforms can be accessed directly and a uniform
+    # object of the correct type will automatically be
+    # created.
+    # It is still possible to manually assign them.
+    # Although there is no advantage to this as the
+    # verification code performs the same steps.
+    # here, in_texture_0 will be detected as a sampler
+    # variable and an object of type UniformSampler
+    # will be created and assigned to it.
+    # this allows us to do validation on data passed to the
+    # shader's uniforms.
+    shader.uniforms.in_texture_0 = 0
 
-shader.unbind()
+    shader.unbind()
 
-# do some other things
-# ...
+    # do some other things
+    # ...
 
-# time to render
-# bind the shader
-shader.bind()
+    # time to render
+    # bind the shader
+    shader.bind()
 
-# set our per-frame uniforms
-shader.uniforms.in_time = 1.0
+    # set our per-frame uniforms
+    shader.uniforms.in_time = 1.0
 
-# render some geometry
-# ...
+    # render some geometry
+    # ...
 
-# unbind the shader
-shader.unbind()
+    # unbind the shader
+    shader.unbind()
 """
 
 import re
@@ -84,11 +84,13 @@ def parse_shader_error( error ):
     GLSL errors are not defined by the standard, as such,
     each driver provider prints their own error format.
 
-    Nvidia print using the following format:
-    0(7): error C1008: undefined variable "MV"
+    Nvidia print using the following format::
 
-    ATi and Intel print using the following format:
-    ERROR: 0:131: '{' : syntax error parse error
+        0(7): error C1008: undefined variable "MV"
+
+    ATi and Intel print using the following format::
+
+        ERROR: 0:131: '{' : syntax error parse error
     """
     # Nvidia
     # 0(7): error C1008: undefined variable "MV"
@@ -128,9 +130,10 @@ def parse_shader_errors( errors ):
 def uniforms( handle ):
     """Returns an iterator for the uniforms of the specified program.
 
-    Each uniform returns a tuple with the following values:
-        name, size, type
-    Where:
+    Each uniform returns a tuple.
+    
+    :rtype: (name, size, type)
+    :return: A tuple consisting of 3 values:
         name is the variable name
         size is the variable size in bytes
         type is the GL enumeration
@@ -161,9 +164,10 @@ def uniform_for_name( handle, name ):
 def attributes( handle ):
     """Returns an iterator for the attributes of the specified program.
 
-    Each attribute returns a tuple with the following values:
-        name, size, type
-    Where:
+    Each attribute returns a tuple.
+
+    :rtype: (name, size, type)
+    :return: A tuple consisting of 3 values:
         name is the variable name
         size is the variable size in bytes
         type is the GL enumeration
@@ -574,19 +578,22 @@ class ShaderProgram( object ):
 class Uniforms( object ):
     """Provides access to ShaderProgram uniform variables.
 
-    Uniforms can be accessed as members:
-    shader.uniforms.model_view = 0
-    print shader.uniforms.model_view
-    >>> 0
+    Uniforms can be accessed as members::
 
-    Uniforms can also be accessed array style:
-    shader.uniforms[ 'model_view' ] = 0
-    print shader.uniforms[ 'model_view' ]
-    >>> 0
+        shader.uniforms.model_view = 0
+        print shader.uniforms.model_view
+        >>> 0
 
-    Uniforms provides a mechanism to iterate over the active Uniforms:
-    for uniform in shader.uniforms:
-        print uniform
+    Uniforms can also be accessed array style::
+
+        shader.uniforms[ 'model_view' ] = 0
+        print shader.uniforms[ 'model_view' ]
+        >>> 0
+
+    Uniforms provides a mechanism to iterate over the active Uniforms::
+
+        for uniform in shader.uniforms:
+            print uniform
     """
 
     """This dictionary holds a list of GL shader enum types.
@@ -898,6 +905,8 @@ class UniformFloat( Uniform ):
     The values for each key represent the uniform set function to use
     and the number of expected elements per value.
     """
+
+    #: The types supported by this Uniform class.
     types = {
         GL.GL_FLOAT:       (GL.glUniform1fv,  1),
         GL.GL_FLOAT_VEC2:  (GL.glUniform2fv,  2),
@@ -921,6 +930,8 @@ class UniformInt( Uniform ):
     The values for each key represent the uniform set function to use
     and the number of expected elements per value.
     """
+
+    #: The types supported by this Uniform class.
     types = {
         GL.GL_INT:         (GL.glUniform1iv,  1),
         GL.GL_INT_VEC2:    (GL.glUniform2iv,  2),
@@ -944,6 +955,8 @@ class UniformUint( Uniform ):
     The values for each key represent the uniform set function to use
     and the number of expected elements per value.
     """
+
+    #: The types supported by this Uniform class.
     types = {
         GL.GL_UNSIGNED_INT:        (GL.glUniform1uiv,     1),
         GL.GL_UNSIGNED_INT_VEC2:   (GL.glUniform2uiv,     2),
@@ -968,6 +981,8 @@ class UniformFloatMatrix( Uniform ):
     The values for each key represent the uniform set function to use
     and the number of expected elements per value.
     """
+
+    #: The types supported by this Uniform class.
     types = {
         GL.GL_FLOAT_MAT2:      (GL.glUniformMatrix2fv,    4),
         GL.GL_FLOAT_MAT3:      (GL.glUniformMatrix3fv,    9),
@@ -1022,6 +1037,8 @@ class UniformSampler( Uniform ):
     The values for each key represent the uniform set function to use
     and the number of expected elements per value.
     """
+
+    #: The types supported by this Uniform class.
     types = {
         GL.GL_SAMPLER_1D:          (GL.glUniform1iv,  1),
         GL.GL_SAMPLER_2D:          (GL.glUniform1iv,  1),
@@ -1104,19 +1121,22 @@ class Attributes( object ):
     Because Attributes must be updated before the shader is linked,
     we cannot do the same validation as we can with Uniforms.
 
-    Attributes can be accessed as members:
-    shader.attributes.in_position = 0
-    print shader.attributes.in_position
-    >>> 0
+    Attributes can be accessed as members::
 
-    Attributes can also be accessed array style:
-    shader.attributes[ 'in_position' ] = 0
-    print shader.attributes[ 'in_position' ]
-    >>> 0
+        shader.attributes.in_position = 0
+        print shader.attributes.in_position
+        >>> 0
 
-    Attributes provides a mechanism to iterate over the active Attributes:
-    for attribute in shader.attributes:
-        print attribute
+    Attributes can also be accessed array style::
+
+        shader.attributes[ 'in_position' ] = 0
+        print shader.attributes[ 'in_position' ]
+        >>> 0
+
+    Attributes provides a mechanism to iterate over the active Attributes::
+
+        for attribute in shader.attributes:
+            print attribute
     """
 
     def __init__( self, program ):
@@ -1233,10 +1253,13 @@ class Attribute( object ):
     def location( self, location ):
         """Sets the attributes location.
 
-        Locations can be set two ways:
-        shader.attributes.in_position = 0
-        or:
-        shader.attributes.in_position.location = 0
+        Locations can be set two ways::
+
+            shader.attributes.in_position = 0
+
+        or::
+
+            shader.attributes.in_position.location = 0
         """
         GL.glBindAttribLocation( self.program.handle, location, self.name )
 

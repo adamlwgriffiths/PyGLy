@@ -266,7 +266,7 @@ class Buffer( object ):
         """Pushes the enable and pointer state of vertex arrays.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glPushClientAttrib( GL.GL_CLIENT_VERTEX_ARRAY_BIT )
 
@@ -274,7 +274,7 @@ class Buffer( object ):
         """Pops the enable and pointer state of vertex arrays.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glPopClientAttrib()
 
@@ -285,7 +285,7 @@ class Buffer( object ):
         will be ignored by OpenGL.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
 
@@ -293,7 +293,7 @@ class Buffer( object ):
         """Disables the vertex data.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_VERTEX_ARRAY )
 
@@ -301,7 +301,7 @@ class Buffer( object ):
         """Sets the glVertexPointer.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self._target ) == self._handle
 
@@ -313,14 +313,14 @@ class Buffer( object ):
     def enable_color_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_COLOR_ARRAY )
 
     def disable_color_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_COLOR_ARRAY )
 
@@ -328,7 +328,7 @@ class Buffer( object ):
         """Sets the glColorPointer.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self._target ) == self._handle
 
@@ -340,14 +340,14 @@ class Buffer( object ):
     def enable_texture_coord_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
     def disable_texture_coord_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
@@ -355,7 +355,7 @@ class Buffer( object ):
         """Sets the glTexCoordPointer.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self._target ) == self._handle
 
@@ -367,14 +367,14 @@ class Buffer( object ):
     def enable_normal_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
 
     def disable_normal_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_NORMAL_ARRAY )
 
@@ -382,7 +382,7 @@ class Buffer( object ):
         """Sets the glNormalPointer.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self._target ) == self._handle
 
@@ -394,14 +394,14 @@ class Buffer( object ):
     def enable_index_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_INDEX_ARRAY )
 
     def disable_index_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_INDEX_ARRAY )
 
@@ -409,7 +409,7 @@ class Buffer( object ):
         """Sets the glIndexPointer.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self._target ) == self._handle
 
@@ -530,6 +530,7 @@ class BufferRegion( object ):
         """The number of bytes in this region.
 
         Where::
+
             nbytes = stride * rows
 
         :rtype: int
@@ -555,6 +556,7 @@ class BufferRegion( object ):
         :rtype: int
         :return: The OpenGL enumeration value representing the data type.
             Valid values are::
+
                 GL_BYTE,
                 GL_UNSIGNED_BYTE,
                 GL_SHORT,
@@ -617,7 +619,7 @@ class BufferRegion( object ):
         """Pushes the enable and pointer state of vertex arrays.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glPushClientAttrib( GL.GL_CLIENT_VERTEX_ARRAY_BIT )
 
@@ -625,21 +627,21 @@ class BufferRegion( object ):
         """Pops the enable and pointer state of vertex arrays.
         
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glPopClientAttrib()
 
     def enable_vertex_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_VERTEX_ARRAY )
 
     def disable_vertex_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_VERTEX_ARRAY )
 
@@ -648,7 +650,7 @@ class BufferRegion( object ):
         dtype attribute.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
@@ -665,14 +667,14 @@ class BufferRegion( object ):
     def enable_color_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_COLOR_ARRAY )
 
     def disable_color_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_COLOR_ARRAY )
 
@@ -681,7 +683,7 @@ class BufferRegion( object ):
         dtype attribute.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
@@ -698,14 +700,14 @@ class BufferRegion( object ):
     def enable_texture_coord_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
     def disable_texture_coord_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY )
 
@@ -714,7 +716,7 @@ class BufferRegion( object ):
         dtype attribute.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
@@ -731,14 +733,14 @@ class BufferRegion( object ):
     def enable_normal_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_NORMAL_ARRAY )
 
     def disable_normal_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_NORMAL_ARRAY )
 
@@ -747,7 +749,7 @@ class BufferRegion( object ):
         dtype attribute.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
@@ -763,14 +765,14 @@ class BufferRegion( object ):
     def enable_index_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glEnableClientState( GL.GL_INDEX_ARRAY )
 
     def disable_index_pointer( self ):
         """
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         GL.glDisableClientState( GL.GL_INDEX_ARRAY )
 
@@ -779,7 +781,7 @@ class BufferRegion( object ):
         dtype attribute.
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
-        exists in OpenGL Legacy profile (OpenGL version <=2.1).
+            exists in OpenGL Legacy profile (OpenGL version <=2.1).
         """
         assert currently_bound_buffer( self.buffer.target ) == self.buffer.handle
 
@@ -851,6 +853,7 @@ class BufferRegion( object ):
         :param string name: A named property defined by this region's dtype.
 
         For example::
+
             import textwrap
             import numpy
             from OpenGL import GL
