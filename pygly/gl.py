@@ -1,3 +1,31 @@
+"""Common and helpful OpenGL functions.
+
+Becareful when using contextmanager aware functions such as load_matrix, etc.
+Python supports using multiple contextmanager functions in a single statement.
+However, you should **NOT** do this.
+When python unwinds the contextmanagers, it does so in the same order it
+set them, not the reverse order.
+
+For example::
+
+    with matrix_mode( GL_PROJECTION ), load_matrix( mat ):
+        pass
+
+This code *looks* innocuous. However, Python will call the functions in the
+following order::
+
+    # winding
+    matrix_mode( GL_PROJECTION )
+    load_matrix( mat )
+    # code goes here
+
+    # unwinding
+    matrix_mode( GL_PROJECTION )
+    load_matrix( mat )
+
+As you can see, when unwinding the functions, Python popped the matrix mode
+and then popped the matrix.
+"""
 from contextlib import contextmanager
 
 import numpy
