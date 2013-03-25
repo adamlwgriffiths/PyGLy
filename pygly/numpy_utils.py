@@ -17,6 +17,8 @@ def dtype_offset( dtype, name = None ):
     """Returns the initial offset of the named property.
 
     If no name is given, 0 is returned.
+
+    :raise KeyError: Raised if the specified name is not found.
     """
     if name:
         # get the dtype for the named value
