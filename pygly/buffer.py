@@ -429,9 +429,6 @@ class BufferRegion( object ):
 
         GL.glBufferSubData( self.buffer.target, self._offset, data.nbytes, data )
 
-    def get_data( self ):
-        pass
-
     def push_attributes( self ):
         """Pushes the enable and pointer state of vertex arrays.
 
