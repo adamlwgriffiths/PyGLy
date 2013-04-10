@@ -652,13 +652,7 @@ class ShaderProgram( object ):
 class Uniforms( object ):
     """Provides access to ShaderProgram uniform variables.
 
-    Uniforms can be accessed as members::
-
-        shader.uniforms.model_view = 0
-        print( shader.uniforms.model_view )
-        >>> 0
-
-    Uniforms can also be accessed array style::
+    Uniforms are accessed using array semantics::
 
         shader.uniforms[ 'model_view' ] = 0
         print( shader.uniforms[ 'model_view' ] )
@@ -1175,13 +1169,7 @@ class Attributes( object ):
     Because Attributes must be updated before the shader is linked,
     we cannot do the same validation as we can with Uniforms.
 
-    Attributes can be accessed as members::
-
-        shader.attributes.in_position = 0
-        print( shader.attributes.in_position )
-        >>> 0
-
-    Attributes can also be accessed array style::
+    Attributes are accessed using array semantics::
 
         shader.attributes[ 'in_position' ] = 0
         print( shader.attributes[ 'in_position' ] )
