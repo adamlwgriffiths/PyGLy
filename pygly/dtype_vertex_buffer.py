@@ -9,6 +9,7 @@ import numpy_utils
 class DtypeVertexBuffer( VertexBuffer ):
 
 
+    @parameters_as_numpy_arrays( 'data' )
     def __init__(
         self,
         dtype,
@@ -18,6 +19,26 @@ class DtypeVertexBuffer( VertexBuffer ):
         data = None,
         handle = None
         ):
+        """Creates a Vertex Buffer with the specified attributes and the
+        format specified by the dtype.
+
+        The usage parameter can be changed by calling allocate with
+        a different usage.
+
+        The dtype can be changed by creating a new buffer and passing the previous
+        buffer's handle to the new one.
+
+        :param numpy.dtype dtype: The dtype that specifies the buffer's data
+            layout.
+        :param int rows: If passed in, the buffer will be allocated with enough room
+            for 'rows * dtype.itemsize' bytes.
+        :param numpy.array data: If passed in, it will over-ride rows and will also
+            populate the buffer with the specified data.
+        :param int handle: If passed in, the buffer will use the specified handle
+            instead of creating a new one.
+            If the target differs from the original buffer, an error will
+            be triggered by OpenGL when the buffer is used.
+        """
         # don't pass data to parent or it will call allocate
         # using nbytes instead of rows.
         super( DtypeVertexBuffer, self ).__init__(
@@ -78,6 +99,8 @@ class DtypeVertexBuffer( VertexBuffer ):
         If the buffer has already been allocated, it will be freed.
 
         The handle is not changed by this operation.
+
+        :param int rows: The number of instances of the dtype to allocate for.
         """
         self._rows = rows
         nbytes = self.stride * rows
@@ -215,6 +238,13 @@ class DtypeVertexBuffer( VertexBuffer ):
         :param Shader shader: The shader object.
         :param string attribute: The name of a shader attribute variable.
         :param string name: A named property defined within the dtype.
+        :param boolean normalise: If the data should be normalised.
+            Signed values are mapped to -1.0 to +1.0.
+            Unsigned values are mapped to 0.0 to 1.0.
+            Only applicable to integer values.
+        :param boolean enable: If the attribute should be enabled.
+            This means you don't need to manually call
+            `py:func:pygly.vertex_buffer.Buffer.enable_attribute_pointer`.
         """
         # get the attribute location
         location = shader.attributes[ attribute ].location

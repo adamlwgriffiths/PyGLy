@@ -279,6 +279,7 @@ def set_attribute_pointer(
 class VertexBuffer( object ):
 
 
+    @parameters_as_numpy_arrays( 'data' )
     def __init__(
         self,
         target = GL.GL_ARRAY_BUFFER,
@@ -287,6 +288,19 @@ class VertexBuffer( object ):
         data = None,
         handle = None
         ):
+        """Creates a Vertex Buffer with the specified attributes.
+
+        The usage parameter can be changed by calling allocate with
+        a different usage.
+
+        :param int nbytes: If passed in, the buffer will be allocated.
+        :param numpy.array data: If passed in, it will over-ride nbytes and will also
+            populate the buffer with the specified data.
+        :param int handle: If passed in, the buffer will use the specified handle
+            instead of creating a new one.
+            If the target differs from the original buffer, an error will
+            be triggered by OpenGL when the buffer is used.
+        """
         super( VertexBuffer, self ).__init__()
 
         self._target = target
@@ -348,6 +362,8 @@ class VertexBuffer( object ):
         If the buffer has already been allocated, it will be freed.
 
         The handle is not changed by this operation.
+
+        .. note:: Existing data will be lost.
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -360,8 +376,12 @@ class VertexBuffer( object ):
     def set_data( self, data, offset = 0 ):
         """Populates the buffer with the specified data.
 
+        The buffer must be allocated before data can be set.
+
         :raise ValueError: Raised if the buffer is not currently bound.
         :raise OverflowError: Raised if the data size exceeds the buffer's bounds.
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.allocate`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -411,6 +431,8 @@ class VertexBuffer( object ):
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
             exists in OpenGL Legacy profile (OpenGL version <=2.1).
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_vertex_pointer`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -439,6 +461,8 @@ class VertexBuffer( object ):
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
             exists in OpenGL Legacy profile (OpenGL version <=2.1).
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_color_pointer`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -467,6 +491,8 @@ class VertexBuffer( object ):
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
             exists in OpenGL Legacy profile (OpenGL version <=2.1).
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_texture_coord_pointer`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -495,6 +521,8 @@ class VertexBuffer( object ):
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
             exists in OpenGL Legacy profile (OpenGL version <=2.1).
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_normal_pointer`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -523,6 +551,8 @@ class VertexBuffer( object ):
 
         .. warning:: This function is removed from the OpenGL Core profile and **only**
             exists in OpenGL Legacy profile (OpenGL version <=2.1).
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_index_pointer`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
@@ -538,6 +568,8 @@ class VertexBuffer( object ):
 
         :param Shader shader: The shader object.
         :param string attribute: The attribute name to enable.
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_attribute_pointer`
         """
         enable_shader_attribute( shader, attribute )
 
@@ -547,6 +579,7 @@ class VertexBuffer( object ):
 
         :param Shader shader: The shader object.
         :param string attribute: The attribute name to disable.
+
         """
         disable_shader_attribute( shader, attribute )
 
@@ -554,6 +587,8 @@ class VertexBuffer( object ):
         """Enables the attribute at the specified index.
 
         :param int index: The index to enable.
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.disable_shader_attribute_pointer`
         """
         enable_attribute_pointer( index )
 
@@ -575,6 +610,9 @@ class VertexBuffer( object ):
         enable = True
         ):
         """Sets the glVertexAttribPointer.
+
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_attribute_pointer`
+        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_shader_attribute_pointer`
         """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
