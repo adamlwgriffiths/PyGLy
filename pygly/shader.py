@@ -2,22 +2,20 @@
 
 Example usage::
 
-    shaders = {
-        'vert': '''
+    vertex_shader = '''
         VERTEX SHADER TEXT GOES HERE
-        ''',
+        '''
 
-        'frag': '''
+    fragment_shader = '''
         FRAGMENT SHADER TEXT GOES HERE
-        ''',
-        }
+        '''
 
     # compile and attach our shaders but don't link
     # the program just yet
     shader = ShaderProgram(
         False,
-        Shader( GL_VERTEX_SHADER, shaders['vert'] ),
-        Shader( GL_FRAGMENT_SHADER, shaders['frag'] )
+        Shader( GL_VERTEX_SHADER, vertex_shader ),
+        Shader( GL_FRAGMENT_SHADER, fragment_shader )
         )
 
     # bind our vertex attributes
@@ -352,11 +350,13 @@ class Shader( object ):
     """
 
     @classmethod
-    def create_from_existing( cls, type, source, handle ):
+    def create_from_existing( cls, type, source, handle, compile_now = True ):
         """Creates a Shader object using an existing shader handle
         """
         obj = cls( type, source, False )
         obj._handle = handle
+        if compile_now:
+            obj.compile()
         return obj
 
     @classmethod
@@ -488,6 +488,8 @@ class ShaderProgram( object ):
     """
     
     def __init__( self, *args, **kwargs ):
+        super( ShaderProgram, self ).__init__()
+        
         # create the program handle
         self._handle = GL.glCreateProgram()
 
@@ -500,9 +502,9 @@ class ShaderProgram( object ):
 
         # default raise exception to False
         self.raise_invalid_variables = kwargs.get(
-                'raise_invalid_variables',
-                False
-                )
+            'raise_invalid_variables',
+            False
+            )
 
         # default link now to True
         link_now = kwargs.get( 'link_now', True )
