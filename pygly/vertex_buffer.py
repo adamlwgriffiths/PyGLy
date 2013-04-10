@@ -80,7 +80,7 @@ def set_vertex_pointer( values_per_vertex, glType, stride, offset):
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
     """
-    offset = None if not offset else ctypes.c_void_p( offset )
+    offset = ctypes.c_void_p( offset ) if offset else None
     GL.glVertexPointer( values_per_vertex, glType, stride, offset )
 
 def enable_color_pointer():
@@ -111,7 +111,7 @@ def set_color_pointer( values_per_vertex, glType, stride, offset ):
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
     """
-    offset = None if not offset else ctypes.c_void_p( offset )
+    offset = ctypes.c_void_p( offset ) if offset else None
     GL.glColorPointer( values_per_vertex, glType, stride, offset )
 
 def enable_texture_coord_pointer():
@@ -142,7 +142,7 @@ def set_texture_coord_pointer( values_per_vertex, glType, stride, offset ):
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
     """
-    offset = None if not offset else ctypes.c_void_p( offset )
+    offset = ctypes.c_void_p( offset ) if offset else None
     GL.glTexCoordPointer( values_per_vertex, glType, stride, offset )
 
 def enable_normal_pointer():
@@ -173,7 +173,7 @@ def set_normal_pointer( glType, stride, offset ):
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
     """
-    offset = None if not offset else ctypes.c_void_p( offset )
+    offset = ctypes.c_void_p( offset ) if offset else None
     GL.glNormalPointer( glType, stride, offset )
 
 def enable_index_pointer():
@@ -205,7 +205,7 @@ def set_index_pointer( glType, stride, offset ):
     .. warning:: This function is removed from the OpenGL Core profile and **only**
         exists in OpenGL Legacy profile (OpenGL version <=2.1).
     """
-    offset = None if not offset else ctypes.c_void_p( offset )
+    offset = ctypes.c_void_p( offset ) if offset else None
     GL.glIndexPointer( glType, stride, offset )
 
 def enable_shader_attribute( shader, attribute ):
@@ -218,7 +218,7 @@ def enable_shader_attribute( shader, attribute ):
     :param pygly.shader.ShaderProgram shader: The shader object.
     :param string attribute: The attribute name to enable.
     """
-    location = shader.attributes[ attribute ]
+    location = shader.attributes[ attribute ].location
     GL.glEnableVertexAttribArray( location )
 
 def disable_shader_attribute( shader, attribute ):
@@ -228,7 +228,7 @@ def disable_shader_attribute( shader, attribute ):
     :param pygly.shader.ShaderProgram shader: The shader object.
     :param string attribute: The attribute name to disable.
     """
-    location = shader.attributes[ attribute ]
+    location = shader.attributes[ attribute ].location
     GL.glDisableVertexAttribArray( location )
 
 def enable_attribute_pointer( index ):
@@ -264,7 +264,7 @@ def set_attribute_pointer(
     where an offset of 0 must be specified as None.
     """
     normalise = GL.GL_TRUE if normalise else GL.GL_FALSE
-    offset = None if not offset else ctypes.c_void_p( offset )
+    offset = ctypes.c_void_p( offset ) if offset else None
 
     GL.glVertexAttribPointer(
         location,
@@ -301,7 +301,7 @@ class VertexBuffer( object ):
         if nbytes:
             self.bind()
             self.allocate( usage, nbytes )
-            if data:
+            if data != None:
                 self.set_data( data )
             self.unbind()
 
@@ -349,8 +349,11 @@ class VertexBuffer( object ):
 
         The handle is not changed by this operation.
         """
+        if not self.bound:
+            raise ValueError( "Buffer is not bound" )
+
         GL.glBufferData( self.target, nbytes, None, usage )
-        self._nbytes = bytes
+        self._nbytes = nbytes
         self._usage = usage
 
     @parameters_as_numpy_arrays( 'data' )
@@ -366,7 +369,7 @@ class VertexBuffer( object ):
         if (offset + data.nbytes) > self.nbytes:
             raise OverflowError( "Data would overflow buffer" )
 
-        GL.glBufferSubData( self.target, 0, data.nbytes, data )
+        GL.glBufferSubData( self.target, offset, data.nbytes, data )
 
     def push_attributes( self ):
         """Pushes the enable and pointer state of vertex arrays.
@@ -590,8 +593,9 @@ class VertexBuffer( object ):
 
     def __str__( self ):
         string = \
-            "VertexBuffer:\n" \
+            "%s:\n" \
             "nbytes:\t%s"  % (
+                self.__class__.__name__,
                 self.nbytes
                 )
         return string
