@@ -3,7 +3,7 @@ import textwrap
 import numpy
 from OpenGL import GL
 
-from pygly.shader import Shader, ShaderProgram
+from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
 from pygly.dtype_vertex_buffer import DtypeVertexBuffer
 from pygly.vertex_array import VertexArray
 
@@ -81,8 +81,8 @@ class CoreQuad( object ):
 
         # create our shader
         self.shader = ShaderProgram(
-            Shader( GL.GL_VERTEX_SHADER, self.vertex_shader ),
-            Shader( GL.GL_FRAGMENT_SHADER, self.fragment_shader )
+            VertexShader( self.vertex_shader ),
+            FragmentShader( self.fragment_shader )
             )
 
         # create a vertex buffer
@@ -169,8 +169,8 @@ class LegacyQuad( object ):
 
         # create our shader
         self.shader = ShaderProgram(
-            Shader( GL.GL_VERTEX_SHADER, self.vertex_shader ),
-            Shader( GL.GL_FRAGMENT_SHADER, self.fragment_shader )
+            VertexShader( self.vertex_shader ),
+            FragmentShader( self.fragment_shader )
             )
 
         # create our vertex buffer
