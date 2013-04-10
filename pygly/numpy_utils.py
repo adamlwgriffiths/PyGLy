@@ -34,27 +34,16 @@ def dtype_element_count( dtype, name = None ):
     column, pass the root dtype in with the name.
     Ie::
 
-        type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-        num_elements( type, 'position' )
-        >>> 3
-        type
-        >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-        type.descr
-        >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
-
-    Do NOT pass a subdtype or the count will be wrong.
-    Ie::
-
-        numpy.dtype( [
-            ('position', 'f4', (3,)).
-            ('colour', 'i2', (3,))
-            ])
-        num_elements( dtype[ 'position' ] )
-        >>> 1
-        type[ 'position' ]
-        >>> dtype(('float32',(3,)))
-        type[ 'position' ].descr
-        >>> [('', '|V12')]
+        >>> a = numpy.dtype([
+        ...         ('position',    'float32',  (3,)),
+        ...         ('colour',      'float32',  (3,)),
+        ...         ])
+        >>> numpy_utils.dtype_element_count( a )
+        6
+        >>> numpy_utils.dtype_element_count( a['position'] )
+        3
+        >>> numpy_utils.dtype_element_count( a, 'position' )
+        3
     """
     def count( descr ):
         if len( descr ) > 2:
@@ -64,24 +53,19 @@ def dtype_element_count( dtype, name = None ):
         else:
             return 1
 
-    descr = dtype.descr
-
-    # we've been given a name
     if name:
-        # find the name in the descriptions
-        for property in descr:
-            if property[ 0 ] == name:
-                return count( property )
-
-        # name not found
-        raise ValueError( "Property not found" )
+        shape = dtype[ name ].shape
     else:
-        # no name given
-        # sum the number of values for each dtype
-        sum = 0
+        shape = dtype.shape
+
+    if len(shape) > 0:
+        return reduce( lambda x, y: x * y, shape )
+    else:
+        descr = dtype.descr
+        size = 0
         for type in descr:
-            sum += count( type )
-        return sum
+            size += count( type )
+        return size
 
 def dtype_type( dtype, name = None ):
     """Returns the type that compose a dtype.
