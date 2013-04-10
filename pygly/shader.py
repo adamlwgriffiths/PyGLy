@@ -88,13 +88,17 @@ def parse_shader_error( error ):
 
         0(7): error C1008: undefined variable "MV"
 
+    Nouveau Linux driver using the following format::
+
+        0:28(16): error: syntax error, unexpected ')', expecting '('
+
     ATi and Intel print using the following format::
 
         ERROR: 0:131: '{' : syntax error parse error
     """
     # Nvidia
     # 0(7): error C1008: undefined variable "MV"
-    match = re.match( r'(\d)\((\d+)\):\s(.*)', error )
+    match = re.match( r'(\d+)\((\d+)\):\s(.*)', error )
     if match:
         return (
             int(match.group( 2 )),   # line number
@@ -111,11 +115,23 @@ def parse_shader_error( error ):
             match.group( 3 )    # description
             )
 
+    # Nouveau
+    # 0:28(16): error: syntax error, unexpected ')', expecting '('
+    match = re.match( r'(\d+):(\d+)\((\d+)\):\s(.*)', error )
+    if match:
+        return (
+            int(match.group( 2 )),   # line number
+            match.group( 4 )    # description
+            )
+
     raise ValueError( 'Unknown GLSL error format' )
 
 def parse_shader_errors( errors ):
     """Parses a GLSL error buffer and returns an list of
     error tuples.
+
+    Errors that cannot be parsed will be returned verbatim
+    with their line number set to -1.
     """
     results = []
     error_list = errors.split( '\n' )
@@ -124,7 +140,7 @@ def parse_shader_errors( errors ):
             result = parse_shader_error( error )
             results.append( result )
         except ValueError as e:
-            pass
+            results.append( (-1, error) )
     return results
 
 def uniforms( handle ):
@@ -179,11 +195,17 @@ def attributes( handle ):
         yield attribute_for_index( handle, index )
 
 def attribute_for_index( handle, index ):
+    """Returns the attribute for the specified attribute index.
+
+    :rtype: tuple(name, size, type)
+    """
+    # Constants like GLsizei are only found in OpenGL.constants
+    # for older versions of pyopengl
     name_length = 30
-    glNameSize = (GLsizei)()
-    glSize = (GL.GLint)()
-    glType = (GL.GLenum)()
-    glName = (GL.GLchar * name_length)()
+    glNameSize = (GL.constants.GLsizei)()
+    glSize = (GL.constants.GLint)()
+    glType = (GL.constants.GLenum)()
+    glName = (GL.constants.GLchar * name_length)()
 
     GL.glGetActiveAttrib(
         handle,
@@ -199,6 +221,16 @@ def attribute_for_index( handle, index ):
     return name, size, type
 
 def attribute_for_name( handle, name ):
+    """Returns the attribute for the specified attribute index.
+
+    This iterates over the attributes returned by attribute_for_index
+    until it finds a matching name.
+
+    If no name is found, None is returned.
+
+    :rtype: tuple(name, size, type)
+    :return: The attribute tuple or None.
+    """
     # we can't get attributes directly
     # we have to iterate over the active attributes and find our
     # attribute match by the name given
@@ -397,14 +429,44 @@ class Shader( object ):
         for error in errors:
             line, desc = error
 
-            print "Error compiling shader type: %s" % enum_to_string( self.type )
-            print "\tLine: %i" % line
-            print "\tDescription: %s" % desc
-            print "\tCode: %s" % lines[ line - 1 ]
+            print( "Error compiling shader type: %s" % enum_to_string( self.type ) )
+            print( "\tLine: %i" % line )
+            print( "\tDescription: %s" % desc )
+            print( "\tCode: %s" % lines[ line - 1 ] )
 
     def __str__( self ):
         string = "Shader:\t%s" % ( enum_to_string( self.type ) )
         return string
+
+
+class VertexShader( Shader ):
+    """An individual Vertex Shader object.
+
+    Used as part of a single ShaderProgram object.
+
+    This is a convenience class that removes the need to pass the
+    GL_VERTEX_SHADER type during the construction of a Shader object.
+    """
+
+    def __init__( self, *args, **kwargs ):
+        super( VertexShader, self ).__init__(
+            GL.GL_VERTEX_SHADER, *args, **kwargs
+            )
+
+
+class FragmentShader( Shader ):
+    """An individual Fragment Shader object.
+
+    Used as part of a single ShaderProgram object.
+
+    This is a convenience class that removes the need to pass the
+    GL_FRAGMENT_SHADER type during the construction of a Shader object.
+    """
+
+    def __init__( self, *args, **kwargs ):
+        super( FragmentShader, self ).__init__(
+            GL.GL_FRAGMENT_SHADER, *args, **kwargs
+            )
 
 
 class ShaderProgram( object ):
@@ -464,8 +526,8 @@ class ShaderProgram( object ):
             # attach the shader
             GL.glAttachShader( self.handle, shader.handle )
         except Exception as e:
-            print "Error attaching shader type: %s" % enum_to_string( shader.type )
-            print "\tException: %s" % str(e)
+            print( "Error attaching shader type: %s" % enum_to_string( shader.type ) )
+            print( "\tException: %s" % str(e) )
 
             # chain the exception
             raise
@@ -514,8 +576,8 @@ class ShaderProgram( object ):
         The buffer should be the exact contents of the GLSL
         error buffer converted to a Python String.
         """
-        print "Error linking shader:"
-        print "\tDescription: %s" % ( buffer )
+        print( "Error linking shader:" )
+        print( "\tDescription: %s" % ( buffer ) )
 
         # print the log to the console
         errors = parse_shader_errors( buffer )
@@ -523,8 +585,8 @@ class ShaderProgram( object ):
         for error in errors:
             line, desc = error
 
-            print "Error linking shader"
-            print "\tDescription: %s" % ( desc )
+            print( "Error linking shader" )
+            print( "\tDescription: %s" % ( desc ) )
 
     @property
     def linked( self ):
@@ -562,6 +624,16 @@ class ShaderProgram( object ):
         """
         return GL.glGetIntegerv( GL.GL_CURRENT_PROGRAM ) == self.handle
 
+    def __getitem__(self, name):
+        """Return the Uniform or Attribute with the specified name.
+        """
+        if name in self.uniforms.all():
+            return self.uniforms[ name ]
+        elif name in self.attributes.all():
+            return self.attributes[ name ]
+        else:
+            raise KeyError( name )
+
     def __str__( self ):
         string = \
             "ShaderProgram:\n" \
@@ -581,19 +653,19 @@ class Uniforms( object ):
     Uniforms can be accessed as members::
 
         shader.uniforms.model_view = 0
-        print shader.uniforms.model_view
+        print( shader.uniforms.model_view )
         >>> 0
 
     Uniforms can also be accessed array style::
 
         shader.uniforms[ 'model_view' ] = 0
-        print shader.uniforms[ 'model_view' ]
+        print( shader.uniforms[ 'model_view' ] )
         >>> 0
 
     Uniforms provides a mechanism to iterate over the active Uniforms::
 
         for uniform in shader.uniforms:
-            print uniform
+            print( uniform )
     """
 
     """This dictionary holds a list of GL shader enum types.
@@ -622,7 +694,12 @@ class Uniforms( object ):
     def __init__( self, program ):
         super( Uniforms, self ).__init__()
 
-        self.__dict__[ 'program' ] = program
+        self._program = program
+        self._uniforms = {}
+
+    @property
+    def program( self ):
+        return self._program
 
     def __iter__( self ):
         return self.next()
@@ -635,16 +712,12 @@ class Uniforms( object ):
         """Called by a ShaderProgram when the program is linked
         successfully.
         """
-        # clear the existing uniforms, if any
-        for key, value in self.__dict__.items():
-            if key != 'program':
-                del self.__dict__[ key ]
-
         # get our active uniforms
-        program = self.__dict__[ 'program' ]
+        program = self.program
+        self._uniforms = {}
         for name, size, type in uniforms( program.handle ):
-            self.__dict__[ name ] = self.types[ type ]()
-            self.__dict__[ name ]._set_data( program, name, type )
+            self._uniforms[ name ] = self.types[ type ]()
+            self._uniforms[ name ]._set_data( program, name, type )
 
     def all( self ):
         """Returns a dictionary of all uniform objects.
@@ -654,15 +727,8 @@ class Uniforms( object ):
         Any uniform automatically detected or accessed programmatically
         in python will appear in this list.
         """
-        _uniforms = self.__dict__.copy()
-        del _uniforms['program']
         # convert to a list
-        return _uniforms
-
-    def __getattr__( self, name ):
-        """Simply calls __getitem__ with the same parameters.
-        """
-        return self.__getitem__( name )
+        return self._uniforms.copy()
 
     def __getitem__( self, name ):
         """Returns an appropriate uniform for the specified variable name.
@@ -671,47 +737,33 @@ class Uniforms( object ):
 
         The ShaderProgram MUST be linked or a ValueError is raised.
         """
-        if not self.__dict__[ 'program' ].linked:
+        if not self.program.linked:
             raise ValueError( "ShaderProgram must be linked before attribute can be queried" )
 
         # check if a uniform already exists
-        if name in self.__dict__:
+        if name in self._uniforms:
             # return the existing uniform
-            return self.__dict__[ name ]
+            return self._uniforms[ name ]
         else:
             # the uniform doesn't exit
             # check if we should raise an exception
             # if not, create an InvalidUniform object and store it
             # this means it will only print a log message this one time
-            if self.__dict__[ 'program' ].raise_invalid_variables:
+            if self.program.raise_invalid_variables:
                 raise ValueError( "Uniform '%s' not specified in ShaderProgram" % name )
             else:
                 # we shouldn't raise an exception
                 # so create an invalid uniform object that will do nothing
-                program = self.__dict__[ 'program' ]
-                self.__dict__[ name ] = InvalidUniform()
-                self.__dict__[ name ]._set_data( program, name, type = None )
-                return self.__dict__[ name ]
-
-    def __setattr__( self, name, value ):
-        self.__setitem__( name, value )
+                self._uniforms[ name ] = InvalidUniform()
+                self._uniforms[ name ]._set_data( self.program, name, type = None )
+                return self._uniforms[ name ]
 
     def __setitem__( self, name, value ):
         """Passes the value to the uniform's value member.
 
         This lets us just call 'Uniforms.variable = value'
         """
-        if isinstance( value, Uniform ):
-            # the value is an instance of Uniform
-            # so it must be to do an assignment of the object itself
-            if name in self.__dict__:
-                raise ValueError( "Replacing Uniform: %s" % name )
-            self.__dict__[ name ] = value
-            value._set_data( name, self.program )
-        else:
-            # the value isn't a Uniform class
-            # so pass it to the existing uniform
-            self.__getitem__( name ).value = value
+        self[ name ].value = value
 
     def __str__( self ):
         string = "Uniforms:\n"
@@ -881,7 +933,7 @@ class InvalidUniform( Uniform ):
 
     def _set_data( self, program, name, type ):
         # ensure we have the right uniform type
-        print "Uniform '%s' not specified in ShaderProgram" % name
+        print( "Uniform '%s' not specified in ShaderProgram" % name )
 
     @property
     def value( self ):
@@ -1124,25 +1176,30 @@ class Attributes( object ):
     Attributes can be accessed as members::
 
         shader.attributes.in_position = 0
-        print shader.attributes.in_position
+        print( shader.attributes.in_position )
         >>> 0
 
     Attributes can also be accessed array style::
 
         shader.attributes[ 'in_position' ] = 0
-        print shader.attributes[ 'in_position' ]
+        print( shader.attributes[ 'in_position' ] )
         >>> 0
 
     Attributes provides a mechanism to iterate over the active Attributes::
 
         for attribute in shader.attributes:
-            print attribute
+            print( attribute )
     """
 
     def __init__( self, program ):
         super( Attributes, self ).__init__()
 
-        self.__dict__[ 'program' ] = program
+        self._program = program
+        self._attributes = {}
+
+    @property
+    def program( self ):
+        return self._program
 
     def _on_program_linked( self ):
         pass
@@ -1161,20 +1218,7 @@ class Attributes( object ):
         The value is an Attribute object.
         """
         # get number of active attributes
-        program = self.__dict__[ 'program' ]
-
-        _attributes = {}
-
-        for attribute in attributes( program.handle ):
-            name, size, type = attribute
-            _attributes[ name ] = Attribute( program, name )
-
-        return _attributes
-
-    def __getattr__( self, name ):
-        """Simply calls __getitem__ with the same parameters.
-        """
-        return self.__getitem__( name )
+        return self._attributes.copy()
 
     def __getitem__( self, name ):
         """Returns the currently bound attribute value.
@@ -1185,23 +1229,18 @@ class Attributes( object ):
         An invalid attribute is signified as OpenGL's glGetAttribLocation
         function returning -1.
         """
-        if name in self.__dict__:
-            return self.__dict__[ name ]
+        if name in self._attributes:
+            return self._attributes[ name ]
 
-        return Attribute( self.__dict__[ 'program' ], name )
-
-    def __setattr__( self, name, value ):
-        """Simply calls __setitem__ with the same parameters
-        """
-        return self.__setitem__( name, value )
+        return Attribute( self.program, name )
 
     def __setitem__( self, name, value ):
-        """Sets the shader's attribute for the specified name.
+        """Sets the shader's attribute location for the specified name.
 
         This value can be set at any time on the ShaderProgram, but it
         will only take effect the next time the ShaderProgram is linked.
         """
-        GL.glBindAttribLocation( self.program.handle, value, name )
+        self[ name ].location = value
 
     def __str__( self ):
         string = "Attributes:\n"
