@@ -13,15 +13,14 @@ Example usage::
     # compile and attach our shaders but don't link
     # the program just yet
     shader = ShaderProgram(
-        False,
         Shader( GL_VERTEX_SHADER, vertex_shader ),
         Shader( GL_FRAGMENT_SHADER, fragment_shader )
         )
 
     # bind our vertex attributes
-    shader.attributes.in_position = 0
-    shader.attributes.in_normal = 1
-    shader.attributes.in_colour = 2
+    shader.attributes['in_position'] = 0
+    shader.attributes['in_normal'].location = 1
+    shader.attributes['in_colour'].location = 2
 
     # bind our fragment output
     shader.frag_location( 'out_frag_colour' )
@@ -43,7 +42,7 @@ Example usage::
     # will be created and assigned to it.
     # this allows us to do validation on data passed to the
     # shader's uniforms.
-    shader.uniforms.in_texture_0 = 0
+    shader.uniforms['in_texture_0'].value = 0
 
     shader.unbind()
 
@@ -55,7 +54,7 @@ Example usage::
     shader.bind()
 
     # set our per-frame uniforms
-    shader.uniforms.in_time = 1.0
+    shader.uniforms['in_time'].value = 1.0
 
     # render some geometry
     # ...
@@ -63,8 +62,6 @@ Example usage::
     # unbind the shader
     shader.unbind()
 """
-
-import re
 
 import numpy
 from OpenGL.error import GLError
@@ -94,6 +91,8 @@ def parse_shader_error( error ):
 
         ERROR: 0:131: '{' : syntax error parse error
     """
+    import re
+
     # Nvidia
     # 0(7): error C1008: undefined variable "MV"
     match = re.match( r'(\d+)\((\d+)\):\s(.*)', error )
@@ -221,7 +220,8 @@ def attribute_for_index( handle, index ):
 def attribute_for_name( handle, name ):
     """Returns the attribute for the specified attribute index.
 
-    This iterates over the attributes returned by attribute_for_index
+    This iterates over the attributes returned by 
+    `py:func:pygly.shader.attribute_for_index`
     until it finds a matching name.
 
     If no name is found, None is returned.
@@ -233,108 +233,138 @@ def attribute_for_name( handle, name ):
     # we have to iterate over the active attributes and find our
     # attribute match by the name given
     for attribute in attributes( handle ):
-        _name, _size, _type = attribute
+        name_, size_, type_ = attribute
 
-        if _name == name:
-            return _name, _size, _type
+        if name_ == name:
+            return name_, size_, type_
 
     # no match found
     return None
 
+
+def _generate_enum_map( enum_names ):
+    """Convert dicts of format {'GL_ENUM_NAME': value, ...}
+    to { GL_ENUM_NAME : value, ...}
+
+    Used to ignore NameErrors that would otherwise result from incomplete
+    OpenGL implementations.
+    """
+    map = {}
+    for (key, value) in enum_names.items():
+        try:
+            map[ getattr(GL, key) ] = value
+        except AttributeError:
+            pass
+    return map
+
+#: processes our enumeration to string map and stores the result
+_enum_string_map = _generate_enum_map(
+    {
+        "GL_VERTEX_SHADER":       "GL_VERTEX_SHADER",
+        "GL_FRAGMENT_SHADER":     "GL_FRAGMENT_SHADER",
+        "GL_GEOMETRY_SHADER":     "GL_GEOMETRY_SHADER",
+        "GL_FLOAT":               "GL_FLOAT",
+        "GL_FLOAT_VEC2":          "GL_FLOAT_VEC2",
+        "GL_FLOAT_VEC3":          "GL_FLOAT_VEC3",
+        "GL_FLOAT_VEC4":          "GL_FLOAT_VEC4",
+        "GL_INT":                 "GL_INT",
+        "GL_INT_VEC2":            "GL_INT_VEC2",
+        "GL_INT_VEC3":            "GL_INT_VEC3",
+        "GL_INT_VEC4":            "GL_INT_VEC4",
+        "GL_UNSIGNED_INT":        "GL_UNSIGNED_INT",
+        "GL_UNSIGNED_INT_VEC2":   "GL_UNSIGNED_INT_VEC2",
+        "GL_UNSIGNED_INT_VEC3":   "GL_UNSIGNED_INT_VEC3",
+        "GL_UNSIGNED_INT_VEC4":   "GL_UNSIGNED_INT_VEC4",
+        "GL_UNSIGNED_INT_ATOMIC_COUNTER": "GL_UNSIGNED_INT_ATOMIC_COUNTER",
+        "GL_FLOAT_MAT2":          "GL_FLOAT_MAT2",
+        "GL_FLOAT_MAT3":          "GL_FLOAT_MAT3",
+        "GL_FLOAT_MAT4":          "GL_FLOAT_MAT4",
+        "GL_FLOAT_MAT2x3":        "GL_FLOAT_MAT2x3",
+        "GL_FLOAT_MAT2x4":        "GL_FLOAT_MAT2x4",
+        "GL_FLOAT_MAT3x2":        "GL_FLOAT_MAT3x2",
+        "GL_FLOAT_MAT3x4":        "GL_FLOAT_MAT3x4",
+        "GL_FLOAT_MAT4x2":        "GL_FLOAT_MAT4x2",
+        "GL_FLOAT_MAT4x3":        "GL_FLOAT_MAT4x3",
+        "GL_SAMPLER_1D":          "GL_SAMPLER_1D",
+        "GL_SAMPLER_2D":          "GL_SAMPLER_2D",
+        "GL_SAMPLER_3D":          "GL_SAMPLER_3D",
+        "GL_SAMPLER_CUBE":        "GL_SAMPLER_CUBE",
+        "GL_SAMPLER_1D_SHADOW":   "GL_SAMPLER_1D_SHADOW",
+        "GL_SAMPLER_2D_SHADOW":   "GL_SAMPLER_2D_SHADOW",
+        "GL_SAMPLER_1D_ARRAY":    "GL_SAMPLER_1D_ARRAY",
+        "GL_SAMPLER_2D_ARRAY":    "GL_SAMPLER_2D_ARRAY",
+        "GL_SAMPLER_1D_ARRAY_SHADOW": "GL_SAMPLER_1D_ARRAY_SHADOW",
+        "GL_SAMPLER_2D_ARRAY_SHADOW": "GL_SAMPLER_2D_ARRAY_SHADOW",
+        "GL_SAMPLER_2D_MULTISAMPLE":  "GL_SAMPLER_2D_MULTISAMPLE",
+        "GL_SAMPLER_2D_MULTISAMPLE_ARRAY":    "GL_SAMPLER_2D_MULTISAMPLE_ARRAY",
+        "GL_SAMPLER_CUBE_SHADOW": "GL_SAMPLER_CUBE_SHADOW",
+        "GL_SAMPLER_BUFFER":      "GL_SAMPLER_BUFFER",
+        "GL_SAMPLER_2D_RECT":     "GL_SAMPLER_2D_RECT",
+        "GL_SAMPLER_2D_RECT_SHADOW":  "GL_SAMPLER_2D_RECT_SHADOW",
+        "GL_INT_SAMPLER_1D":      "GL_INT_SAMPLER_1D",
+        "GL_INT_SAMPLER_2D":      "GL_INT_SAMPLER_2D",
+        "GL_INT_SAMPLER_3D":      "GL_INT_SAMPLER_3D",
+        "GL_INT_SAMPLER_CUBE":    "GL_INT_SAMPLER_CUBE",
+        "GL_INT_SAMPLER_1D_ARRAY":    "GL_INT_SAMPLER_1D_ARRAY",
+        "GL_INT_SAMPLER_2D_ARRAY":    "GL_INT_SAMPLER_2D_ARRAY",
+        "GL_INT_SAMPLER_2D_MULTISAMPLE":  "GL_INT_SAMPLER_2D_MULTISAMPLE",
+        "GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY":    "GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
+        "GL_INT_SAMPLER_BUFFER":  "GL_INT_SAMPLER_BUFFER",
+        "GL_INT_SAMPLER_2D_RECT": "GL_INT_SAMPLER_2D_RECT",
+        "GL_UNSIGNED_INT_SAMPLER_1D": "GL_UNSIGNED_INT_SAMPLER_1D",
+        "GL_UNSIGNED_INT_SAMPLER_2D": "GL_UNSIGNED_INT_SAMPLER_2D",
+        "GL_UNSIGNED_INT_SAMPLER_3D": "GL_UNSIGNED_INT_SAMPLER_3D",
+        "GL_UNSIGNED_INT_SAMPLER_CUBE":   "GL_UNSIGNED_INT_SAMPLER_CUBE",
+        "GL_UNSIGNED_INT_SAMPLER_1D_ARRAY":   "GL_UNSIGNED_INT_SAMPLER_1D_ARRAY",
+        "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY":   "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY",
+        "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE": "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE",
+        "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY":   "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
+        "GL_UNSIGNED_INT_SAMPLER_BUFFER": "GL_UNSIGNED_INT_SAMPLER_BUFFER",
+        "GL_UNSIGNED_INT_SAMPLER_2D_RECT":    "GL_UNSIGNED_INT_SAMPLER_2D_RECT",
+        "GL_IMAGE_1D":            "GL_IMAGE_1D",
+        "GL_IMAGE_2D":            "GL_IMAGE_2D",
+        "GL_IMAGE_3D":            "GL_IMAGE_3D",
+        "GL_IMAGE_2D_RECT":       "GL_IMAGE_2D_RECT",
+        "GL_IMAGE_CUBE":          "GL_IMAGE_CUBE",
+        "GL_IMAGE_BUFFER":        "GL_IMAGE_BUFFER",
+        "GL_IMAGE_1D_ARRAY":      "GL_IMAGE_1D_ARRAY",
+        "GL_IMAGE_2D_ARRAY":      "GL_IMAGE_2D_ARRAY",
+        "GL_IMAGE_2D_MULTISAMPLE":    "GL_IMAGE_2D_MULTISAMPLE",
+        "GL_IMAGE_2D_MULTISAMPLE_ARRAY":  "GL_IMAGE_2D_MULTISAMPLE_ARRAY",
+        "GL_INT_IMAGE_1D":        "GL_INT_IMAGE_1D",
+        "GL_INT_IMAGE_2D":        "GL_INT_IMAGE_2D",
+        "GL_INT_IMAGE_3D":        "GL_INT_IMAGE_3D",
+        "GL_INT_IMAGE_2D_RECT":   "GL_INT_IMAGE_2D_RECT",
+        "GL_INT_IMAGE_CUBE":      "GL_INT_IMAGE_CUBE",
+        "GL_INT_IMAGE_BUFFER":    "GL_INT_IMAGE_BUFFER",
+        "GL_INT_IMAGE_1D_ARRAY":  "GL_INT_IMAGE_1D_ARRAY",
+        "GL_INT_IMAGE_2D_ARRAY":  "GL_INT_IMAGE_2D_ARRAY",
+        "GL_INT_IMAGE_2D_MULTISAMPLE":    "GL_INT_IMAGE_2D_MULTISAMPLE",
+        "GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY":  "GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY",
+        "GL_UNSIGNED_INT_IMAGE_1D":   "GL_UNSIGNED_INT_IMAGE_1D",
+        "GL_UNSIGNED_INT_IMAGE_2D":   "GL_UNSIGNED_INT_IMAGE_2D",
+        "GL_UNSIGNED_INT_IMAGE_3D":   "GL_UNSIGNED_INT_IMAGE_3D",
+        "GL_UNSIGNED_INT_IMAGE_2D_RECT":  "GL_UNSIGNED_INT_IMAGE_2D_RECT",
+        "GL_UNSIGNED_INT_IMAGE_CUBE": "GL_UNSIGNED_INT_IMAGE_CUBE",
+        "GL_UNSIGNED_INT_IMAGE_BUFFER":   "GL_UNSIGNED_INT_IMAGE_BUFFER",
+        "GL_UNSIGNED_INT_IMAGE_1D_ARRAY": "GL_UNSIGNED_INT_IMAGE_1D_ARRAY",
+        "GL_UNSIGNED_INT_IMAGE_2D_ARRAY": "GL_UNSIGNED_INT_IMAGE_2D_ARRAY",
+        "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE":   "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE",
+        "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY": "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY",
+        }
+    )
+
 def enum_to_string( glEnum ):
-    return {
-        GL.GL_VERTEX_SHADER:       'GL_VERTEX_SHADER',
-        GL.GL_FRAGMENT_SHADER:     'GL_FRAGMENT_SHADER',
-        GL.GL_GEOMETRY_SHADER:     'GL_GEOMETRY_SHADER',
-        GL.GL_FLOAT:               "GL_FLOAT",
-        GL.GL_FLOAT_VEC2:          "GL_FLOAT_VEC2",
-        GL.GL_FLOAT_VEC3:          "GL_FLOAT_VEC3",
-        GL.GL_FLOAT_VEC4:          "GL_FLOAT_VEC4",
-        GL.GL_INT:                 "GL_INT",
-        GL.GL_INT_VEC2:            "GL_INT_VEC2",
-        GL.GL_INT_VEC3:            "GL_INT_VEC3",
-        GL.GL_INT_VEC4:            "GL_INT_VEC4",
-        GL.GL_UNSIGNED_INT:        "GL_UNSIGNED_INT",
-        GL.GL_UNSIGNED_INT_VEC2:   "GL_UNSIGNED_INT_VEC2",
-        GL.GL_UNSIGNED_INT_VEC3:   "GL_UNSIGNED_INT_VEC3",
-        GL.GL_UNSIGNED_INT_VEC4:   "GL_UNSIGNED_INT_VEC4",
-        GL.GL_UNSIGNED_INT_ATOMIC_COUNTER: "GL_UNSIGNED_INT_ATOMIC_COUNTER",
-        GL.GL_FLOAT_MAT2:          "GL_FLOAT_MAT2",
-        GL.GL_FLOAT_MAT3:          "GL_FLOAT_MAT3",
-        GL.GL_FLOAT_MAT4:          "GL_FLOAT_MAT4",
-        GL.GL_FLOAT_MAT2x3:        "GL_FLOAT_MAT2x3",
-        GL.GL_FLOAT_MAT2x4:        "GL_FLOAT_MAT2x4",
-        GL.GL_FLOAT_MAT3x2:        "GL_FLOAT_MAT3x2",
-        GL.GL_FLOAT_MAT3x4:        "GL_FLOAT_MAT3x4",
-        GL.GL_FLOAT_MAT4x2:        "GL_FLOAT_MAT4x2",
-        GL.GL_FLOAT_MAT4x3:        "GL_FLOAT_MAT4x3",
-        GL.GL_SAMPLER_1D:          "GL_SAMPLER_1D",
-        GL.GL_SAMPLER_2D:          "GL_SAMPLER_2D",
-        GL.GL_SAMPLER_3D:          "GL_SAMPLER_3D",
-        GL.GL_SAMPLER_CUBE:        "GL_SAMPLER_CUBE",
-        GL.GL_SAMPLER_1D_SHADOW:   "GL_SAMPLER_1D_SHADOW",
-        GL.GL_SAMPLER_2D_SHADOW:   "GL_SAMPLER_2D_SHADOW",
-        GL.GL_SAMPLER_1D_ARRAY:    "GL_SAMPLER_1D_ARRAY",
-        GL.GL_SAMPLER_2D_ARRAY:    "GL_SAMPLER_2D_ARRAY",
-        GL.GL_SAMPLER_1D_ARRAY_SHADOW: "GL_SAMPLER_1D_ARRAY_SHADOW",
-        GL.GL_SAMPLER_2D_ARRAY_SHADOW: "GL_SAMPLER_2D_ARRAY_SHADOW",
-        GL.GL_SAMPLER_2D_MULTISAMPLE:  "GL_SAMPLER_2D_MULTISAMPLE",
-        GL.GL_SAMPLER_2D_MULTISAMPLE_ARRAY:    "GL_SAMPLER_2D_MULTISAMPLE_ARRAY",
-        GL.GL_SAMPLER_CUBE_SHADOW: "GL_SAMPLER_CUBE_SHADOW",
-        GL.GL_SAMPLER_BUFFER:      "GL_SAMPLER_BUFFER",
-        GL.GL_SAMPLER_2D_RECT:     "GL_SAMPLER_2D_RECT",
-        GL.GL_SAMPLER_2D_RECT_SHADOW:  "GL_SAMPLER_2D_RECT_SHADOW",
-        GL.GL_INT_SAMPLER_1D:      "GL_INT_SAMPLER_1D",
-        GL.GL_INT_SAMPLER_2D:      "GL_INT_SAMPLER_2D",
-        GL.GL_INT_SAMPLER_3D:      "GL_INT_SAMPLER_3D",
-        GL.GL_INT_SAMPLER_CUBE:    "GL_INT_SAMPLER_CUBE",
-        GL.GL_INT_SAMPLER_1D_ARRAY:    "GL_INT_SAMPLER_1D_ARRAY",
-        GL.GL_INT_SAMPLER_2D_ARRAY:    "GL_INT_SAMPLER_2D_ARRAY",
-        GL.GL_INT_SAMPLER_2D_MULTISAMPLE:  "GL_INT_SAMPLER_2D_MULTISAMPLE",
-        GL.GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:    "GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
-        GL.GL_INT_SAMPLER_BUFFER:  "GL_INT_SAMPLER_BUFFER",
-        GL.GL_INT_SAMPLER_2D_RECT: "GL_INT_SAMPLER_2D_RECT",
-        GL.GL_UNSIGNED_INT_SAMPLER_1D: "GL_UNSIGNED_INT_SAMPLER_1D",
-        GL.GL_UNSIGNED_INT_SAMPLER_2D: "GL_UNSIGNED_INT_SAMPLER_2D",
-        GL.GL_UNSIGNED_INT_SAMPLER_3D: "GL_UNSIGNED_INT_SAMPLER_3D",
-        GL.GL_UNSIGNED_INT_SAMPLER_CUBE:   "GL_UNSIGNED_INT_SAMPLER_CUBE",
-        GL.GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:   "GL_UNSIGNED_INT_SAMPLER_1D_ARRAY",
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:   "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY",
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE: "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE",
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:   "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY",
-        GL.GL_UNSIGNED_INT_SAMPLER_BUFFER: "GL_UNSIGNED_INT_SAMPLER_BUFFER",
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_RECT:    "GL_UNSIGNED_INT_SAMPLER_2D_RECT",
-        GL.GL_IMAGE_1D:            "GL_IMAGE_1D",
-        GL.GL_IMAGE_2D:            "GL_IMAGE_2D",
-        GL.GL_IMAGE_3D:            "GL_IMAGE_3D",
-        GL.GL_IMAGE_2D_RECT:       "GL_IMAGE_2D_RECT",
-        GL.GL_IMAGE_CUBE:          "GL_IMAGE_CUBE",
-        GL.GL_IMAGE_BUFFER:        "GL_IMAGE_BUFFER",
-        GL.GL_IMAGE_1D_ARRAY:      "GL_IMAGE_1D_ARRAY",
-        GL.GL_IMAGE_2D_ARRAY:      "GL_IMAGE_2D_ARRAY",
-        GL.GL_IMAGE_2D_MULTISAMPLE:    "GL_IMAGE_2D_MULTISAMPLE",
-        GL.GL_IMAGE_2D_MULTISAMPLE_ARRAY:  "GL_IMAGE_2D_MULTISAMPLE_ARRAY",
-        GL.GL_INT_IMAGE_1D:        "GL_INT_IMAGE_1D",
-        GL.GL_INT_IMAGE_2D:        "GL_INT_IMAGE_2D",
-        GL.GL_INT_IMAGE_3D:        "GL_INT_IMAGE_3D",
-        GL.GL_INT_IMAGE_2D_RECT:   "GL_INT_IMAGE_2D_RECT",
-        GL.GL_INT_IMAGE_CUBE:      "GL_INT_IMAGE_CUBE",
-        GL.GL_INT_IMAGE_BUFFER:    "GL_INT_IMAGE_BUFFER",
-        GL.GL_INT_IMAGE_1D_ARRAY:  "GL_INT_IMAGE_1D_ARRAY",
-        GL.GL_INT_IMAGE_2D_ARRAY:  "GL_INT_IMAGE_2D_ARRAY",
-        GL.GL_INT_IMAGE_2D_MULTISAMPLE:    "GL_INT_IMAGE_2D_MULTISAMPLE",
-        GL.GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY:  "GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY",
-        GL.GL_UNSIGNED_INT_IMAGE_1D:   "GL_UNSIGNED_INT_IMAGE_1D",
-        GL.GL_UNSIGNED_INT_IMAGE_2D:   "GL_UNSIGNED_INT_IMAGE_2D",
-        GL.GL_UNSIGNED_INT_IMAGE_3D:   "GL_UNSIGNED_INT_IMAGE_3D",
-        GL.GL_UNSIGNED_INT_IMAGE_2D_RECT:  "GL_UNSIGNED_INT_IMAGE_2D_RECT",
-        GL.GL_UNSIGNED_INT_IMAGE_CUBE: "GL_UNSIGNED_INT_IMAGE_CUBE",
-        GL.GL_UNSIGNED_INT_IMAGE_BUFFER:   "GL_UNSIGNED_INT_IMAGE_BUFFER",
-        GL.GL_UNSIGNED_INT_IMAGE_1D_ARRAY: "GL_UNSIGNED_INT_IMAGE_1D_ARRAY",
-        GL.GL_UNSIGNED_INT_IMAGE_2D_ARRAY: "GL_UNSIGNED_INT_IMAGE_2D_ARRAY",
-        GL.GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE:   "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE",
-        GL.GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY: "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY",
-        }[ glEnum ]
+    """Converts an OpenGL shader uniform or attribute enumeration
+    type to a string.
+
+    For example::
+
+        >>> enum_to_string( OpenGL.GL.GL_FLOAT_MAT4 )
+        'GL_FLOAT_MAT4'
+    """
+    global _enum_string_map
+    return _enum_string_map[ glEnum ]
 
 
 class Shader( object ):
@@ -346,7 +376,11 @@ class Shader( object ):
     must be used as part of a single Shader Program.
     Geometry shaders (GL_GEOMETRY_SHADER) are optional.
 
-    Shaders can be used by multiple ShaderPrograms.
+    Shaders can be used by multiple `py:class:pygly.shader.ShaderProgram`.
+
+    Multiple shaders of the same type can be attached to a ShaderProgram.
+    The GLSL linker will over-write any existing functions with the same signature
+    with functions from the newly attached shader.
     """
 
     @classmethod
@@ -390,7 +424,8 @@ class Shader( object ):
         """Compiles the shader using the current content
         value.
 
-        This is required before a ShaderProgram is linked.
+        Shaders are required to be compiled before a
+        `py:class:pygly.shader.ShaderProgram` can be linked.
 
         This is not required to be performed in order to
         attach a Shader to a ShaderProgram. As long as the
@@ -442,10 +477,9 @@ class Shader( object ):
 class VertexShader( Shader ):
     """An individual Vertex Shader object.
 
-    Used as part of a single ShaderProgram object.
-
     This is a convenience class that removes the need to pass the
-    GL_VERTEX_SHADER type during the construction of a Shader object.
+    GL_VERTEX_SHADER type during the construction of a
+    `py:class:pygly.shader.Shader` object.
     """
 
     def __init__( self, *args, **kwargs ):
@@ -457,10 +491,9 @@ class VertexShader( Shader ):
 class FragmentShader( Shader ):
     """An individual Fragment Shader object.
 
-    Used as part of a single ShaderProgram object.
-
     This is a convenience class that removes the need to pass the
-    GL_FRAGMENT_SHADER type during the construction of a Shader object.
+    GL_FRAGMENT_SHADER type during the construction of a
+    `py:class:pygly.shader.Shader` object.
     """
 
     def __init__( self, *args, **kwargs ):
@@ -489,7 +522,7 @@ class ShaderProgram( object ):
     
     def __init__( self, *args, **kwargs ):
         super( ShaderProgram, self ).__init__()
-        
+
         # create the program handle
         self._handle = GL.glCreateProgram()
 
@@ -517,7 +550,7 @@ class ShaderProgram( object ):
         return self._handle
 
     def attach_shader( self, shader ):
-        """Attaches a Shader object for the specified GL_*_SHADER type.
+        """Attaches a Shader object.
 
         This expects an instance of the Shader class (or equivalent).
         If you need to attach a normal GL shader handle, use the
@@ -650,7 +683,7 @@ class ShaderProgram( object ):
 
 
 class Uniforms( object ):
-    """Provides access to ShaderProgram uniform variables.
+    """Provides access to `py:class:pygly.shader.ShaderProgram` uniform variables.
 
     Uniforms are accessed using array semantics::
 
@@ -669,23 +702,33 @@ class Uniforms( object ):
     When processing uniforms, the appropriate class is instantiated
     for the specific time.
 
-    The values are populated by calling 'register_uniform_class'.
+    The values are populated by calling
+    `py:func:pygly.shader._register_uniform_class`.
     """
     types = {}
 
     @staticmethod
-    def register_uniform_class( class_type, types ):
+    def register_uniform_class( cls, types ):
         """Registers a Uniform class to be used for specific GLSL GL types.
 
         class_type is a class type, such as UniformFloat.
-        types is a list of GL enumeration types that the class is to be used for.
-        Such as GL_FLOAT_VEC4, GL_SAMPLER_1D, etc.
+        types is a list of GL enumeration types as strings that the class
+        is to be used for.
+
+        For example::
+
+            ['GL_FLOAT_VEC4', 'GL_SAMPLER_1D']
 
         There is no checking for duplicates, latter calls to this function can over-ride
         existing class registrations.
         """
         for type in types:
-            Uniforms.types[ type ] = class_type
+            # add to dictionary
+            # check if the type is valid
+            try:
+                Uniforms.types[ getattr(GL, type) ] = cls
+            except AttributeError:
+                pass
 
     def __init__( self, program ):
         super( Uniforms, self ).__init__()
@@ -755,9 +798,9 @@ class Uniforms( object ):
                 return self._uniforms[ name ]
 
     def __setitem__( self, name, value ):
-        """Passes the value to the uniform's value member.
+        """Sets the value of the shader's uniform.
 
-        This lets us just call 'Uniforms.variable = value'
+        This lets us just call 'shader.uniforms['variable'] = value'
         """
         self[ name ].value = value
 
@@ -778,8 +821,8 @@ class Uniform( object ):
         This should only be called by inherited Uniform classes.
 
         Types is a dictionary with the following format:
-        key: GL enumeration type, Eg. GL_FLOAT_VEC4.
-        value: (uniform setter function, number of values per variable)
+            key: GL enumeration type as a string, Eg. 'GL_FLOAT_VEC4'.
+            value: (uniform setter function, number of values per variable)
 
         The function is used when setting the uniform value.
 
@@ -789,7 +832,7 @@ class Uniform( object ):
         """
         super( Uniform, self ).__init__()
 
-        self._types = types
+        self._types = _generate_enum_map( types )
         self._dtype = dtype
 
         # these values are set in _set_data which is called by
@@ -848,7 +891,7 @@ class Uniform( object ):
         return self._num_values
 
     def _set_data( self, program, name, type ):
-        """Used by the 'Uniforms' class to pass the data to the Uniform
+        """Used by the `py:class:pygly.shader.Uniform` class to pass the data to the Uniform
         object once it is assigned to a ShaderProgram.
         """
         self._program = program
@@ -861,7 +904,7 @@ class Uniform( object ):
         # ensure we have the right uniform type
         if self.type not in self._types:
             raise ValueError(
-                "Uniform '%s' has type '%s' and is not supporte by " % (
+                "Uniform '%s' has type '%s' and is not supported by %s" % (
                     self.name,
                     enum_to_string( self.type ),
                     self.__class__.__name__
@@ -876,6 +919,8 @@ class Uniform( object ):
     @property
     def value( self ):
         """Retrieves the current value of the Uniform.
+
+        .. warning:: Not currently implemented
         """
         raise NotImplementedError
 
@@ -909,6 +954,7 @@ class Uniform( object ):
             enum_to_string( self.type ),
             self.location
             )
+
 
 class InvalidUniform( Uniform ):
     """Represents an InvalidUniform.
@@ -956,10 +1002,10 @@ class UniformFloat( Uniform ):
 
     #: The types supported by this Uniform class.
     types = {
-        GL.GL_FLOAT:       (GL.glUniform1fv,  1),
-        GL.GL_FLOAT_VEC2:  (GL.glUniform2fv,  2),
-        GL.GL_FLOAT_VEC3:  (GL.glUniform3fv,  3),
-        GL.GL_FLOAT_VEC4:  (GL.glUniform4fv,  4),
+        "GL_FLOAT":       (GL.glUniform1fv,  1),
+        "GL_FLOAT_VEC2":  (GL.glUniform2fv,  2),
+        "GL_FLOAT_VEC3":  (GL.glUniform3fv,  3),
+        "GL_FLOAT_VEC4":  (GL.glUniform4fv,  4),
         }
 
     def __init__( self ):
@@ -981,10 +1027,10 @@ class UniformInt( Uniform ):
 
     #: The types supported by this Uniform class.
     types = {
-        GL.GL_INT:         (GL.glUniform1iv,  1),
-        GL.GL_INT_VEC2:    (GL.glUniform2iv,  2),
-        GL.GL_INT_VEC3:    (GL.glUniform3iv,  3),
-        GL.GL_INT_VEC4:    (GL.glUniform4iv,  4),
+        "GL_INT":         (GL.glUniform1iv,  1),
+        "GL_INT_VEC2":    (GL.glUniform2iv,  2),
+        "GL_INT_VEC3":    (GL.glUniform3iv,  3),
+        "GL_INT_VEC4":    (GL.glUniform4iv,  4),
         }
 
     def __init__( self ):
@@ -1006,11 +1052,11 @@ class UniformUint( Uniform ):
 
     #: The types supported by this Uniform class.
     types = {
-        GL.GL_UNSIGNED_INT:        (GL.glUniform1uiv,     1),
-        GL.GL_UNSIGNED_INT_VEC2:   (GL.glUniform2uiv,     2),
-        GL.GL_UNSIGNED_INT_VEC3:   (GL.glUniform3uiv,     3),
-        GL.GL_UNSIGNED_INT_VEC4:   (GL.glUniform4uiv,     4),
-        GL.GL_UNSIGNED_INT_ATOMIC_COUNTER: (GL.glUniform1uiv, 1),
+        "GL_UNSIGNED_INT":        (GL.glUniform1uiv,     1),
+        "GL_UNSIGNED_INT_VEC2":   (GL.glUniform2uiv,     2),
+        "GL_UNSIGNED_INT_VEC3":   (GL.glUniform3uiv,     3),
+        "GL_UNSIGNED_INT_VEC4":   (GL.glUniform4uiv,     4),
+        "GL_UNSIGNED_INT_ATOMIC_COUNTER": (GL.glUniform1uiv, 1),
         }
 
     def __init__( self ):
@@ -1032,15 +1078,15 @@ class UniformFloatMatrix( Uniform ):
 
     #: The types supported by this Uniform class.
     types = {
-        GL.GL_FLOAT_MAT2:      (GL.glUniformMatrix2fv,    4),
-        GL.GL_FLOAT_MAT3:      (GL.glUniformMatrix3fv,    9),
-        GL.GL_FLOAT_MAT4:      (GL.glUniformMatrix4fv,    16),
-        GL.GL_FLOAT_MAT2x3:    (GL.glUniformMatrix2x3fv,  6),
-        GL.GL_FLOAT_MAT2x4:    (GL.glUniformMatrix2x4fv,  8),
-        GL.GL_FLOAT_MAT3x2:    (GL.glUniformMatrix3x2fv,  6),
-        GL.GL_FLOAT_MAT3x4:    (GL.glUniformMatrix3x4fv,  12),
-        GL.GL_FLOAT_MAT4x2:    (GL.glUniformMatrix4x2fv,  8),
-        GL.GL_FLOAT_MAT4x3:    (GL.glUniformMatrix4x3fv,  12),
+        "GL_FLOAT_MAT2":      (GL.glUniformMatrix2fv,    4),
+        "GL_FLOAT_MAT3":      (GL.glUniformMatrix3fv,    9),
+        "GL_FLOAT_MAT4":      (GL.glUniformMatrix4fv,    16),
+        "GL_FLOAT_MAT2x3":    (GL.glUniformMatrix2x3fv,  6),
+        "GL_FLOAT_MAT2x4":    (GL.glUniformMatrix2x4fv,  8),
+        "GL_FLOAT_MAT3x2":    (GL.glUniformMatrix3x2fv,  6),
+        "GL_FLOAT_MAT3x4":    (GL.glUniformMatrix3x4fv,  12),
+        "GL_FLOAT_MAT4x2":    (GL.glUniformMatrix4x2fv,  8),
+        "GL_FLOAT_MAT4x3":    (GL.glUniformMatrix4x3fv,  12),
         }
 
     def __init__( self ):
@@ -1088,72 +1134,72 @@ class UniformSampler( Uniform ):
 
     #: The types supported by this Uniform class.
     types = {
-        GL.GL_SAMPLER_1D:          (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D:          (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_3D:          (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_CUBE:        (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_1D_SHADOW:   (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_SHADOW:   (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_1D_ARRAY:    (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_ARRAY:    (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_1D_ARRAY_SHADOW: (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_ARRAY_SHADOW: (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_MULTISAMPLE:  (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_MULTISAMPLE_ARRAY:    (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_CUBE_SHADOW: (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_BUFFER:      (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_RECT:     (GL.glUniform1iv,  1),
-        GL.GL_SAMPLER_2D_RECT_SHADOW:  (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_1D:      (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_2D:      (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_3D:      (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_CUBE:    (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_1D_ARRAY:    (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_2D_ARRAY:    (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_2D_MULTISAMPLE:  (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:    (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_BUFFER:  (GL.glUniform1iv,  1),
-        GL.GL_INT_SAMPLER_2D_RECT: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_1D: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_2D: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_3D: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_CUBE:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_BUFFER: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_SAMPLER_2D_RECT:    (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_1D:            (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_2D:            (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_3D:            (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_2D_RECT:       (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_CUBE:          (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_BUFFER:        (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_1D_ARRAY:      (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_2D_ARRAY:      (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_2D_MULTISAMPLE:        (GL.glUniform1iv,  1),
-        GL.GL_IMAGE_2D_MULTISAMPLE_ARRAY:  (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_1D:        (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_2D:        (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_3D:        (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_2D_RECT:   (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_CUBE:      (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_BUFFER:    (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_1D_ARRAY:  (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_2D_ARRAY:  (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_2D_MULTISAMPLE:        (GL.glUniform1iv,  1),
-        GL.GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY:  (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_1D:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_2D:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_3D:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_2D_RECT:  (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_CUBE: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_BUFFER:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_1D_ARRAY: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_2D_ARRAY: (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE:   (GL.glUniform1iv,  1),
-        GL.GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY: (GL.glUniform1iv,  1),
+        "GL_SAMPLER_1D":          (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D":          (GL.glUniform1iv,  1),
+        "GL_SAMPLER_3D":          (GL.glUniform1iv,  1),
+        "GL_SAMPLER_CUBE":        (GL.glUniform1iv,  1),
+        "GL_SAMPLER_1D_SHADOW":   (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_SHADOW":   (GL.glUniform1iv,  1),
+        "GL_SAMPLER_1D_ARRAY":    (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_ARRAY":    (GL.glUniform1iv,  1),
+        "GL_SAMPLER_1D_ARRAY_SHADOW": (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_ARRAY_SHADOW": (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_MULTISAMPLE":  (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_MULTISAMPLE_ARRAY":    (GL.glUniform1iv,  1),
+        "GL_SAMPLER_CUBE_SHADOW": (GL.glUniform1iv,  1),
+        "GL_SAMPLER_BUFFER":      (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_RECT":     (GL.glUniform1iv,  1),
+        "GL_SAMPLER_2D_RECT_SHADOW":  (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_1D":      (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_2D":      (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_3D":      (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_CUBE":    (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_1D_ARRAY":    (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_2D_ARRAY":    (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_2D_MULTISAMPLE":  (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY":    (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_BUFFER":  (GL.glUniform1iv,  1),
+        "GL_INT_SAMPLER_2D_RECT": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_1D": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_2D": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_3D": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_CUBE":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_1D_ARRAY":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_BUFFER": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_SAMPLER_2D_RECT":    (GL.glUniform1iv,  1),
+        "GL_IMAGE_1D":            (GL.glUniform1iv,  1),
+        "GL_IMAGE_2D":            (GL.glUniform1iv,  1),
+        "GL_IMAGE_3D":            (GL.glUniform1iv,  1),
+        "GL_IMAGE_2D_RECT":       (GL.glUniform1iv,  1),
+        "GL_IMAGE_CUBE":          (GL.glUniform1iv,  1),
+        "GL_IMAGE_BUFFER":        (GL.glUniform1iv,  1),
+        "GL_IMAGE_1D_ARRAY":      (GL.glUniform1iv,  1),
+        "GL_IMAGE_2D_ARRAY":      (GL.glUniform1iv,  1),
+        "GL_IMAGE_2D_MULTISAMPLE":        (GL.glUniform1iv,  1),
+        "GL_IMAGE_2D_MULTISAMPLE_ARRAY":  (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_1D":        (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_2D":        (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_3D":        (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_2D_RECT":   (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_CUBE":      (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_BUFFER":    (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_1D_ARRAY":  (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_2D_ARRAY":  (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_2D_MULTISAMPLE":        (GL.glUniform1iv,  1),
+        "GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY":  (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_1D":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_2D":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_3D":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_2D_RECT":  (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_CUBE": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_BUFFER":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_1D_ARRAY": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_2D_ARRAY": (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE":   (GL.glUniform1iv,  1),
+        "GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY": (GL.glUniform1iv,  1),
         }
 
     def __init__( self ):
@@ -1164,7 +1210,7 @@ class UniformSampler( Uniform ):
 
 
 class Attributes( object ):
-    """Provides access to ShaderProgram attribute bindings.
+    """Provides access to `py:class:pygly.shader.ShaderProgram` attribute bindings.
 
     Because Attributes must be updated before the shader is linked,
     we cannot do the same validation as we can with Uniforms.
@@ -1192,7 +1238,10 @@ class Attributes( object ):
         return self._program
 
     def _on_program_linked( self ):
-        pass
+        self._attributes = dict(
+            (name, Attribute( self.program, name ))
+            for (name, size, type) in attributes( self._program.handle )
+            )
 
     def __iter__( self ):
         return self.next()
@@ -1214,21 +1263,19 @@ class Attributes( object ):
         """Returns the currently bound attribute value.
 
         The ShaderProgram MUST be linked or a ValueError is raised.
-
-        If the attribute is invalid, None will be returned.
-        An invalid attribute is signified as OpenGL's glGetAttribLocation
-        function returning -1.
         """
-        if name in self._attributes:
-            return self._attributes[ name ]
-
-        return Attribute( self.program, name )
+        if name not in self._attributes:
+            self._attributes[ name ] = Attribute( self.program, name )
+        return self._attributes[ name ]
 
     def __setitem__( self, name, value ):
-        """Sets the shader's attribute location for the specified name.
+        """Sets the location of the shader's attribute.
 
-        This value can be set at any time on the ShaderProgram, but it
-        will only take effect the next time the ShaderProgram is linked.
+        Passes the value to the attribute's location.
+        This lets us just call 'shader.attributes['variable'] = value'
+
+        This value can be set at any time on the `py:class:pygly.shader.ShaderProgram`,
+        but it will only take effect the next time the ShaderProgram is linked.
         """
         self[ name ].location = value
 
@@ -1253,7 +1300,7 @@ class Attribute( object ):
     def name( self ):
         """Returns the name of the uniform as specified in GLSL.
 
-        Eg. in_position
+        Eg. 'in_position'
         """
         return self._name
 
@@ -1268,9 +1315,13 @@ class Attribute( object ):
         """Returns the GL enumeration type for the Attribute.
 
         Eg. GL_FLOAT_VEC4.
+
+        :rtype: GL enumeration or None if invalid.
         """
-        name, size, type = attribute_for_name( self.program.handle, self.name )
-        return type
+        attribute = attribute_for_name( self.program.handle, self.name )
+        if attribute:
+            return attribute[ 2 ]
+        return None
 
     @property
     def location( self ):
@@ -1281,14 +1332,6 @@ class Attribute( object ):
     @location.setter
     def location( self, location ):
         """Sets the attributes location.
-
-        Locations can be set two ways::
-
-            shader.attributes.in_position = 0
-
-        or::
-
-            shader.attributes.in_position.location = 0
         """
         GL.glBindAttribLocation( self.program.handle, location, self.name )
 
@@ -1304,12 +1347,13 @@ class Attribute( object ):
 
 
 # register our uniform types
-def register_uniforms():
+def _register_uniforms():
     """Registers our uniform class types with the central
     Uniforms class.
 
     This is called automatically on import and does not need
     to be called manually.
+
     Calling this multiple times will not do any harm.
     """
     Uniforms.register_uniform_class( UniformFloat, UniformFloat.types.keys() )
@@ -1318,5 +1362,5 @@ def register_uniforms():
     Uniforms.register_uniform_class( UniformFloatMatrix, UniformFloatMatrix.types.keys() )
     Uniforms.register_uniform_class( UniformSampler, UniformSampler.types.keys() )
 
-register_uniforms()
+_register_uniforms()
 
