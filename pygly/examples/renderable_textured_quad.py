@@ -112,9 +112,9 @@ class CoreQuad( object ):
 
     def draw( self, projection, model_view ):
         self.shader.bind()
-        self.shader.uniforms.projection = projection
-        self.shader.uniforms.model_view = model_view
-        self.shader.uniforms.in_diffuse_texture = 0
+        self.shader.uniforms['projection'].value = projection
+        self.shader.uniforms['model_view'].value = model_view
+        self.shader.uniforms['in_diffuse_texture'].value = 0
 
         self.vao.bind()
         GL.glDrawArrays( GL.GL_TRIANGLES, 0, self.buffer.rows )
