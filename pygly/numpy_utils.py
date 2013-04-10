@@ -32,29 +32,29 @@ def dtype_element_count( dtype, name = None ):
 
     If you need the number of elements of a specifically named
     column, pass the root dtype in with the name.
-    Ie.
+    Ie::
 
-    type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-    num_elements( type, 'position' )
-    >>> 3
-    type
-    >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-    type.descr
-    >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
+        type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
+        num_elements( type, 'position' )
+        >>> 3
+        type
+        >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
+        type.descr
+        >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
 
     Do NOT pass a subdtype or the count will be wrong.
-    Ie.
+    Ie::
 
-    numpy.dtype( [
-        ('position', 'f4', (3,)).
-        ('colour', 'i2', (3,))
-        ])
-    num_elements( dtype[ 'position' ] )
-    >>> 1
-    type[ 'position' ]
-    >>> dtype(('float32',(3,)))
-    type[ 'position' ].descr
-    >>> [('', '|V12')]
+        numpy.dtype( [
+            ('position', 'f4', (3,)).
+            ('colour', 'i2', (3,))
+            ])
+        num_elements( dtype[ 'position' ] )
+        >>> 1
+        type[ 'position' ]
+        >>> dtype(('float32',(3,)))
+        type[ 'position' ].descr
+        >>> [('', '|V12')]
     """
     def count( descr ):
         if len( descr ) > 2:
@@ -88,29 +88,29 @@ def dtype_type( dtype, name = None ):
 
     If you need the type of a specifically named
     column, pass the root dtype in with the name.
-    Ie.
+    Ie::
 
-    type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-    extract_type( type, 'position' )
-    >>> '<f4'
-    type
-    >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-    type.descr
-    >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
+        type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
+        extract_type( type, 'position' )
+        >>> '<f4'
+        type
+        >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
+        type.descr
+        >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
 
     Do NOT pass a subdtype or the count will be wrong.
-    Ie.
+    Ie::
 
-    numpy.dtype( [
-        ('position', 'f4', (3,)).
-        ('colour', 'i2', (3,))
-        ])
-    num_elements( dtype[ 'position' ] )
-    >>> '|V12'
-    type[ 'position' ]
-    >>> dtype(('float32',(3,)))
-    type[ 'position' ].descr
-    >>> [('', '|V12')]
+        numpy.dtype( [
+            ('position', 'f4', (3,)).
+            ('colour', 'i2', (3,))
+            ])
+        num_elements( dtype[ 'position' ] )
+        >>> '|V12'
+        type[ 'position' ]
+        >>> dtype(('float32',(3,)))
+        type[ 'position' ].descr
+        >>> [('', '|V12')]
     """
     if name:
         for property in dtype.descr:
@@ -128,29 +128,29 @@ def dtype_gl_enum( dtype, name = None ):
 
     If you need the type of a specifically named
     column, pass the root dtype in with the name.
-    Ie.
+    Ie::
 
-    type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-    gl_enum( type, 'position' )
-    >>> GL_FLOAT
-    type
-    >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
-    type.descr
-    >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
+        type = dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
+        gl_enum( type, 'position' )
+        >>> GL_FLOAT
+        type
+        >>> dtype([('position', '<f4', (3,)), ('colour', '<f4', (3,))])
+        type.descr
+        >>> [('position', '<f4', (3,)), ('colour', '<f4', (3,))]
 
     Do NOT pass a subdtype or the count will be wrong.
-    Ie.
+    Ie::
 
-    numpy.dtype( [
-        ('position', 'f4', (3,)).
-        ('colour', 'i2', (3,))
-        ])
-    gl_enum( dtype[ 'position' ] )
-    >>> KeyError: 'V12'
-    type[ 'position' ]
-    >>> dtype(('float32',(3,)))
-    type[ 'position' ].descr
-    >>> [('', '|V12')]
+        numpy.dtype( [
+            ('position', 'f4', (3,)).
+            ('colour', 'i2', (3,))
+            ])
+        gl_enum( dtype[ 'position' ] )
+        >>> KeyError: 'V12'
+        type[ 'position' ]
+        >>> dtype(('float32',(3,)))
+        type[ 'position' ].descr
+        >>> [('', '|V12')]
     """
     from OpenGL import GL
     import re
