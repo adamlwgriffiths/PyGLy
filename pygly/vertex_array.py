@@ -6,9 +6,6 @@ from OpenGL import GL
 class VertexArray( object ):
     """Wraps OpenGL Vertex Array Objects.
 
-    This is an OpenGL Core function (>=3.0) and should not be
-    called for Legacy profile applications (<=2.1).
-
     Provides wrappers around standard functions and higher level
     wrappers with PyGLy.BufferRegion interfaces.
 
@@ -18,35 +15,40 @@ class VertexArray( object ):
         fs = Shader( GL_FRAGMENT_SHADER, shader_source['frag'] )
         shader = ShaderProgram( vs, fs )
 
+        # a basic triangle
         vertices = numpy.array(
-            [ ... ],
+            [
+                #  X    Y    Z          R    G    B
+                (( 0.0, 1.0, 0.0),     (1.0, 0.0, 0.0)),
+                ((-2.0,-1.0, 0.0),     (0.0, 1.0, 0.0)),
+                (( 2.0,-1.0, 0.0),     (0.0, 0.0, 1.0)),
+                ],
             dtype = [
                 ('position','float32',(3,)),
-                ('normal','float32',(3,))
+                ('colour','float32',(3,))
                 ]
             )
-        vbo = Buffer(
+        buffer = DtypeVertexBuffer(
+            vertices.dtype,
             GL_ARRAY_BUFFER,
             GL_STATIC_DRAW,
-            (vertices.size, vertices.dtype)
+            data = vertices
             )
-        vbo.bind()
-        vertices_buffer.set_data( vertices )
 
         vao = VertexArray()
+
         vao.bind()
-        vao.set_attribute( shader, 'in_position', vertices_buffer, 'position' )
-        vao.set_attribute( shader, 'in_normal', vertices_buffer, 'normal' )
+        buffer.bind()
+        buffer.set_attribute_pointer_dtype( shader, 'in_position', 'position' )
+        buffer.set_attribute_pointer_dtype( shader, 'in_colour', 'colour' )
+        buffer.unbind()
         vao.unbind()
 
-        vbo.unbind()
+    .. warning:: This is an OpenGL Core function (>=3.0) and should not be
+        called for Legacy profile applications (<=2.1).
     """
 
-    def __init__(
-        self,
-        target = GL.GL_ARRAY_BUFFER,
-        usage = GL.GL_STATIC_DRAW
-        ):
+    def __init__( self ):
         super( VertexArray, self ).__init__()
 
         self._handle = GL.glGenVertexArrays( 1 )
@@ -54,10 +56,6 @@ class VertexArray( object ):
     @property
     def handle( self ):
         return self._handle
-
-    @property
-    def is_bound( self ):
-        pass
 
     def bind( self ):
         GL.glBindVertexArray( self.handle )
