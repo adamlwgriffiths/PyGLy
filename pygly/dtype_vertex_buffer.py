@@ -49,6 +49,8 @@ class DtypeVertexBuffer( VertexBuffer ):
     @property
     def dtype( self ):
         """The dtype structure used by data in this buffer.
+
+        :rtype: numpy.dtype
         """
         return self._dtype
 
@@ -65,15 +67,23 @@ class DtypeVertexBuffer( VertexBuffer ):
         """Returns the stride of the buffer.
 
         The stride is the size of a single block of the specified dtype.
+
+        :rtype: int
         """
         return self.dtype.itemsize
 
     def allocate( self, usage, rows ):
+        """Allocates a new buffer on the GPU.
+
+        If the buffer has already been allocated, it will be freed.
+
+        The handle is not changed by this operation.
+        """
         self._rows = rows
         nbytes = self.stride * rows
         super( DtypeVertexBuffer, self ).allocate( usage, nbytes )
 
-    def offset( self, name ):
+    def offset( self, name = None ):
         """The byte offset for data of the named property.
 
         The name must match a name within the dtype.
@@ -226,11 +236,12 @@ class DtypeVertexBuffer( VertexBuffer ):
 
     def __str__( self ):
         string = \
-            "DtypeVertexBuffer:\n" \
+            "%s:\n" \
             "dtype:\t%s\n" \
             "rows:\t%d\n" \
             "nbytes:\t%d\n" \
             "stride:\t%d"  % (
+                self.__class__.__name__,
                 str(self._dtype),
                 self.rows,
                 self.nbytes,
