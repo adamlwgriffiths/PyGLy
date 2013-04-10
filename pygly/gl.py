@@ -29,8 +29,6 @@ and then popped the matrix.
 from contextlib import contextmanager
 
 import numpy
-#from OpenGL.arrays.vbo import VBO
-#from OpenGL.GL.ARB.vertex_array_object import *
 from OpenGL import GL
 
 from pyrr.utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays
