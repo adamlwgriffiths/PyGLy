@@ -1,8 +1,12 @@
 import ctypes
+from numbers import Number
 
+import numpy
 from OpenGL import GL
 
 from pyrr.utils import parameters_as_numpy_arrays
+from shader import Attribute as ShaderAttribute
+import numpy_utils
 
 
 def currently_bound_buffer( type ):
@@ -279,45 +283,231 @@ def set_attribute_pointer(
 class VertexBuffer( object ):
 
 
-    @parameters_as_numpy_arrays( 'data' )
-    def __init__(
-        self,
+    class Attribute( object ):
+
+        def __init__( self, buffer ):
+            super( VertexBuffer.Attribute, self ).__init__()
+
+            self.buffer = buffer
+
+        @property
+        def float32( self ):
+            # return an attribute class with GL_TYPE = GL_FLOAT
+            # and a data size of 4 bytes
+            # can use this information to determine the number of
+            # values per vertex
+            pass
+
+        @property
+        def float64( self ):
+            pass
+
+        @property
+        def int32( self ):
+            pass
+
+        @property
+        def int16( self ):
+            pass
+
+        @property
+        def int8( self ):
+            pass
+
+        @property
+        def uint32( self ):
+            pass
+
+        @property
+        def uint16( self ):
+            pass
+
+        @property
+        def uint8( self ):
+            pass
+
+        def __setitem__( self, index, data ):
+            if not self.buffer.bound:
+                raise ValueError( "Buffer is not bound" )
+
+            # check the data type
+            # we can only receive an integer or an attribute
+            if isinstance( data, int ):
+                location = data
+            elif isinstance( data, ShaderAttribute ):
+                location = data.location
+            else:
+                raise TypeError( "Cannot set attribute, data is of an unknown type" )
+
+            # check the slice type
+            if isinstance( index, slice ):
+                # single slice
+                pass
+            elif isinstance( index, tuple ):
+                # tuple of slices
+                pass
+            if isinstance( index, str ):
+                stride = self.buffer.dtype.itemsize
+                offset = numpy_utils.dtype_offset( self.buffer.dtype, index )
+                values_per_vertex = numpy_utils.dtype_element_count( self.buffer.dtype, index )
+                glType = numpy_utils.dtype_gl_enum( self.buffer.dtype, index )
+
+                print location, values_per_vertex, glType, stride, offset
+
+                # enable the attribute
+                GL.glEnableVertexAttribArray( location )
+
+                # set the pointer
+                set_attribute_pointer(
+                    location,
+                    values_per_vertex,
+                    glType,
+                    stride,
+                    offset
+                    )
+            else:
+                # primitive
+                pass
+
+    @staticmethod
+    def bound_buffer( type ):
+        """Returns the handle of the currently bound buffer.
+
+        The buffer target type is required as there are 3 different
+        buffer properties we can check.
+
+        OpenGL provides individual binding stacks for the following
+        buffer target types stacks:
+            * GL_TEXTURE_BUFFER
+            * GL_ELEMENT_ARRAY_BUFFER
+            * All other buffer target types.
+
+        :param int type: The buffer target type.
+        :rtype: int
+        :return: The handle of the currently bound buffer.
+        """
+        if type == GL.GL_TEXTURE_BUFFER:
+            enum = GL.GL_TEXTURE_BUFFER_BINDING
+        elif type == GL.GL_ELEMENT_ARRAY_BUFFER:
+            enum = GL.GL_ELEMENT_ARRAY_BUFFER_BINDING
+        else:
+            enum = GL.GL_ARRAY_BUFFER_BINDING
+
+        return GL.glGetInteger( enum )
+
+    @classmethod
+    def empty(
+        cls,
+        shape,
         target = GL.GL_ARRAY_BUFFER,
         usage = GL.GL_STATIC_DRAW,
-        nbytes = None,
-        data = None,
+        dtype = None,
+        use_shadow_buffer = False,
         handle = None
         ):
-        """Creates a Vertex Buffer with the specified attributes.
+        # just make the empty buffer
+        buffer = cls(
+            target,
+            usage,
+            dtype,
+            shape,
+            use_shadow_buffer,
+            handle
+            )
+        # initialise the buffer's size
+        buffer.bind()
+        GL.glBufferData( buffer.target, buffer.nbytes, None, buffer.usage )
+        buffer.unbind()
 
-        The usage parameter can be changed by calling allocate with
-        a different usage.
+    @classmethod
+    def zeros(
+        cls,
+        shape,
+        target = GL.GL_ARRAY_BUFFER,
+        usage = GL.GL_STATIC_DRAW,
+        dtype = None,
+        use_shadow_buffer = False,
+        handle = None
+        ):
+        buffer = cls.array(
+            target,
+            usage,
+            dtype,
+            use_shadow_buffer,
+            handle
+            )
+        # initialise the buffer's size
+        object = numpy.zeros( shape, dtype = dtype )
+        buffer.bind()
+        GL.glBufferData( buffer.target, buffer.nbytes, None, buffer.usage )
+        buffer[:] = object
+        buffer.unbind()
+        return buffer
 
-        :param int nbytes: If passed in, the buffer will be allocated.
-        :param numpy.array data: If passed in, it will over-ride nbytes and will also
-            populate the buffer with the specified data.
-        :param int handle: If passed in, the buffer will use the specified handle
-            instead of creating a new one.
-            If the target differs from the original buffer, an error will
-            be triggered by OpenGL when the buffer is used.
-        """
+    @classmethod
+    def buffer(
+        cls,
+        object,
+        target = GL.GL_ARRAY_BUFFER,
+        usage = GL.GL_STATIC_DRAW,
+        dtype = None,
+        use_shadow_buffer = False,
+        handle = None
+        ):
+        # handle other vertex buffers
+        if isinstance( object, VertexBuffer ):
+            # TODO
+            raise TypeError( "Not currently supported" )
+
+        # ensure we're working with a numpy array
+        np_object = numpy.array( object )
+
+        buffer = cls(
+            target,
+            usage,
+            dtype if dtype else np_object.dtype,
+            np_object.shape,
+            use_shadow_buffer,
+            handle
+            )
+        # set the buffer's data
+        buffer.bind()
+        GL.glBufferData( buffer.target, buffer.nbytes, None, buffer.usage )
+        buffer[:] = np_object
+        buffer.unbind()
+
+        return buffer
+
+    def __init__(
+        self,
+        target,
+        usage,
+        dtype,
+        shape,
+        use_shadow_buffer = False,
+        handle = None,
+        offset = 0,
+        strides = None
+        ):
         super( VertexBuffer, self ).__init__()
 
         self._target = target
         self._usage = usage
-        self._nbytes = 0
+        self._dtype = numpy.dtype( dtype )
+        self._shape = shape
+        self._shadow_buffer = None
+        self._offset = offset
+        self._strides = tuple( strides ) if strides else ( self._dtype.itemsize, )
 
-        self.handle = GL.glGenBuffers( 1 ) if not handle else handle
+        if use_shadow_buffer:
+            self._shadow_buffer = numpy.empty( self._shape, self._dtype )
 
-        if data != None:
-            nbytes = data.nbytes
+        # create or copy the buffer handle
+        self._handle = handle if handle else GL.glGenBuffers( 1 )
 
-        if nbytes:
-            self.bind()
-            self.allocate( usage, nbytes )
-            if data != None:
-                self.set_data( data )
-            self.unbind()
+    @property
+    def handle( self ):
+        return self._handle
 
     @property
     def target( self ):
@@ -329,7 +519,69 @@ class VertexBuffer( object ):
 
     @property
     def nbytes( self ):
-        return self._nbytes
+        # nbytes = shape * dtype.itemsize
+        return reduce( lambda x, y: x * y, self._shape ) * self._dtype.itemsize
+
+    @property
+    def dtype( self ):
+        return self._dtype
+
+    @dtype.setter
+    def dtype( self, _dtype ):
+        # validate the shape
+        # throw ValueError if shape changes size
+        new_size = reduce( lambda x, y: x * y, self._shape ) * _dtype.itemsize
+        if self.nbytes != new_size:
+            raise ValueError( "New dtype would change the buffer's size" )
+
+        if None == self._shadow_buffer:
+            self._dtype = _dtype
+
+            # update the shape
+            # dtype can change the view of the memory
+            # if the size of dtype has changed, the shape should be updated
+
+            shape = list( self.shape )
+
+            # calculate the new number of elements in the buffer
+            count = self.nbytes / self._dtype.itemsize
+            # determine how many instances there are of the last dimension
+            num_groups = reduce( lambda x, y: x * y, self._shape ) / self._shape[ -1 ]
+            # update the last dimensions count to the number of values per instance
+            shape[-1] = count / num_groups
+
+            self.shape = tuple( shape )
+        else:
+            self._shadow_buffer.dtype = _dtype
+
+    @property
+    def shape( self ):
+        return self._shape
+
+    @shape.setter
+    def shape( self, _shape ):
+        # validate the shape
+        # throw ValueError if shape changes size
+        new_size = reduce( lambda x, y: x * y, _shape ) * self._dtype.itemsize
+        if self.nbytes != new_size:
+            raise ValueError( "New shape would change the buffer's size" )
+
+        if None == self._shadow_buffer:
+            self._shape = _shape
+        else:
+            self._shadow_buffer.shape = _shape
+
+    @property
+    def ndim( self ):
+        return len( self._shape )
+
+    @property
+    def offset( self ):
+        return self._offset
+
+    @property
+    def strides( self ):
+        return self._strides
 
     @property
     def bound( self ):
@@ -338,295 +590,214 @@ class VertexBuffer( object ):
         :rtype: boolean
         :return: Returns True if the buffer is currently bound.
         """
-        return currently_bound_buffer( self.target ) == self.handle
+        return VertexBuffer.bound_buffer( self.target ) == self.handle
+
+    @property
+    def shadow_buffer( self ):
+        """Returns the shadow buffer.
+
+        This can be used to perform multiple operations before
+        pushing them to OpenGL.
+        """
+        return self._shadow_buffer
+
+    @property
+    def attribute( self ):
+        # return a data view of the buffer
+        return VertexBuffer.Attribute( self )
+
+    def __getitem__( self, index ):
+        """Returns the selected data from the buffer.
+
+        The data will be retreived from OpenGL before having
+        the index applied to it and returned.
+
+        If a shadow buffer is present, the data will be retrieved
+        from the shadow buffer instead of from OpenGL.
+        The buffer does *not* need to be bound if there is a shadow buffer.
+
+        .. note: The shadow buffer may have un-pushed changes in it.
+            Therefore, data retrieved may not be representative of
+            the current buffer if a shadow buffer is present.
+
+        :raise ValueError: Raised if there is no shadow buffer and the
+            buffer is not bound.
+        """
+        # check if we have a shadow buffer
+        if None != self._shadow_buffer:
+            # we have a shadow buffer
+            # just return the shadow buffer values
+            return self._shadow_buffer[ index ]
+
+        # no shadow buffer
+        # we have to get the data from opengl
+        if not self.bound:
+            raise ValueError( "Buffer is not bound" )
+
+        # TODO: this just gets the whole array
+        # then gets the data from the indices
+        # we need to be more efficient about this
+
+        # get the data from opengl
+        data = numpy.empty( self.shape, self.dtype )
+        GL.glGetBufferSubData(
+            self.target,
+            0,
+            self.nbytes,
+            data
+            )
+        return data[ index ]
+
+    def __setitem__( self, index, data ):
+        """Updates the buffer with the provided data.
+
+        The relevant sections of the buffer will be retrieved
+        from OpenGL, updated, and passed back.
+
+        If no stride is requested, the data will be set without
+        needing to retrieve the data.
+        For example::
+
+            buffer[:] = [ 1.0, 2.0, 3.0 ]
+            buffer[0:1] = [ 1.0 ]
+
+        If a shadow buffer is present, data will not be requested from
+        OpenGL before setting.
+        Instead the shadow buffer will be updated and then the
+        entire shadow buffer will be pushed.
+
+        :raise ValueError: Raised if the buffer is not bound.
+        """
+        # the buffer must be bound
+        if not self.bound:
+            raise ValueError( "Buffer is not bound" )
+
+        # check if we're receiving a shader attribute
+        if isinstance( data, ShaderAttribute ):
+            # redirect to our attribute helper
+            self.attribute[ index ] = data
+            return
+
+        # check for a shadow buffer
+        if None != self._shadow_buffer:
+            # we have a shadow buffer
+            # assign the data to the shadow buffer
+            # then push the shadow buffer into opengl
+            self._shadow_buffer[ index ] = data
+
+            # TODO: pass 'index' to push function
+            self.push_shadow_buffer()
+            return
+
+        # no shadow buffer
+
+        # check if we're setting data without strides
+        # this includes [:]
+        # which means we can avoid the get
+        if isinstance( index, slice ):
+            # we check this by seeing if:
+            # the start is 0
+            # the end is >= nbytes
+            # the stride is 1 or None
+            if \
+                index.step == 1 or \
+                index.step == None:
+                # get the slice start and stop
+                # handle [:] slice which is (None,None,None)
+                start = index.start * self._dtype.itemsize if index.start else 0
+                stop = index.stop * self._dtype.itemsize if index.stop else self.nbytes
+
+                # push back into opengl
+                GL.glBufferSubData( self.target, start, stop, data )
+                return
+
+        # the data has strides or is a list of slices
+        # we have to get the data from opengl
+        # then we update the data and pass it back
+
+        # TODO: this gets and sets the entire buffer
+        # we should try and get as smaller chunk as possible
+
+        # get the data
+        buffer_data = self[:]
+        # update our slice values
+        buffer_data[ index ] = data
+        # push back into opengl
+        GL.glBufferSubData(
+            self.target,
+            0,
+            self.nbytes,
+            buffer_data
+            )
+
+    def push_shadow_buffer( self ):
+        """Pushes the current shadow buffer to the OpenGL buffer.
+
+        This allows you to perform multiple operations on the
+        shadow buffer before the final result is pushed.
+        """
+        if not self.bound:
+            raise ValueError( "Buffer is not bound" )
+
+        # push entire buffer
+        GL.glBufferSubData(
+            self.target,
+            0,
+            self.nbytes,
+            self._shadow_buffer
+            )
 
     def bind( self ):
-        """Unbinds the current buffer.
+        """Binds the current buffer.
 
-        This will deactivate the buffer.
+        This will activate the buffer.
 
-        Asserts that the buffer is currently bound.
+        Asserts that the buffer is not currently bound.
         """
         if self.bound:
             raise ValueError( "Buffer is already bound" )
         GL.glBindBuffer( self.target, self.handle )
 
     def unbind( self ):
+        """Unbinds the current buffer.
+
+        This will deactivate the buffer.
+
+        Asserts that the buffer is currently bound.
+        """
         if not self.bound:
             raise ValueError( "Buffer is not bound" )
         GL.glBindBuffer( self.target, 0 )
 
-    def allocate( self, usage, nbytes ):
-        """Allocates a new buffer on the GPU.
 
-        If the buffer has already been allocated, it will be freed.
-
-        The handle is not changed by this operation.
-
-        .. note:: Existing data will be lost.
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        GL.glBufferData( self.target, nbytes, None, usage )
-        self._nbytes = nbytes
-        self._usage = usage
-
-    @parameters_as_numpy_arrays( 'data' )
-    def set_data( self, data, offset = 0 ):
-        """Populates the buffer with the specified data.
-
-        The buffer must be allocated before data can be set.
-
-        :raise ValueError: Raised if the buffer is not currently bound.
-        :raise OverflowError: Raised if the data size exceeds the buffer's bounds.
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.allocate`
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        if (offset + data.nbytes) > self.nbytes:
-            raise OverflowError( "Data would overflow buffer" )
-
-        GL.glBufferSubData( self.target, offset, data.nbytes, data )
-
-    def push_attributes( self ):
-        """Pushes the enable and pointer state of vertex arrays.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        push_attributes()
-
-    def pop_attributes( self ):
-        """Pops the enable and pointer state of vertex arrays.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        pop_attributes()
-
-    def enable_vertex_pointer( self ):
-        """Enables the vertex data for rendering.
-
-        If vertex data is not enabled before rendering, the data
-        will be ignored by OpenGL.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        enable_vertex_pointer()
-
-    def disable_vertex_pointer( self ):
-        """Disables the vertex data.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        disable_vertex_pointer()
-
-    def set_vertex_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
-        """Sets the glVertexPointer.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_vertex_pointer`
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        if enable:
-            self.enable_vertex_pointer()
-
-        set_vertex_pointer( values_per_vertex, glType, stride, offset )
-
-    def enable_color_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        enable_color_pointer()
-
-    def disable_color_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        disable_color_pointer()
-
-    def set_color_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
-        """Sets the glColorPointer.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_color_pointer`
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        if enable:
-            self.enable_color_pointer()
-
-        set_color_pointer( values_per_vertex, glType, stride, offset )
-
-    def enable_texture_coord_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        enable_texture_coord_pointer()
-
-    def disable_texture_coord_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        disable_texture_coord_pointer()
-
-    def set_texture_coord_pointer( self, values_per_vertex, glType, stride, offset, enable = True ):
-        """Sets the glTexCoordPointer.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_texture_coord_pointer`
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        if enable:
-            self.enable_texture_coord_pointer()
-
-        set_texture_coord_pointer( values_per_vertex, glType, stride, offset )
-
-    def enable_normal_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        enable_normal_pointer()
-
-    def disable_normal_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        disable_normal_pointer()
-
-    def set_normal_pointer( self, glType, stride, offset, enable = True ):
-        """Sets the glNormalPointer.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_normal_pointer`
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        if enable:
-            self.enable_normal_pointer()
-
-        set_normal_pointer( glType, stride, offset )
-
-    def enable_index_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        enable_index_pointer()
-
-    def disable_index_pointer( self ):
-        """
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-        """
-        disable_index_pointer()
-
-    def set_index_pointer( self, glType, stride, offset, enable = True ):
-        """Sets the glIndexPointer.
-
-        .. warning:: This function is removed from the OpenGL Core profile and **only**
-            exists in OpenGL Legacy profile (OpenGL version <=2.1).
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_index_pointer`
-        """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
-
-        if enable:
-            self.enable_index_pointer()
-
-        set_index_pointer( glType, stride, offset )
-
-    def enable_shader_attribute_pointer( self, shader, attribute ):
-        """Enables the attribute at the index that matches the location of
-        the specified shader attribute.
-
-        :param Shader shader: The shader object.
-        :param string attribute: The attribute name to enable.
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_attribute_pointer`
-        """
-        enable_shader_attribute( shader, attribute )
-
-    def disable_shader_attribute_pointer( self, shader, attribute ):
-        """Disables the attribute at the index that matches the location of
-        the specified shader attribute.
-
-        :param Shader shader: The shader object.
-        :param string attribute: The attribute name to disable.
-
-        """
-        disable_shader_attribute( shader, attribute )
-
-    def enable_attribute_pointer( self, index ):
-        """Enables the attribute at the specified index.
-
-        :param int index: The index to enable.
-
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.disable_shader_attribute_pointer`
-        """
-        enable_attribute_pointer( index )
-
-    def disable_attribute_pointer( self, index ):
-        """Disables the attribute at the specified index.
-
-        :param int index: The index to disable.
-        """
-        disable_attribute_pointer( index )
-
-    def set_attribute_pointer(
+    def set_attribute(
         self,
         location,
-        values_per_vertex,
-        glType,
-        stride,
-        offset,
+        values_per_vertex = 1,
         normalise = False,
-        enable = True
+        glType = None
         ):
-        """Sets the glVertexAttribPointer.
+        """Sets the attribute pointer.
 
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_attribute_pointer`
-        .. seealso:: `py:func:pygly.vertex_buffer.Buffer.enable_shader_attribute_pointer`
+        This is the equivalent of calling glVertexAttribPointer.
+
+        This function automatically handles a quirk in PyOpenGL
+        where an offset of 0 must be specified as None.
         """
-        if not self.bound:
-            raise ValueError( "Buffer is not bound" )
+        normalise = GL.GL_TRUE if normalise else GL.GL_FALSE
+        offset = ctypes.c_void_p( self._offset ) if self._offset else None
 
-        if enable:
-            self.enable_attribute_pointer( location )
+        # TODO: this won't work for all cases
+        glType = glType if glType else numpy_utils.dtype_type( self.dtype )
+        stride = self._stride[ 0 ]
 
-        set_attribute_pointer(
+        GL.glVertexAttribPointer(
             location,
             values_per_vertex,
             glType,
+            normalise,
             stride,
-            offset,
-            normalise
+            offset
             )
 
     def __str__( self ):
@@ -637,3 +808,4 @@ class VertexBuffer( object ):
                 self.nbytes
                 )
         return string
+
