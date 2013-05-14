@@ -4,7 +4,7 @@ import numpy
 from OpenGL import GL
 
 from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
-from pygly.dtype_vertex_buffer import DtypeVertexBuffer
+from pygly.vertex_buffer import VertexBuffer
 from pygly.vertex_array import VertexArray
 
 
@@ -89,11 +89,10 @@ class CoreQuad( object ):
         # we pass in a list of regions we want to define
         # we only have 1 region here
         # for each region, we pass in how many rows, and the dtype
-        self.buffer = DtypeVertexBuffer(
-            vertices.dtype,
+        self.buffer = VertexBuffer.buffer(
+            vertices,
             GL.GL_ARRAY_BUFFER,
-            GL.GL_STATIC_DRAW,
-            data = vertices
+            GL.GL_STATIC_DRAW
             )
 
         self.vao = VertexArray()
@@ -105,19 +104,23 @@ class CoreQuad( object ):
         # create our vertex array
         self.vao.bind()
         self.buffer.bind()
-        self.buffer.set_attribute_pointer_dtype( self.shader, 'in_position', 'position' )
-        self.buffer.set_attribute_pointer_dtype( self.shader, 'in_uv', 'texture_coord' )
+        self.buffer[ 'position' ] = self.shader[ 'in_position' ]
+        self.buffer[ 'texture_coord' ] = self.shader[ 'in_uv' ]
         self.buffer.unbind()
         self.vao.unbind()
 
+        #self.buffer['position'] = self.shader['in_position']
+
     def draw( self, projection, model_view ):
+        global vertices
+
         self.shader.bind()
-        self.shader.uniforms['projection'].value = projection
-        self.shader.uniforms['model_view'].value = model_view
-        self.shader.uniforms['in_diffuse_texture'].value = 0
+        self.shader.uniforms[ 'projection' ].value = projection
+        self.shader.uniforms[ 'model_view' ].value = model_view
+        self.shader.uniforms[ 'in_diffuse_texture' ].value = 0
 
         self.vao.bind()
-        GL.glDrawArrays( GL.GL_TRIANGLES, 0, self.buffer.rows )
+        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len(vertices) )
         self.vao.unbind()
 
         self.shader.unbind()
@@ -182,6 +185,8 @@ class LegacyQuad( object ):
             )
 
     def draw( self ):
+        global vertices
+
         if self.use_shaders:
             self.shader.bind()
 
@@ -192,7 +197,7 @@ class LegacyQuad( object ):
         self.buffer.set_vertex_pointer_dtype( 'position' )
         self.buffer.set_texture_coord_pointer_dtype( 'texture_coord' )
 
-        GL.glDrawArrays( GL.GL_TRIANGLES, 0, self.buffer.rows )
+        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len(vertices) )
 
         self.buffer.pop_attributes()
         self.buffer.unbind()
