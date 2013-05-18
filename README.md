@@ -101,10 +101,7 @@ PyGLy is available from the PyPy package repository under the name 'pygly'.
 
 ### Install dependencies
 
-Required:
-   * numpy
-   * PyOpenGL
-   * PyDispatch
+Install required dependencies listed above.
 
 Optional:
    * pillow
