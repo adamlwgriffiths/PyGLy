@@ -81,7 +81,7 @@ Dependencies
 ### Required Dependencies:
    * Python 2(.6?)+
    * PyOpenGL
-   * PyDispatch
+   * PyDispatcher
    * NumPy
    * Pyrr (https://github.com/adamlwgriffiths/Pyrr)
 
