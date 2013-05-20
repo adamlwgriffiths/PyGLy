@@ -4,7 +4,7 @@ import numpy
 from OpenGL import GL
 
 from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
-from pygly.vertex_buffer import VertexBuffer
+from pygly.vertex_buffer import VertexBuffer, BufferAttributes, GenericAttribute, VertexAttribute, TextureCoordAttribute
 from pygly.vertex_array import VertexArray
 
 
@@ -89,23 +89,36 @@ class CoreQuad( object ):
         # we pass in a list of regions we want to define
         # we only have 1 region here
         # for each region, we pass in how many rows, and the dtype
-        self.buffer = VertexBuffer.buffer(
-            vertices,
+        self.buffer = VertexBuffer(
             GL.GL_ARRAY_BUFFER,
-            GL.GL_STATIC_DRAW
+            GL.GL_STATIC_DRAW,
+            data = vertices,
             )
-
-        self.vao = VertexArray()
 
         # pass the shader and region to our VAO
         # and bind each of the attributes to a VAO index
         # the shader name is the variable name used in the shader
         # the buffer name is the name of the property in our vertex dtype
+        self.buffer_attributes = BufferAttributes()
+        self.buffer_attributes[ 'position' ] = GenericAttribute.from_dtype(
+            self.buffer,
+            vertices.dtype,
+            'position',
+            location = self.shader.attributes[ 'in_position' ]
+            )
+        self.buffer_attributes[ 'uv' ] = GenericAttribute.from_dtype(
+            self.buffer,
+            vertices.dtype,
+            'texture_coord',
+            location = self.shader.attributes[ 'in_uv' ]
+            )
+
         # create our vertex array
+        self.vao = VertexArray()
+
         self.vao.bind()
         self.buffer.bind()
-        self.buffer[ 'position' ] = self.shader[ 'in_position' ]
-        self.buffer[ 'texture_coord' ] = self.shader[ 'in_uv' ]
+        self.buffer_attributes.set()
         self.buffer.unbind()
         self.vao.unbind()
 
@@ -120,7 +133,7 @@ class CoreQuad( object ):
         self.shader.uniforms[ 'in_diffuse_texture' ].value = 0
 
         self.vao.bind()
-        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len(vertices) )
+        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len( vertices ) )
         self.vao.unbind()
 
         self.shader.unbind()
@@ -177,11 +190,25 @@ class LegacyQuad( object ):
             )
 
         # create our vertex buffer
-        self.buffer = DtypeVertexBuffer(
-            vertices.dtype,
+        self.buffer = VertexBuffer(
             GL.GL_ARRAY_BUFFER,
             GL.GL_STATIC_DRAW,
-            data = vertices
+            data = vertices,
+            )
+
+        self.buffer_attributes = BufferAttributes()
+        self.buffer_attributes[ 'position' ] = GenericAttribute.from_dtype(
+            self.buffer,
+            vertices.dtype,
+            'position',
+            location = self.shader.attributes[ 'in_position' ]
+            )
+
+        self.buffer_attributes[ 'uv' ] = GenericAttribute.from_dtype(
+            self.buffer,
+            vertices.dtype,
+            'texture_coord',
+            location = self.shader.attributes[ 'in_uv' ]
             )
 
     def draw( self ):
@@ -194,10 +221,9 @@ class LegacyQuad( object ):
         self.buffer.push_attributes()
 
         # set the vertex pointer to the position data
-        self.buffer.set_vertex_pointer_dtype( 'position' )
-        self.buffer.set_texture_coord_pointer_dtype( 'texture_coord' )
+        self.buffer_attributes.set()
 
-        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len(vertices) )
+        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len( vertices ) )
 
         self.buffer.pop_attributes()
         self.buffer.unbind()
