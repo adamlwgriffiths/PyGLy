@@ -69,6 +69,8 @@ from OpenGL import GL
 
 from pyrr.utils import parameters_as_numpy_arrays
 
+from pygly.gl import _generate_enum_map
+
 
 def parse_shader_error( error ):
     """Parses a single GLSL error and extracts the line number
@@ -241,21 +243,6 @@ def attribute_for_name( handle, name ):
     # no match found
     return None
 
-
-def _generate_enum_map( enum_names ):
-    """Convert dicts of format {'GL_ENUM_NAME': value, ...}
-    to { GL_ENUM_NAME : value, ...}
-
-    Used to ignore NameErrors that would otherwise result from incomplete
-    OpenGL implementations.
-    """
-    map = {}
-    for (key, value) in enum_names.items():
-        try:
-            map[ getattr(GL, key) ] = value
-        except AttributeError:
-            pass
-    return map
 
 #: processes our enumeration to string map and stores the result
 _enum_string_map = _generate_enum_map(
@@ -470,7 +457,10 @@ class Shader( object ):
             print( "\tCode: %s" % lines[ line - 1 ] )
 
     def __str__( self ):
-        string = "Shader:\t%s" % ( enum_to_string( self.type ) )
+        string = "%s(type=%s)" % (
+            self.__class__.__name__,
+            enum_to_string( self.type )
+            )
         return string
 
 
@@ -670,14 +660,10 @@ class ShaderProgram( object ):
             raise KeyError( name )
 
     def __str__( self ):
-        string = \
-            "ShaderProgram:\n" \
-            "Linked:\t%s\n" \
-            "%s\n" \
-            "%s" % (
-            str(self.linked),
-            str(self.attributes),
-            str(self.uniforms)
+        string = "%s(uniforms=[%s], attributes=[%s])" % (
+            self.__class__.__name__,
+            str( self.uniforms ),
+            str( self.attributes )
             )
         return string
 
@@ -805,10 +791,13 @@ class Uniforms( object ):
         self[ name ].value = value
 
     def __str__( self ):
-        string = "Uniforms:\n"
+        string = "%s(" % (self.__class__.__name__)
+
         for uniform in self:
-            string += str(uniform) + "\n"
-        return string[:-1]
+            string += str(uniform) + ", "
+        string = string[:-2] + ")"
+
+        return string
 
 
 class Uniform( object ):
@@ -948,7 +937,7 @@ class Uniform( object ):
     def __str__( self ):
         """Returns a human readable string representing the Uniform.
         """
-        return "%s:\t%s\t%s\t%d" % (
+        return "%s(name=%s, type=%s, location=%d)" % (
             self.__class__.__name__,
             self.name,
             enum_to_string( self.type ),
@@ -1280,10 +1269,12 @@ class Attributes( object ):
         self[ name ].location = value
 
     def __str__( self ):
-        string = "Attributes:\n"
+        string = "%s(" % (self.__class__.__name__)
+
         for attribute in self:
-            string += str(attribute) + "\n"
-        return string[:-1]
+            string += str(attribute) + ", "
+
+        return string[:-2] + ")"
 
 
 class Attribute( object ):
@@ -1338,7 +1329,7 @@ class Attribute( object ):
     def __str__( self ):
         """Returns a human readable string representing the Attribute.
         """
-        return "%s:\t%s\t%s\t%d" % (
+        return "%s(name=%s, type=%s, location=%d)" % (
             self.__class__.__name__,
             self.name,
             enum_to_string( self.type ),

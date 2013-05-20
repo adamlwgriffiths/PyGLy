@@ -4,7 +4,7 @@ import numpy
 from OpenGL import GL
 
 from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
-from pygly.dtype_vertex_buffer import DtypeVertexBuffer
+from pygly.vertex_buffer import VertexBuffer, BufferAttributes, GenericAttribute, VertexAttribute, TextureCoordAttribute
 from pygly.vertex_array import VertexArray
 
 
@@ -114,34 +114,41 @@ class CoreColourCube( object ):
         # we pass in a list of regions we want to define
         # we only have 1 region here
         # for each region, we pass in how many rows, and the dtype
-        self.buffer = DtypeVertexBuffer(
-            vertices.dtype,
+        self.buffer = VertexBuffer(
             GL.GL_ARRAY_BUFFER,
             GL.GL_STATIC_DRAW,
-            data = vertices
+            data = vertices,
             )
-
-        self.vao = VertexArray()
-
+        
         # pass the shader and region to our VAO
         # and bind each of the attributes to a VAO index
         # the shader name is the variable name used in the shader
         # the buffer name is the name of the property in our vertex dtype
+        self.buffer_attributes = BufferAttributes()
+        self.buffer_attributes[ 'position' ] = GenericAttribute.from_dtype(
+            self.buffer,
+            vertices.dtype,
+            'position',
+            location = self.shader.attributes[ 'in_position' ]
+            )
+
         # create our vertex array
+        self.vao = VertexArray()
+
         self.vao.bind()
         self.buffer.bind()
-        self.buffer.set_attribute_pointer_dtype( self.shader, 'in_position', 'position' )
+        self.buffer_attributes.set()
         self.buffer.unbind()
         self.vao.unbind()
 
     def draw( self, projection, model_view, colour ):
         self.shader.bind()
-        self.shader.uniforms['projection'].value = projection
-        self.shader.uniforms['model_view'].value = model_view
-        self.shader.uniforms['in_colour'].value = colour
+        self.shader.uniforms[ 'projection' ].value = projection
+        self.shader.uniforms[ 'model_view' ].value = model_view
+        self.shader.uniforms[ 'in_colour' ].value = colour
 
         self.vao.bind()
-        GL.glDrawArrays( GL.GL_TRIANGLES, 0, self.buffer.rows )
+        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len( vertices ) )
         self.vao.unbind()
 
         self.shader.unbind()
@@ -186,11 +193,18 @@ class LegacyColourCube( object ):
             )
 
         # create our vertex buffer
-        self.buffer = DtypeVertexBuffer(
-            vertices.dtype,
+        self.buffer = VertexBuffer(
             GL.GL_ARRAY_BUFFER,
             GL.GL_STATIC_DRAW,
-            data = vertices
+            data = vertices,
+            )
+
+        self.buffer_attributes = BufferAttributes()
+        self.buffer_attributes[ 'position' ] = GenericAttribute.from_dtype(
+            self.buffer,
+            vertices.dtype,
+            'position',
+            location = self.shader.attributes[ 'in_position' ]
             )
 
     def draw( self, colour ):
@@ -204,9 +218,9 @@ class LegacyColourCube( object ):
         GL.glColor4f( *colour )
 
         # set the vertex pointer to the position data
-        self.buffer.set_vertex_pointer_dtype( 'position' )
+        self.buffer_attributes.set()
 
-        GL.glDrawArrays( GL.GL_TRIANGLES, 0, self.buffer.rows )
+        GL.glDrawArrays( GL.GL_TRIANGLES, 0, len( vertices ) )
 
         self.buffer.pop_attributes()
         self.buffer.unbind()

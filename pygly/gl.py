@@ -34,6 +34,21 @@ from OpenGL import GL
 from pyrr.utils import all_parameters_as_numpy_arrays, parameters_as_numpy_arrays
 
 
+def _generate_enum_map( enum_names ):
+    """Convert dicts of format {'GL_ENUM_NAME': value, ...}
+    to { GL_ENUM_NAME : value, ...}
+
+    Used to ignore NameErrors that would otherwise result from incomplete
+    OpenGL implementations.
+    """
+    map = {}
+    for (key, value) in enum_names.items():
+        try:
+            map[ getattr(GL, key) ] = value
+        except AttributeError:
+            pass
+    return map
+
 def _extract_version(version):
     """Extracts the major and minor versions from an OpenGL version string.
 
@@ -143,6 +158,19 @@ def type_to_string( glType ):
         GL.GLfloat:    "GLfloat",
         GL.GLdouble:   "GLdouble",
         }[ glType ]
+
+def enum_to_type( glEnum ):
+    return {
+        GL.constants.GL_CHAR:           GL.constants.GLchar,
+        GL.constants.GL_UNSIGNED_BYTE:  GL.constants.GLubyte,
+        GL.constants.GL_BYTE:           GL.constants.GLbyte,
+        GL.constants.GL_UNSIGNED_SHORT: GL.constants.GLushort,
+        GL.constants.GL_SHORT:          GL.constants.GLshort,
+        GL.constants.GL_UNSIGNED_INT:   GL.constants.GLuint,
+        GL.constants.GL_INT:            GL.constants.GLint,
+        GL.constants.GL_FLOAT:          GL.constants.GLfloat,
+        GL.constants.GL_DOUBLE:         GL.constants.GLdouble,
+        }[ glEnum ]
 
 @contextmanager
 def attributes( attribs ):
