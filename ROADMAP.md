@@ -9,6 +9,7 @@ PyGLy Roadmap
 Short Term
 ==========
 
+   * Re-write Texture in style of VertexBuffer
    * Syntax formatting checker integration
       * [pep8](https://pypi.python.org/pypi/pep8)
       * [PyLint](http://www.pylint.org/)
