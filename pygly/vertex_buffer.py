@@ -264,7 +264,7 @@ class BufferAttributes( object ):
 class BufferAttribute( object ):
 
     @classmethod
-    def from_dtype( cls, buffer, dtype, name, **kwargs ):
+    def from_dtype( cls, buffer, dtype, name, offset = 0, **kwargs ):
         import numpy_utils
 
         args = {
@@ -272,7 +272,7 @@ class BufferAttribute( object ):
             'values_per_vertex':    numpy_utils.dtype_element_count( dtype, name ),
             'gl_type':  numpy_utils.dtype_gl_enum( dtype, name ),
             'stride':   dtype.itemsize,
-            'offset':   numpy_utils.dtype_offset( dtype, name )
+            'offset':   offset + numpy_utils.dtype_offset( dtype, name )
             }
         args.update( kwargs )
 
