@@ -537,7 +537,7 @@ class IndexAttribute( BufferAttribute ):
     def __init__(
         self,
         buffer,
-        gl_type = GL.GL_FLOAT,
+        gl_type = GL.GL_UNSIGNED_INT,
         stride = None,
         offset = None,
         **kwargs
