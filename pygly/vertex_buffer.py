@@ -417,7 +417,7 @@ class TextureCoordAttribute( BufferAttribute ):
     def __init__(
         self,
         buffer,
-        values_per_vertex = 3,
+        values_per_vertex = 2,
         gl_type = GL.GL_FLOAT,
         stride = None,
         offset = None,
