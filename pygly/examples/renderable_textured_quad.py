@@ -197,14 +197,14 @@ class LegacyQuad( object ):
             )
 
         self.buffer_attributes = BufferAttributes()
-        self.buffer_attributes[ 'position' ] = GenericAttribute.from_dtype(
+        self.buffer_attributes[ 'position' ] = VertexAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
             'position',
             location = self.shader.attributes[ 'in_position' ]
             )
 
-        self.buffer_attributes[ 'uv' ] = GenericAttribute.from_dtype(
+        self.buffer_attributes[ 'uv' ] = TextureCoordAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
             'texture_coord',
@@ -217,16 +217,16 @@ class LegacyQuad( object ):
         if self.use_shaders:
             self.shader.bind()
 
-        self.buffer.bind()
-        self.buffer.push_attributes()
+        self.buffer_attributes.push_attributes()
 
         # set the vertex pointer to the position data
+        self.buffer.bind()
         self.buffer_attributes.set()
+        self.buffer.unbind()
 
         GL.glDrawArrays( GL.GL_TRIANGLES, 0, len( vertices ) )
 
-        self.buffer.pop_attributes()
-        self.buffer.unbind()
+        self.buffer_attributes.pop_attributes()
 
         if self.use_shaders:
             self.shader.unbind()

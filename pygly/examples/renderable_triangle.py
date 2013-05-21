@@ -4,7 +4,7 @@ import numpy
 from OpenGL import GL
 
 from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
-from pygly.vertex_buffer import VertexBuffer, BufferAttributes, GenericAttribute, VertexAttribute, TextureCoordAttribute
+from pygly.vertex_buffer import VertexBuffer, BufferAttributes, GenericAttribute, VertexAttribute, ColourAttribute
 from pygly.vertex_array import VertexArray
 
 
@@ -119,6 +119,8 @@ class CoreTriangle( object ):
         self.vao.unbind()
 
     def draw( self, projection, model_view ):
+        global vertices
+
         self.shader.bind()
         self.shader.uniforms[ 'projection' ].value = projection
         self.shader.uniforms[ 'model_view' ].value = model_view
@@ -176,13 +178,13 @@ class LegacyTriangle( object ):
             )
 
         self.buffer_attributes = BufferAttributes()
-        self.buffer_attributes[ 'position' ] = GenericAttribute.from_dtype(
+        self.buffer_attributes[ 'position' ] = VertexAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
             'position',
             location = self.shader.attributes[ 'in_position' ]
             )
-        self.buffer_attributes[ 'colour' ] = GenericAttribute.from_dtype(
+        self.buffer_attributes[ 'colour' ] = ColourAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
             'colour',
@@ -190,19 +192,21 @@ class LegacyTriangle( object ):
             )
 
     def draw( self ):
+        global vertices
+        
         if self.use_shaders:
             self.shader.bind()
 
-        self.buffer.bind()
-        self.buffer.push_attributes()
+        self.buffer_attributes.push_attributes()
 
         # set the vertex pointer to the position data
+        self.buffer.bind()
         self.buffer_attributes.set()
+        self.buffer.unbind()
 
         GL.glDrawArrays( GL.GL_TRIANGLES, 0, len( vertices ) )
 
-        self.buffer.pop_attributes()
-        self.buffer.unbind()
+        self.buffer_attributes.pop_attributes()
 
         if self.use_shaders:
             self.shader.unbind()
