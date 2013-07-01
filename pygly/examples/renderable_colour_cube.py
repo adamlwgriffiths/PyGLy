@@ -203,8 +203,7 @@ class LegacyColourCube( object ):
         self.buffer_attributes[ 'position' ] = VertexAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
-            'position',
-            location = self.shader.attributes[ 'in_position' ]
+            'position'
             )
 
     def draw( self, colour ):

@@ -181,14 +181,12 @@ class LegacyTriangle( object ):
         self.buffer_attributes[ 'position' ] = VertexAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
-            'position',
-            location = self.shader.attributes[ 'in_position' ]
+            'position'
             )
         self.buffer_attributes[ 'colour' ] = ColourAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
-            'colour',
-            location = self.shader.attributes[ 'in_colour' ]
+            'colour'
             )
 
     def draw( self ):
