@@ -144,18 +144,13 @@ class LegacyQuad( object ):
     vertex_shader = textwrap.dedent( """
         #version 120
 
-        // input
-        attribute vec2 in_uv;
-
-        // shared
-        varying vec2 ex_uv;
-
         void main(void) 
         {
             // apply projection and model view matrix to vertex
             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 
-            ex_uv = in_uv;
+            // select the texture coordinate to use
+            gl_TexCoord[0]  = gl_MultiTexCoord0;
         }
         """ )
 
@@ -165,13 +160,10 @@ class LegacyQuad( object ):
         // input
         uniform sampler2D in_diffuse_texture;
 
-        // shared
-        varying vec2 ex_uv;
-
         void main(void) 
         {
             // set colour of each fragment
-            gl_FragColor = texture2D( in_diffuse_texture, ex_uv );;
+            gl_FragColor = texture2D( in_diffuse_texture, gl_TexCoord[0].st );
         }
         """ )
 
@@ -182,6 +174,8 @@ class LegacyQuad( object ):
         global vertices
 
         self.use_shaders = True
+
+        GL.glEnable(GL.GL_TEXTURE_2D)
 
         # create our shader
         self.shader = ShaderProgram(
@@ -200,15 +194,13 @@ class LegacyQuad( object ):
         self.buffer_attributes[ 'position' ] = VertexAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
-            'position',
-            location = self.shader.attributes[ 'in_position' ]
+            'position'
             )
 
         self.buffer_attributes[ 'uv' ] = TextureCoordAttribute.from_dtype(
             self.buffer,
             vertices.dtype,
-            'texture_coord',
-            location = self.shader.attributes[ 'in_uv' ]
+            'texture_coord'
             )
 
     def draw( self ):
@@ -216,6 +208,7 @@ class LegacyQuad( object ):
 
         if self.use_shaders:
             self.shader.bind()
+            self.shader.uniforms[ 'in_diffuse_texture' ].value = 0
 
         self.buffer_attributes.push_attributes()
 
