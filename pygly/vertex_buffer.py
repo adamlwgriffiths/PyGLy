@@ -450,7 +450,7 @@ class TextureCoordAttribute( BufferAttribute ):
             self.enable()
 
         offset = ctypes.c_void_p( self.offset ) if self.offset else None
-        GL.glTexCoordPointer( values_per_vertex, self.gl_type, self.stride, offset )
+        GL.glTexCoordPointer( self.values_per_vertex, self.gl_type, self.stride, offset )
 
     def enable( self ):
         """Enables the vertex texture co-ordinate data for rendering.
