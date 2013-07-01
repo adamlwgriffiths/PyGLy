@@ -59,7 +59,7 @@ def _extract_version(version):
     # there can be a 3rd version
     # split full stops and spaces and take the first 2 results
     versions = re.split( r'[\.\s\-]', version )
-    return versions[ 0 ], versions[ 1 ]
+    return int(versions[0]), int(versions[1])
 
 def gl_version():
     """Returns the current OpenGL version string as specified by the
