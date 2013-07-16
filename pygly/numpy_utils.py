@@ -141,10 +141,10 @@ def dtype_gl_enum( dtype, name = None ):
 
     # remove endian identifiers
     # http://docs.scipy.org/doc/numpy/reference/generated/numpy.dtype.byteorder.html#numpy.dtype.byteorder
-    type = dtype_type( dtype, name )
-    stripped_type = re.sub('[=<>|]', '', type)
+    type_ = dtype_type( dtype, name )
+    stripped_type = re.sub('[=<>|]', '', type_)
 
-    return {
+    types = {
         'int8':     GL.GL_BYTE,
         'i1':       GL.GL_BYTE,
         'uint8':    GL.GL_UNSIGNED_BYTE,
@@ -161,5 +161,25 @@ def dtype_gl_enum( dtype, name = None ):
         'f4':       GL.GL_FLOAT,
         'float64':  GL.GL_DOUBLE,
         'f8':       GL.GL_DOUBLE,
-        }[ stripped_type ]
+    }
+
+    if stripped_type not in types:
+        raise ValueError('Cannot convert from {0}'.format(type_))
+
+    return types[ stripped_type ]
+
+def gl_enum_dtype(enum, name=None):
+    from OpenGL import GL
+
+    types = {
+        GL.GL_BYTE:             'int8',
+        GL.GL_UNSIGNED_BYTE:    'uint8',
+        GL.GL_SHORT:            'int16',
+        GL.GL_UNSIGNED_SHORT:   'uint16',
+        GL.GL_INT:              'int32',
+        GL.GL_UNSIGNED_INT:     'uint32',
+        GL.GL_FLOAT:            'float32',
+        GL.GL_DOUBLE:           'float64',
+    }
+    return types[enum]
 
