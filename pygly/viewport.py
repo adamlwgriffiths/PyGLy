@@ -49,7 +49,7 @@ def set_viewport( rect ):
     with attributes( GL_VIEWPORT_BIT ):
         set_viewport( rect )
 
-    These functions are not available on the
+    The glPushAttrib / glPopAttrib functions are not available on the
     OpenGL Core profile (>=3.0)
     """
     GL.glViewport(
