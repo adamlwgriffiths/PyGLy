@@ -47,16 +47,13 @@ class Scene( scene.Scene ):
         self.current_texture = 0
 
         # load some from a directory using PIL
-        self.load_texture_directory(
-            os.path.join( os.path.dirname( __file__ ), 'data/textures' )
-            )
+        image_directory = os.path.join( os.path.dirname( __file__ ), 'data/textures' )
+        self.load_texture_directory(image_directory)
 
         # generate some random ones using numpy
         self.generate_random_textures()
 
     def load_texture_directory( self, directory ):
-        import pygly.pil_texture
-
         print 'Loading images from', directory
 
         extensions = [
@@ -70,24 +67,16 @@ class Scene( scene.Scene ):
 
         for filename in os.listdir( directory ):
             name, extension = os.path.splitext( filename )
+
             if extension not in extensions:
                 continue
 
             try:
                 print filename,
                 full_path = '%s/%s' % (directory, filename)
-
-                image = Image.open( full_path )
-                print image.format, image.mode, image.getbands()
-
-                texture = Texture2D()
-                texture.bind()
-                texture.set_min_mag_filter( GL.GL_NEAREST, GL.GL_NEAREST )
-                pygly.pil_texture.set_pil_image( texture, image )
-                texture.unbind()
-
-                self.textures.append( (filename, texture) )
-            except IOError as e:
+                texture = Texture2D.from_file(full_path)
+                self.textures.append((filename, texture))
+            except Exception as e:
                 print 'Exception:', e
                 # ensure we unbound our textures
                 GL.glBindTexture( GL.GL_TEXTURE_2D, 0 )
@@ -95,6 +84,44 @@ class Scene( scene.Scene ):
     def generate_random_textures( self ):
         import numpy
 
+        def float32_rgb():
+            data = numpy.linspace(0.0, 1.0, 32 * 32 * 3).astype('float32')
+            data.shape = (32,32,-1)
+            texture = Texture2D(data=data)
+            return texture
+
+        self.textures.append(('Gradient RGB (float32)', float32_rgb()))
+
+        def uint8_rgb():
+            data = numpy.linspace(0, 255, 32 * 32 * 3).astype('uint8')
+            data.shape = (32,32,-1)
+            texture = Texture2D(data=data)
+            return texture
+
+        self.textures.append(('Gradient RGB (uint8)', uint8_rgb()))
+
+        def random_rgb():
+            data = numpy.random.random_integers(0, 255, 32 * 32 * 3).astype('uint8')
+            data.shape = (32,32,-1)
+            texture = Texture2D(data=data)
+            return texture
+
+        self.textures.append(('Random RGB (uint8)', random_rgb()))
+
+        def random_luminance():
+            data = numpy.random.random_integers(0, 255, 32 * 32).astype('uint8')
+            data.shape = (32,32,-1)
+
+            from pygly import gl
+            if gl.is_legacy():
+                texture = Texture2D(data=data, internal_format=GL.GL_LUMINANCE)
+            else:
+                texture = Texture2D(data=data, swizzle='rrr', internal_format=GL.GL_RGB)
+            return texture
+
+        self.textures.append(('Random Luminance (uint32)', random_luminance()))
+
+        """
         def random_rgb():
             # create a random RGB texture
             name = 'Red Shade RGB'
@@ -132,17 +159,22 @@ class Scene( scene.Scene ):
             texture.unbind()
             self.textures.append( (name, texture) )
         random_luminance()
+        """
 
     def on_key_pressed( self, key ):
         if key == "right":
             self.current_texture += 1
             self.current_texture %= len( self.textures )
-            print self.textures[ self.current_texture ][ 0 ]
+
+            name, texture = self.textures[ self.current_texture ]
+            print name, texture.internal_format
         elif key == "left":
             self.current_texture -= 1
             if self.current_texture < 0:
                 self.current_texture = len( self.textures ) - 1
-            print self.textures[ self.current_texture ][ 0 ]
+
+            name, texture = self.textures[ self.current_texture ]
+            print name, texture.internal_format
 
     def on_window_resized( self, width, height ):
         # update the viewport
