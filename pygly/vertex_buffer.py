@@ -84,8 +84,7 @@ class VertexBuffer( object ):
         target = GL.GL_ARRAY_BUFFER,
         usage = GL.GL_STATIC_DRAW,
         nbytes = None,
-        data = None,
-        handle = None
+        data = None
         ):
         """Creates a Vertex Buffer with the specified attributes.
 
@@ -105,8 +104,7 @@ class VertexBuffer( object ):
         self._target = target
         self._usage = usage
         self._nbytes = 0
-
-        self.handle = GL.glGenBuffers( 1 ) if not handle else handle
+        self._handle = GL.glGenBuffers( 1 )
 
         if data != None:
             nbytes = data.nbytes
@@ -117,6 +115,10 @@ class VertexBuffer( object ):
             if data != None:
                 self.set_data( data )
             self.unbind()
+
+    @property
+    def handle( self ):
+        return self._handle
 
     @property
     def target( self ):
