@@ -134,36 +134,31 @@ class Texture(object):
         border=False,
         **kwargs
         ):
-        """
+        """Creates a new texture.
+
+        By default, only the handle will be allocated.
+        Optional parameters allow the texture to be allocated and have data set.
+
         :param GLuint target: The OpenGL texture target type.
         :param GLuint internal_format: The internal format used by this texture.
         :param GLuint min_filter: The minification filter to use for scaling the image down.
             This MUST be set on OpenGL 3.0+ or the texture won't render.
-
         :param GLuint mag_filter: The magnification filter to use for scaling the image down.
             This MUST be set on OpenGL 3.0+ or the texture won't render.
-
         :param GLuint wrap_s: The wrap setting for the S dimension.
         :param GLuint wrap_t: The wrap setting for the T dimension.
-        
         :param bool border: Whether or not to apply a border to the texture.
             This MUST be False on OpenGL 3.0+.
-
         :param iterable data: Data to set on the texture.
             The data shape should represent the dimensions of the texture and
             the number of channels.
 
             For example, a 32x32 RGBA texture would have the shape (32,32,4).
-
         :param tuple shape: Specify the data's shape instead of using the shape of the data variable itself.
         :param GLuint data_type: OpenGL data type (GL_FLOAT, etc).
             Inferred from data dtype if not set.
         :param GLuint format: The OpenGL format of the data.
             Inferred from data shape if not set.
-
-
-        data, shape, data_type, format:
-        Related to passing data in immediately
         """
         super(Texture, self).__init__()        
 
