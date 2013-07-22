@@ -6,24 +6,14 @@ from OpenGL import GL
 from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
 from pygly.vertex_buffer import VertexBuffer, BufferAttributes, GenericAttribute, VertexAttribute, TextureCoordAttribute
 from pygly.vertex_array import VertexArray
+from pyrr import geometry
 
 
-# create a triangle
-vertices = numpy.array(
-    [
-        #  X    Y    Z          U    V
-        (( 1.0, 1.0, 0.0),     (1.0, 1.0)),
-        ((-1.0, 1.0, 0.0),     (0.0, 1.0)),
-        (( 1.0,-1.0, 0.0),     (1.0, 0.0)),
-        ((-1.0, 1.0, 0.0),     (0.0, 1.0)),
-        ((-1.0,-1.0, 0.0),     (0.0, 0.0)),
-        (( 1.0,-1.0, 0.0),     (1.0, 0.0)),
-        ],
-    dtype = [
-        ('position',        'float32',  (3,)),
-        ('texture_coord',   'float32',  (2,)),
-        ]
-    )
+vertices = geometry.create_quad(scale=(5.0,5.0), st=True, dtype='float32')
+vertices.dtype = [
+    ('position',        'float32',  (3,)),
+    ('texture_coord',   'float32',  (2,)),
+]
 
 
 def create( core_profile = True ):

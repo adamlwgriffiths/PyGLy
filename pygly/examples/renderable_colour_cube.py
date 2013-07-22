@@ -6,56 +6,11 @@ from OpenGL import GL
 from pygly.shader import Shader, VertexShader, FragmentShader, ShaderProgram
 from pygly.vertex_buffer import VertexBuffer, BufferAttributes, GenericAttribute, VertexAttribute
 from pygly.vertex_array import VertexArray
+from pyrr import geometry
 
 
-vertices = numpy.array(
-    [
-        (( 1.0, 1.0,-1.0),),
-        ((-1.0, 1.0,-1.0),),
-        (( 1.0, 1.0, 1.0),),
-        ((-1.0, 1.0,-1.0),),
-        ((-1.0, 1.0, 1.0),),
-        (( 1.0, 1.0, 1.0),),
-
-        (( 1.0,-1.0, 1.0),),
-        ((-1.0,-1.0, 1.0),),
-        (( 1.0,-1.0,-1.0),),
-        ((-1.0,-1.0, 1.0),),
-        ((-1.0,-1.0,-1.0),),
-        (( 1.0,-1.0,-1.0),),
-
-        (( 1.0, 1.0, 1.0),),
-        ((-1.0, 1.0, 1.0),),
-        (( 1.0,-1.0, 1.0),),
-        ((-1.0, 1.0, 1.0),),
-        ((-1.0,-1.0, 1.0),),
-        (( 1.0,-1.0, 1.0),),
-
-        (( 1.0,-1.0,-1.0),),
-        ((-1.0,-1.0,-1.0),),
-        (( 1.0, 1.0,-1.0),),
-        ((-1.0,-1.0,-1.0),),
-        ((-1.0, 1.0,-1.0),),
-        (( 1.0, 1.0,-1.0),),
-
-        ((-1.0, 1.0, 1.0),),
-        ((-1.0, 1.0,-1.0),),
-        ((-1.0,-1.0, 1.0),),
-        ((-1.0, 1.0,-1.0),),
-        ((-1.0,-1.0,-1.0),),
-        ((-1.0,-1.0, 1.0),),
-
-        (( 1.0, 1.0,-1.0),),
-        (( 1.0, 1.0, 1.0),),
-        (( 1.0,-1.0,-1.0),),
-        (( 1.0, 1.0, 1.0),),
-        (( 1.0,-1.0, 1.0),),
-        (( 1.0,-1.0,-1.0),),
-        ],
-    dtype = [
-        ('position',    'float32',  (3,)),
-        ]
-    )
+vertices = geometry.create_cube(scale=(2.0,2.0,2.0), dtype='float32')
+vertices.dtype = [('position', 'float32', (3,)),]
 
 
 def create( core_profile = True ):
