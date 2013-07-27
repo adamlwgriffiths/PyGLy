@@ -310,7 +310,7 @@ class VertexAttribute( BufferAttribute ):
         offset = None,
         **kwargs
         ):
-        super( VertexAttribute, self ).__init__( buffer, )
+        super( VertexAttribute, self ).__init__( buffer )
 
         self.values_per_vertex = values_per_vertex
         self.gl_type = gl_type
