@@ -9,7 +9,8 @@ from pygly.vertex_array import VertexArray
 from pyrr import geometry
 
 
-vertices = geometry.create_cube(scale=(2.0,2.0,2.0), dtype='float32')
+vertices, indices = geometry.create_cube(scale=(2.0,2.0,2.0), dtype='float32')
+vertices = vertices[indices]
 vertices.dtype = [('position', 'float32', (3,)),]
 
 

@@ -9,7 +9,8 @@ from pygly.vertex_array import VertexArray
 from pyrr import geometry
 
 
-vertices = geometry.create_quad(scale=(5.0,5.0), st=True, dtype='float32')
+vertices, indices = geometry.create_quad(scale=(5.0,5.0), st=True, dtype='float32')
+vertices = vertices[indices]
 vertices.dtype = [
     ('position',        'float32',  (3,)),
     ('texture_coord',   'float32',  (2,)),
