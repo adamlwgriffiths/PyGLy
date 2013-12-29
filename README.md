@@ -94,7 +94,7 @@ Dependencies
 Installation
 -----------------------
 
-PyGLy is available from the PyPy package repository under the name 'pygly'.
+PyGLy is available from the PyPI package repository under the name 'pygly'.
 
 **Source installation is the recommended method to use PyGLy.**
 
