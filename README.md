@@ -1,3 +1,10 @@
+Whilest this project is still usable, it is no longer maintained.
+
+I will accept pull-requests and patches, but my own major development on this library has ceased.
+
+The lessons learnt while developing and using this are being used in the next-generation OpenGL framework [OMGL](https://github.com/adamlwgriffiths/OMGL), which will be used as a base for the [Bast 3D Engine](https://github.com/adamlwgriffiths/bast).
+
+
 PyGLy
 =====================
 
