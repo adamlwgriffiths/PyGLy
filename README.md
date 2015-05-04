@@ -1,4 +1,4 @@
-Whilest this project is still usable, it is no longer maintained.
+Whilest this project is still usable, it will no longer receive new features.
 
 I will accept pull-requests and patches, but my own major development on this library has ceased.
 
@@ -27,7 +27,6 @@ Design
    * Full control over rendering process.
    * Uses Pyrr for Maths - NumPy powered Quaternion, Matrix, Vectors, Rays.
    * Liberal BSD licensing - Do what you want!
-   * Active development - Being developed for games.
 
 
 Features
