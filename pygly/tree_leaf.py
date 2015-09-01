@@ -1,8 +1,3 @@
-'''
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
-'''
-
-    
 class TreeLeaf( object ):
     """Base class for Tree Leaf objects.
 
