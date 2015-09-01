@@ -14,7 +14,6 @@ setup(
     description = 'Pure Python OpenGL framework built on top of Pyglet',
     license = 'BSD',
     author = 'Adam Griffiths',
-    author_email = 'adam.lw.griffiths@gmail.com',
     url = 'https://github.com/adamlwgriffiths/PyGLy',
     requires = [
         'pyopengl',
