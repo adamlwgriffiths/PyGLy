@@ -1,6 +1,4 @@
 '''
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
-
 .. todo:: rotate by matrix
 .. todo:: rotate by eulers
 .. todo:: rotate_about_axis( axis, radians )

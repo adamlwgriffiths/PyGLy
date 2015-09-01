@@ -9,8 +9,6 @@ be used to perform this task.
 Code borrowed from the following places:
 http://code.activestate.com/recipes/81253/
 http://stackoverflow.com/questions/3942303/how-does-a-python-set-check-if-two-objects-are-equal-what-methods-does-an-o
-
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
 '''
 
 import weakref
