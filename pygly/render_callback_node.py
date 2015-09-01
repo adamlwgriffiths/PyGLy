@@ -1,7 +1,3 @@
-"""
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
-"""
-
 from render_node import RenderNode
 
 
