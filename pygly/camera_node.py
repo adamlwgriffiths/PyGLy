@@ -1,7 +1,3 @@
-'''
-.. moduleauthor:: Adam Griffiths <adam.lw.griffiths@gmail.com>
-'''
-
 import math
 
 from pyrr import quaternion
